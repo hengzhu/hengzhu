@@ -230,6 +230,7 @@ func (c *AccountController)Bind() {
 			Id:member.Id,
 			Mail:obj.Email,
 		}
+
 		id, err := m.UpdateUser(&me);
 		if err != nil || id == 0 {
 			c.Response(FAIL, "")
