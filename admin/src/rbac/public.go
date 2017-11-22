@@ -6,7 +6,7 @@ import (
 	m "hengzhu/admin/src/models"
     "github.com/astaxie/beego/cache"
     "github.com/astaxie/beego/utils/captcha"
-	"github.com/deepzz0/go-com/log"
+	"github.com/Zeniubius/golang_utils/glog"
 )
 
 var Cpt *captcha.Captcha
@@ -64,7 +64,7 @@ func (this *MainController) Login() {
 	needCaptcha,_ := beego.AppConfig.Bool("admin_login_captcha")
 	isajax := this.GetString("isajax")
 	if isajax == "1" {
-		log.Printf("Captcha is %v, name:%v", this.Ctx.Request.Form.Get(Cpt.FieldIDName), this.Ctx.Request.Form.Get(Cpt.FieldCaptchaName))
+		glog.Info("Captcha is %v, name:%v", this.Ctx.Request.Form.Get(Cpt.FieldIDName), this.Ctx.Request.Form.Get(Cpt.FieldCaptchaName))
         if needCaptcha && !Cpt.VerifyReq(this.Ctx.Request) {
             this.Rsp(false, "验证码错误")
             return

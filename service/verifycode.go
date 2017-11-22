@@ -3,7 +3,7 @@ package service
 import (
 	"strconv"
 	"time"
-	"github.com/deepzz0/go-com/log"
+	"github.com/Zeniubius/golang_utils/glog"
 	"math/rand"
 	"hengzhu/cache"
 )
@@ -17,21 +17,20 @@ import (
  */
 func GetVerifyCode(len int) (string, error) {
 	v, err := RandomNegative(len); if err != nil {
-		log.Infof("gensmsVcode: %v", err)
+		glog.Info("gensmsVcode: %v", err)
 		return "", err
 	}
 	return strconv.Itoa(v), nil
 }
 
-
 func VcodeVerify(mobile string, vcode string) bool {
 	cacheCode := cache.Bm.Get(SMS_CACHE_KEY+mobile)
 	if cacheCode == ""{
-		log.Warn("vcodeVerify<|>验证码为空<|>cacheCode:")
+		glog.Warn("vcodeVerify<|>验证码为空<|>cacheCode:")
 		return false
 	}
 	if cacheCode != vcode {
-		log.Warn("vcodeVerify<|>验证码错误<|>cacheCode:")
+		glog.Warn("vcodeVerify<|>验证码错误<|>cacheCode:")
 		return false
 	}
 	return true
@@ -40,11 +39,11 @@ func VcodeVerify(mobile string, vcode string) bool {
 func EmailVcodeVerify(mail string, vcode string) bool {
 	cacheCode := cache.Bm.Get(MAIl_CACHE_KEY+mail)
 	if cacheCode == ""{
-		log.Warn("vcodeVerify<|>邮件验证码为空<|>cacheCode:")
+		glog.Warn("vcodeVerify<|>邮件验证码为空<|>cacheCode:")
 		return false
 	}
 	if cacheCode != vcode {
-		log.Warn("vcodeVerify<|>邮件验证码错误<|>cacheCode:")
+		glog.Warn("vcodeVerify<|>邮件验证码错误<|>cacheCode:")
 		return false
 	}
 	return true

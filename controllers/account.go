@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/deepzz0/go-com/log"
+	"github.com/Zeniubius/golang_utils/glog"
 	m "hengzhu/models/usermodel"
 	"time"
 	"fmt"
@@ -23,7 +23,7 @@ func (c *AccountController) URLMapping() {
 //@Return:
 //
 func (c *AccountController)Index() {
-	log.Infof("requs:%v", c.Ctx.Request.RequestURI)
+	glog.Info("requs:%v", c.Ctx.Request.RequestURI)
 	membersess := c.GetSession("memberinfo")
 	if membersess == nil {
 		c.Response(LOGIN_EXPIRE, "")
@@ -32,7 +32,7 @@ func (c *AccountController)Index() {
 	c.Data["islogin"] = true
 	member := membersess.(m.User)
 	//id := member.Id
-	log.Infof("Member:%v",member)
+	glog.Info("Member:%v",member)
 	stime, err := c.GetInt("stime")
 	etime, err := c.GetInt("etime")
 	if stime != 0 && etime != 0 {
@@ -85,7 +85,7 @@ func (c *AccountController)ChangePwd() {
 	var obj m.UserChangePwd
 	c.ParseForm(&obj)
 	c.ValidData(obj)
-	log.Infof("obj: %+v", obj)
+	glog.Info("obj: %+v", obj)
 	if obj.NewPassword != obj.RePassword {
 		c.Response(DIFFERENCE_NEWPASSWORD, "")
 		return
@@ -148,8 +148,8 @@ func (c *AccountController)Bind() {
 		c.Ctx.Redirect(302, "/login")
 	}
 	member := memberinfo.(m.User)
-	log.Printf("url is %v", c.Ctx.Request.RequestURI)
-	log.Printf("Requ is %v\n", string(c.Ctx.Input.RequestBody))
+	glog.Info("url is %v", c.Ctx.Request.RequestURI)
+	glog.Info("Requ is %v\n", string(c.Ctx.Input.RequestBody))
 	bindtype := c.GetString("type")
 	nowtime := time.Now().Unix()
 	b := m.UserBindmobile{
@@ -164,7 +164,7 @@ func (c *AccountController)Bind() {
 	case "mobile":
 		var obj m.UserBindmobile
 		c.ParseForm(&obj)
-		log.Infof("obj: %+v\n", obj)
+		glog.Info("obj: %+v\n", obj)
 		c.ValidData(obj)
 		//if !service.VcodeVerify(obj.Mobile, obj.Seccode) {
 		//	c.Response(SMS_CODE_ERROR, "")
@@ -188,7 +188,7 @@ func (c *AccountController)Bind() {
 	case "email":
 		var obj m.UserEmailBind
 		c.ParseForm(&obj)
-		log.Infof("obj: %+v\n", obj)
+		glog.Info("obj: %+v\n", obj)
 		c.ValidData(obj)
 
 		code, err := uc_client.UcUserEdit(member.UserName, member.Password, "", obj.Email, "", c.Ctx.Request.UserAgent());
@@ -212,7 +212,7 @@ func (c *AccountController)Bind() {
 				return
 			default:
 				c.Response(FAIL,"")
-				log.Infof("uc_client.UcUserEdit return: %v",code)
+				glog.Info("uc_client.UcUserEdit return: %v",code)
 				return
 			}
 		}
@@ -253,8 +253,8 @@ func (c *AccountController)Bind() {
 //@Return:
 //
 func (c *AccountController)UpdateDetail() {
-	log.Printf("url is %v\n", c.Ctx.Request.RequestURI)
-	log.Printf("Requ is %v\n", string(c.Ctx.Input.RequestBody))
+	glog.Info("url is %v\n", c.Ctx.Request.RequestURI)
+	glog.Info("Requ is %v\n", string(c.Ctx.Input.RequestBody))
 	memberinfo := c.GetSession("memberinfo")
 	if memberinfo == nil {
 		c.Response(LOGIN_EXPIRE, "")
@@ -269,11 +269,11 @@ func (c *AccountController)UpdateDetail() {
 	}
 
 	births := fmt.Sprintf("%s-%s-%s", obj.BornYear, obj.BornMonth, obj.BornDay)
-	log.Infof("births: %v", births)
+	glog.Info("births: %v", births)
 	birth, err := time.Parse("2006-1-2", births); if err != nil {
-		log.Infof("time.Parse error %v", err)
+		glog.Info("time.Parse error %v", err)
 	}
-	log.Infof("birth %v", birth)
+	glog.Info("birth %v", birth)
 	meinfo := m.UserInfo{
 		Id:memberinfo.(m.User).Id,
 		NickName:obj.NickName,
@@ -284,7 +284,7 @@ func (c *AccountController)UpdateDetail() {
 		UserAddress:obj.Add,
 		UserPostcode:obj.ZipCode,
 	}
-	log.Infof("memberinfo:%+v", meinfo)
+	glog.Info("memberinfo:%+v", meinfo)
 	id, err := m.UpdateUserInfo(&meinfo); if err == nil && id > 0 {
 		if len(meinfo.NickName) > 0 {
 			me := m.User{
@@ -295,7 +295,7 @@ func (c *AccountController)UpdateDetail() {
 				c.Response(SUCCESS, "")
 				return
 			} else {
-				log.Infof("error:%v", err)
+				glog.Info("error:%v", err)
 				c.Response(FAIL, "")
 				return
 			}
@@ -304,6 +304,6 @@ func (c *AccountController)UpdateDetail() {
 		c.Response(SUCCESS, "")
 		return
 	}
-	log.Infof("obj: %+v\n", obj)
+	glog.Info("obj: %+v\n", obj)
 	c.Response(FAIL, "")
 }

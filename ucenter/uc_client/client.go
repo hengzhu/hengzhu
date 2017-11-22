@@ -7,7 +7,7 @@ import (
 	"hengzhu/utils"
 	"hengzhu/ucenter"
 	"fmt"
-	"github.com/deepzz0/go-com/log"
+	"github.com/Zeniubius/golang_utils/glog"
 	ucc "hengzhu/ucenter/uc_client/controllers"
 	"hengzhu/models/usermodel"
 	"time"
@@ -61,13 +61,13 @@ func UcApiRequestData(module string, action string, arg string, extra string) (p
 
 func UcApiInput(data string, useragent string) string {
 	ua := &http.Request{}
-	log.Printf("useragent:%+v", ua)
-	log.Printf("useragent:%+v", useragent)
+	glog.Info("useragent:%+v", ua)
+	glog.Info("useragent:%+v", useragent)
 
 	//useragent1 := "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36"
 	params := fmt.Sprintf("%s&agent=%s&time=%d", data, lib.Strtomd5(useragent), time.Now().Unix())        //time.Now().Unix()
-	log.Printf("params:%v", params)
-	log.Printf("UC_KEY:%v", ucenter.UC_KEY)
+	glog.Info("params:%v", params)
+	glog.Info("UC_KEY:%v", ucenter.UC_KEY)
 	step := utils.UcAuthcode(params, "ENCODE", ucenter.UC_KEY, 0)
 	return step
 }
@@ -189,7 +189,7 @@ func UcApiPost(module string, action string, args map[string]string, useragent s
 		uv.Set(key, value)
 	}
 	userdata := uv.Encode()
-	log.Infof("userdata %v",userdata)
+	glog.Info("userdata %v",userdata)
 	input := UcApiInput(userdata, useragent)
 
 	v := url.Values{}
@@ -202,25 +202,25 @@ func UcApiPost(module string, action string, args map[string]string, useragent s
 	v.Set("appid", appid)
 	senddata := v.Encode()
 	tourl := ucenter.UC_API + "/index.php"
-	log.Printf("UcApiPost to url: %v", tourl)
-	log.Printf("UcApiPost senddata: %v", senddata)
+	glog.Info("UcApiPost to url: %v", tourl)
+	glog.Info("UcApiPost senddata: %v", senddata)
 
 	body := strings.NewReader(senddata)
 	client := &http.Client{}
-	log.Printf("UcApiPost: body: %v", body)
+	glog.Info("UcApiPost: body: %v", body)
 	req, err := http.NewRequest("POST", tourl, body); if err != nil {
-		log.Printf("UcApiPost: NewRequest error: %v", err)
+		glog.Info("UcApiPost: NewRequest error: %v", err)
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded;param=value")
 	req.Header.Set("User-Agent", useragent)
 	resd, err2 := client.Do(req); if err2 != nil {
-		log.Printf("UcApiPost: Client.Do error: %v", err2)
+		glog.Info("UcApiPost: Client.Do error: %v", err2)
 		return "", err2
 	}
 	defer resd.Body.Close()
 	data, _ := ioutil.ReadAll(resd.Body)
 	res = string(data)
-	log.Printf("UcApiPost: res data:%v", res)
+	glog.Info("UcApiPost: res data:%v", res)
 	return res, nil
 }

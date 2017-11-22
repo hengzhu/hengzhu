@@ -6,7 +6,7 @@ import (
 	"github.com/astaxie/beego/context"
 	"github.com/astaxie/beego/validation"
 	"bytes"
-	"github.com/deepzz0/go-com/log"
+	"github.com/Zeniubius/golang_utils/glog"
 	"time"
 )
 
@@ -59,7 +59,7 @@ func (c *BaseController) ValidData(param interface{}) {
 	valid := validation.Validation{}
 	b, err := valid.Valid(param)
 	if err != nil {
-		log.Infof("valid error %v ",err)
+		glog.Info("valid error %v ",err)
 		c.Response(FAIL,err.Error())
 		c.StopRun()
 	}
@@ -68,7 +68,7 @@ func (c *BaseController) ValidData(param interface{}) {
 		var verror bytes.Buffer
 		for _, err := range valid.Errors {
 			verror.WriteString(err.Key+":"+err.Message+";")
-			log.Infof("verror: %v",verror.String())
+			glog.Info("verror: %v",verror.String())
 		}
 		c.Response(PARAMS_ERROR,"")
 		c.StopRun()
@@ -79,7 +79,7 @@ func (c *BaseController) ValidData(param interface{}) {
 
 func (c *BaseController)DecodeFormData(obj interface{})  {
 	err := c.ParseForm(&obj); if err != nil {
-		log.Printf("error: %v", err)
+		glog.Info("error: %v", err)
 	}
 }
 

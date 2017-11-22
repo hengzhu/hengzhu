@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/deepzz0/go-com/log"
+	"github.com/Zeniubius/golang_utils/glog"
 	"net/url"
 	"io/ioutil"
 	"strings"
@@ -27,29 +27,29 @@ const (
 func SendSms(moblie string, content string) error {
 	tourl := beego.AppConfig.String("sms_url")
 	appkey := beego.AppConfig.String("sms_appkey")
-	log.Infof("SendSms: tourl %v, appkey:%v",tourl,appkey)
+	glog.Info("SendSms: tourl %v, appkey:%v",tourl,appkey)
 	v := url.Values{}
 	v.Set("mobile",moblie)
 	v.Set("content",content)
 	v.Set("appkey",appkey)
 	senddata := v.Encode()
-	log.Infof("SendSms: senddata:%v",senddata)
+	glog.Info("SendSms: senddata:%v",senddata)
 	//body := ioutil.NopCloser(strings.NewReader(senddata))
 	body := strings.NewReader(senddata)
 	client := &http.Client{}
-	log.Infof("SendSms: body: %v",body)
+	glog.Info("SendSms: body: %v",body)
 	req, err := http.NewRequest("POST",tourl,body); if err != nil {
-		log.Infof("SendSms: NewRequest error: %v",err)
+		glog.Info("SendSms: NewRequest error: %v",err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded;param=value")
 	resd, err2 := client.Do(req); if err2 != nil{
-		log.Infof("SendSms: Client.Do error: %v",err2)
+		glog.Info("SendSms: Client.Do error: %v",err2)
 		return err2
 	}
 	defer resd.Body.Close()
 	data, _ := ioutil.ReadAll(resd.Body)
-	log.Infof("SendSms: res data:%v",string(data))
+	glog.Info("SendSms: res data:%v",string(data))
 	return nil
 }
 

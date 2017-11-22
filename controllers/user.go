@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"hengzhu/admin/src/lib"
-	"github.com/deepzz0/go-com/log"
+	"github.com/Zeniubius/golang_utils/glog"
 	"hengzhu/cache"
 	"hengzhu/service"
 	"time"
@@ -33,16 +33,16 @@ func (c *UserController) URLMapping() {
 }
 
 func (c *UserController) Login() {
-	log.Printf("url is %v", c.Ctx.Request.RequestURI)
+	glog.Info("url is %v", c.Ctx.Request.RequestURI)
 	isajax := c.GetString("isajax")
 	if isajax == "1" {
-		log.Printf("Requ is %v", string(c.Ctx.Input.RequestBody))
+		glog.Info("Requ is %v", string(c.Ctx.Input.RequestBody))
 		obj := m.UserLogin{}
 		err := c.ParseForm(&obj);
 		if err != nil {
-			log.Printf("ParseForm error: %v", err)
+			glog.Info("ParseForm error: %v", err)
 		}
-		log.Printf("obj is %v", obj)
+		glog.Info("obj is %v", obj)
 		tp, err := m.CheckUserNameType(obj.UserName)
 		isuid := "0"
 		if tp == "mail" {
@@ -52,7 +52,7 @@ func (c *UserController) Login() {
 			obj.UserName = mobuser.UserName
 		}
 		res, err := uc_client.UcUserLogin(obj, isuid, c.Ctx.Request.UserAgent())
-		log.Infof("res %+v", res)
+		glog.Info("res %+v", res)
 		if res.Result <= 0 {
 			//检查Ucenter返回的登录的状态
 			switch res.Result {
@@ -78,7 +78,7 @@ func (c *UserController) Login() {
 					return
 				}
 			} else {
-				log.Infof("error: %v", err)
+				glog.Info("error: %v", err)
 				me := m.User{
 					Id:      res.Result,
 					Password:res.Password,
@@ -86,7 +86,7 @@ func (c *UserController) Login() {
 				}
 				id, err := m.UpdateUser(&me);
 				if err == nil && id > 0 {
-					log.Infof("UpdateUser id: %v", id)
+					glog.Info("UpdateUser id: %v", id)
 				}
 			}
 		}
@@ -96,7 +96,7 @@ func (c *UserController) Login() {
 		defer sess.SessionRelease(c.Ctx.ResponseWriter)
 		sess.Set("memberinfo", member)
 		sid := sess.SessionID()
-		log.Infof("obj.AutoLogin:%v", obj.AutoLogin)
+		glog.Info("obj.AutoLogin:%v", obj.AutoLogin)
 
 		var sessiontime int
 		if obj.AutoLogin == true {
@@ -107,7 +107,7 @@ func (c *UserController) Login() {
 
 		c.Ctx.Output.Cookie(beego.AppConfig.String("sessionname"), sid, sessiontime)
 
-		log.Printf("member login success: %v", member)
+		glog.Info("member login success: %v", member)
 		c.Response(SUCCESS, uc_client.UcUserSynlogin(member))
 	}
 
@@ -126,20 +126,20 @@ func (c *UserController) Login() {
 //@Return:
 //
 func (c *UserController) Register() {
-	log.Printf("url is %v", c.Ctx.Request.RequestURI)
+	glog.Info("url is %v", c.Ctx.Request.RequestURI)
 	isajax := c.GetString("isajax")
 	if isajax == "1" {
-		log.Print("Requ Isajax")
-		log.Printf("Requ is %v", string(c.Ctx.Input.RequestBody))
+		glog.Info("Requ Isajax")
+		glog.Info("Requ is %v", string(c.Ctx.Input.RequestBody))
 		//log.Printf("c.Ctx.Request is %v", c.Ctx.Request)
 		if !rbac.Cpt.VerifyReq(c.Ctx.Request) {
-			log.Infof("captcha error")
+			glog.Info("captcha error")
 			c.Response(CAPTCHA_ERROR, "")
 			return
 		}
 		var obj m.UserReg
 		c.ParseForm(&obj)
-		log.Infof("obj: %+v", obj)
+		glog.Info("obj: %+v", obj)
 		c.ValidData(obj.UserLogin)
 		if obj.Mobile != "" {
 			c.ValidData(obj)
@@ -152,11 +152,11 @@ func (c *UserController) Register() {
 				return
 			}
 		}
-		log.Printf("agant:%s", c.Ctx.Request.UserAgent())
+		glog.Info("agant:%s", c.Ctx.Request.UserAgent())
 		//注册到Ucenter，返回code
 		code, err := uc_client.UcUserRegister(obj, c.Ctx.Request.UserAgent());
 		if err != nil {
-			log.Infof("uc_client.UcUserRegister error:%v", err)
+			glog.Info("uc_client.UcUserRegister error:%v", err)
 			c.Response(FAIL, "")
 			return
 		}
@@ -206,46 +206,46 @@ func (c *UserController) Register() {
 //@Return:
 //
 func (c *UserController) SendVCode() {
-	log.Printf("Requ is %v", string(c.Ctx.Input.RequestBody))
-	log.Printf("Requ is %v", c.Ctx.Request.Body)
+	glog.Info("Requ is %v", string(c.Ctx.Input.RequestBody))
+	glog.Info("Requ is %v", c.Ctx.Request.Body)
 	sendtype := c.GetString("type")
 	if sendtype == "sms" {
 		var obj m.UserBindmobile
 		obj.Seccode = "000000"
 		c.ParseForm(&obj)
-		log.Infof("obj: %+v", obj)
+		glog.Info("obj: %+v", obj)
 		c.ValidData(obj)
-		log.Infof("obj: %+v", obj)
+		glog.Info("obj: %+v", obj)
 		if cache.Bm.IsExist(SMS_SENDED_CACHE_KEY + obj.Mobile) {
-			log.Warnf("phonenum %v too many requests", obj.Mobile)
+			glog.Warn("phonenum %v too many requests", obj.Mobile)
 			c.Response(TOO_MANY_REQUEST, "")
 			return
 		}
 		content, err := service.GetSendVcodeContent(obj.Mobile, service.DEFAULT_VCODE_LEN)
 		if err != nil {
-			log.Infof("GetSendVcodeContent error: %v", err)
+			glog.Info("GetSendVcodeContent error: %v", err)
 			c.Response(FAIL, "")
 			return
 		}
 		c.Response(SUCCESS, "")
 		err = service.SendSms(obj.Mobile, content)
 		if err != nil {
-			log.Infof("SendSms error: %v", err)
+			glog.Info("SendSms error: %v", err)
 			c.Response(FAIL, "")
 			return
 		}
 		cache.Bm.Put(SMS_SENDED_CACHE_KEY + obj.Mobile, obj.Mobile, SMS_SEND_TIMEOUT)
 		c.Response(SUCCESS, "")
-		log.Infof("mobile: %v", obj.Mobile)
+		glog.Info("mobile: %v", obj.Mobile)
 	} else {
 		var obj m.UserEmailBind
 		c.ParseForm(&obj)
-		log.Infof("obj: %+v", obj)
+		glog.Info("obj: %+v", obj)
 		obj.Vcode = "000000"
 		c.ValidData(obj)
-		log.Infof("obj: %+v", obj)
+		glog.Info("obj: %+v", obj)
 		if cache.Bm.IsExist(SMS_SENDED_CACHE_KEY + obj.Email) {
-			log.Warnf("email %v too many requests", obj.Email)
+			glog.Warn("email %v too many requests", obj.Email)
 			c.Response(TOO_MANY_REQUEST, "")
 			return
 		}
@@ -262,7 +262,7 @@ func (c *UserController) SendVCode() {
 
 func CheckLogin(username string, password string, ty string) (member m.User, err error) {
 	member = m.GetUserByMulti(username, ty)
-	log.Infof("member: %+v", member)
+	glog.Info("member: %+v", member)
 	if member.Id == 0 {
 		return member, errors.New(codeDesc[USER_NOT_EXIST])
 	}
