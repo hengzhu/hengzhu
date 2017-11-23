@@ -165,7 +165,7 @@ func AccessList(uid int64) (list []orm.Params, err error) {
 	var roles []orm.Params
 	o := orm.NewOrm()
 	role := new(Role)
-	_, err = o.QueryTable(role).Filter("User__User__Id", uid).Values(&roles)
+	_, err = o.QueryTable(role).Filter("User__AdminUser__Id", uid).Values(&roles)
 	if err != nil {
 		return nil, err
 	}

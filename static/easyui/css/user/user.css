@@ -1,0 +1,691 @@
+.page_center {
+	margin-top: 50px;
+	padding-bottom: 80px;
+}
+
+.user_nc {
+	border: 1px solid rgb(230, 202, 168);
+	border-radius: 10px;
+	width: 80%;
+	margin: auto;
+}
+
+.user_nc>div:first-child {
+	width: 90%;
+	margin: auto;
+	border-bottom: 1px solid #e6caa8;
+}
+
+.user_nc>div:first-child>img {
+	padding: 30px 15px;
+	padding-right: 5px;
+}
+
+.user_nc>div:first-child>div {
+	margin-top: 50px;
+}
+
+.user_nc>div:first-child>div>h4 {
+	font-family: "microsoft yahei";
+	color: #237db2;
+}
+
+.user_nc>div:first-child>div>p {
+	font-family: "microsoft yahei";
+	color: #0080c0;
+	font-size: 14px;
+}
+
+.user_nc>div:first-child>div>p>span {
+	font-family: "microsoft yahei";
+	color: #4f4f4f;
+	font-size: 14px;
+}
+
+.user_nc>div:last-child {
+	width: 80%;
+	margin: auto;
+	padding-bottom: 25px;
+}
+
+.user_nc>div:last-child p {
+	font-family: "microsoft yahei";
+	color: #4f4f4f;
+	font-size: 14px;
+	margin-top: 30px;
+	height: 1px;
+}
+
+.user_nc>div:last-child p:nth-child(2) {
+	margin-bottom: 8px;
+}
+
+.user_nc>div:last-child p:nth-child(3) {
+	margin-top: 3px;
+}
+
+.user_nc>div:last-child p:first-child span {
+	width: 20px;
+	height: 20px;
+	display: block;
+	float: left;
+}
+
+
+
+
+
+.user_nc>div:last-child p:first-child span:nth-child(-n+6) {
+	background: url(../../img/user/account_left_icon.png) no-repeat;
+	background-position: -52px -103px;/*空心五角星*/
+}
+#_user_span_xin {
+	background: url(../../img/user/account_left_icon.png) no-repeat;
+	background-position: -10px -103px;/*实心五角星*/
+}
+.user_nc>div:last-child p:first-child span:first-child {
+	width: 65px;
+	height: 30px;
+	background: url() no-repeat;
+	background-color: rgba(0, 0, 0, 0);
+}
+/*.user_nc>div:last-child p:nth-child(2) {
+	clear: both;
+}
+
+.user_nc>div:last-child p:nth-child(2) span {
+	font-family: "microsoft yahei";
+	color: #f80443;
+	font-size: 14px;
+}*/
+
+.user_nc>div:last-child p:nth-child(2) span {
+	width: 25px;
+	height: 22px;
+	display: block;
+	float: left;
+	margin-right: 5px;
+}
+
+.user_nc>div:last-child p:nth-child(2) span:first-child {
+	width: 65px;
+}
+
+/*.user_nc>div:last-child p:nth-child(2) span:nth-child(2) {
+	background: url(../../img/user/account_left_icon.png) no-repeat;
+	background-position: -8px -35px;
+}*/
+
+.user_nc>div:last-child p:nth-child(2) span:nth-child(2) {
+	background: url(../../img/user/account_left_icon.png) no-repeat;
+	background-position: -8px -67px;/*手机已绑定*/
+	/*background-position: -47px -67px;*//*手机未绑定*/
+}
+
+.user_nc>div:last-child p:nth-child(2) span:last-child {
+	background: url(../../img/user/account_left_icon.png) no-repeat;
+	/*background-position: -47px -6px;*//*邮箱未绑定*/
+	background-position: -8px -6px;/*邮箱已绑定*/
+}
+
+.user_btn,
+.user_lb {
+	width: 80%;
+	margin: auto;
+}
+
+.user_btn button {
+	width: 100%;
+	height: 50px;
+	border: 0;
+	background: url(../../img/user/account_left_icon.png) no-repeat;
+	background-position: 2px -194px;
+	margin-top: 16px;
+	outline: none;
+	
+}
+
+.user_btn button:first-child {
+	background: url(../../img/user/account_left_icon.png) no-repeat;
+	background-position: 2px -137px;
+}
+
+.news_lb {
+	border: 1px solid rgb(203, 203, 203);
+	background-color: rgb(245, 245, 245);
+}
+
+.news_nu {
+	position: relative;
+}
+
+.news_nu a:last-child img{
+	width: 18%;
+	position: absolute;
+	top: 55px;
+	right: 5px;
+}
+
+.user_lb>h3>b {
+	font-family: "微软雅黑";
+	color: black;
+	padding-left: 30px;
+	background: url(../../img/content/juxing.jpg)no-repeat left;
+}
+
+.user_lb>h3 {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	height: 80px;
+	line-height: 94px;
+}
+
+.user_lb>h3>small {
+	float: right;
+	/*line-height: 107px;*/
+	padding-top: 45px;
+}
+
+.user_lb img {
+	padding-right: 0px;
+	padding-left: 0px;
+	padding-top: 5px;
+}
+
+.news_nu {
+	width: 90%;
+	margin: 0 auto;
+	border-bottom: 1px dashed rgb(220, 220, 220);
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+.news_nu div {
+	padding-right: 0;
+}
+
+.news_nu div p {
+	margin: 0 0 2px;
+}
+
+.news_nu div p:first-child {
+	font-family: "microsoft yahei";
+	font-size: 20px;
+	color: #545454;
+}
+
+.news_nu div p:nth-child(2) {
+	font-family: "microsoft yahei";
+	font-size: 14px;
+	color: 4f4f4f;
+}
+
+.news_nu div p:last-child {
+	font-family: "microsoft yahei";
+	font-size: 14px;
+	color: #666666;
+}
+
+.news_nu div p:last-child {
+	font-family: "microsoft yahei";
+	font-size: 14px;
+	color: #fb3702;
+}
+
+.user_security>._user_up {
+	border: 1px solid rgb(230, 202, 168);
+	border-radius: 10px;
+	-webkit-box-shadow: 2px 2px 7px rgb(189, 178, 166);
+	-moz-box-shadow: 2px 2px 7px rgb(189, 178, 166);
+	box-shadow: 2px 2px 7px rgb(189, 178, 166);
+}
+
+.user_security ._user_up h3 {
+	text-align: left;
+	margin-left: 26px;
+	margin-right: 26px;
+	padding-bottom: 16px;
+	margin-top: 18px;
+	margin-bottom: 70px;
+	font-family: "microsoft yahei";
+	border-bottom: 1px dotted rgba(193, 193, 193, 0.85);
+	font-weight: 500;
+}
+
+.user_security ._user_up div h3{
+	margin-bottom: 47px;
+	margin-right: 0;
+	margin-left: 0;
+}
+
+.user_security ._user_up div:nth-child(2) input {
+	width: 80px;
+	height: 36px;
+	border: 1px solid #e5e5e5;
+	background: white;
+	border-radius: 4px;
+	font-family: "microsoft yahei";
+	font-size: 14px;
+	color: #237db2;
+	outline: none;
+/*	margin-right: 30px;*/
+}
+
+.user_security ._user_up div:nth-child(2) input:first-child {
+	color: #ffffff;
+	background: #237db2;
+	border: 1px solid #237db2;
+}
+
+.user_security>._user_up>div {
+	width: 93%;
+	margin: 0 auto;
+	margin-bottom: 110px;
+}
+.user_security ._user_up>#div_emil p:nth-child(2),
+.user_security ._user_up>#div_emil p:nth-child(3),
+.user_security ._user_up>#div_phones p:nth-child(2),
+.user_security ._user_up>#div_phones p:nth-child(3) {
+	width: 65%;
+	margin: auto;
+	font-family: "microsoft yahei";
+	font-size: 14px;
+	color: #3333333;
+	background: url(../../img/user/1.png) no-repeat left;
+	padding-left: 10px;
+}
+
+.user_security ._user_up #div_emil button:last-child,
+.user_security ._user_up>#div_phones button:last-child{
+	width: 36%;
+	padding: 0;
+	border: 0;
+	border-radius: 10px;
+	outline: none;
+	display: block;
+	margin-left: 28%;
+	margin-bottom: 170px;
+}
+
+.user_security ._user_up #div_phones>button:last-child>img,
+.user_security ._user_up>#div_emil button:last-child>img {
+	width: 100%;
+}
+
+.user_security ._user_up #div_emil p:nth-child(3),
+.user_security ._user_up>#div_phones p:nth-child(3){
+	margin-left: 19.3%;
+	margin-top: 36px;
+	margin-bottom: 36px;
+}
+
+.user_security ._user_up #div_phones p:nth-child(2)>img,
+.user_security ._user_up>#div_emil p:nth-child(2)>img {
+	width: 25%;
+	margin-top: -7px;
+	margin-left: 10px;
+}
+
+.user_security ._user_up #div_phones p:nth-child(2)>input,
+.user_security ._user_up>#div_emil p:nth-child(2)>input{
+	width: 47%;
+	height: 40px;
+	border-radius: 10px;
+	border: 1px solid rgb(210, 210, 210);
+	outline: none;
+	padding-left: 5px;
+}
+
+.user_security ._user_up #div_phones p:nth-child(3)>input:first-child,
+.user_security ._user_up>#div_emil p:nth-child(3)>input:first-child {
+	width: 30%;
+	height: 40px;
+	border-radius: 10px;
+	border: 1px solid rgb(210, 210, 210);
+	outline: none;
+	padding-left: 5px;
+}
+
+.user_security ._user_up #div_phones p:nth-child(3)>input:last-child,
+.user_security ._user_up>#div_emil p:nth-child(3)>input:last-child{
+	background: url(../../img/user/account_right_daojishi.png)no-repeat left;
+	width: 100px;
+	height: 40px;
+	border: 0;
+	border-radius: 10px;
+	outline: none;
+}
+
+.user_wd>h3 {
+	margin-top: 0px;
+	margin-bottom: 20px;
+	height: 80px;
+	line-height: 94px;
+}
+
+.user_wd>h3>b {
+	font-family: "微软雅黑";
+	color: black;
+	padding-left: 30px;
+	background: url(../../img/content/juxing.jpg)no-repeat left;
+}
+
+.user_wd {
+	margin-top: 87px;
+}
+
+.user_wd div>div>div>img {
+	width: 100%;
+}
+.user_wd>div{
+	padding-left: 0;
+	padding-right: 0;
+	margin-left: 0;
+	margin-right: 0;
+}
+.user_inf{
+	font-family: "microsoft yahei";
+	font-size: 14px;
+	color: #fb6301;
+	margin-left: 26px;
+	margin-bottom: 25px;
+}
+/*===================================================完善个人资料==================================*/
+#user_information{
+	margin-left: 36%;
+	width: 60%;
+}
+#user_information>p{
+	font-family: "microsoft yahei";
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 30px;
+}
+#user_information>p input{
+	width: 44.5%;
+	height: 26px;
+	border-radius:0 ;
+	background-color:rgba(0,0,0,0);
+	border: 1px solid rgb(204,204,204);
+	color: #000000;
+	margin-right: 10px;
+}
+#user_information>p:nth-child(3){
+	font-family: "microsoft yahei";
+	font-size: 12px;
+	color: rgba(143, 143, 143, 0.82);
+	margin-left: 74px
+}
+#user_information>p:nth-child(2){
+	margin: 0 0 5px;
+}
+#user_information>p:nth-child(4){
+	width: 100%;
+	padding-left: 0;
+	margin: 0;
+	background: url();
+	padding-left: 28px;
+	margin-bottom: 30px;
+}
+#user_information>p:nth-child(4) input{
+	width: 15px;
+	height: 15px;
+	border:1px solid rgb(232,131,6);
+	color: rgb(232,131,6);
+}
+#user_information>p:nth-child(6){
+	padding-left: 6px;
+}
+#user_information>p:nth-child(7) span{
+	color: #56d29f;
+}
+#main{
+	font-family: "microsoft yahei";
+    font-size: 14px;
+    color: #333;
+    	margin-bottom: 30px;
+}
+#main .demo p>label{
+	font-family: "microsoft yahei";
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+#main .demo p>label select{
+	height: 26px;
+	border-color: rgb(204, 204, 204);
+}
+#user_information>input:last-child{
+	width: 35%;
+	height: 40px;
+	background-color: rgb(244,171,55);
+	color: white;
+	font-size: 16px;
+	border-radius:10px ;
+	    margin-left: 72px;
+}
+/*=====================================================修改密码=======================================*/
+#user_password{
+	margin-left: 100px;
+	width: 80%;
+	margin-bottom: 257px;
+}
+#user_password>p>input{
+	width: 54.3%;
+    height: 40px;
+    border: 1px solid #e5e5e5;
+    background: white;
+    border-radius: 8px;
+    font-family: "microsoft yahei";
+    font-size: 14px;
+    outline: none;
+    color: #000;
+    background:white;
+    border: 1px solid rgb(204, 204, 204);
+    padding-left: 6px;
+}
+#user_password>p{
+	margin-bottom: 36px;
+	font-family: "microsoft yahei";
+	font-size: 14px;
+	color: #333;
+	background: url(../../img/user/1.png)no-repeat left;
+	padding-left: 10px;
+}
+#user_password>p:nth-child(-n+2){
+	margin-left: 28px;
+}
+#user_password>input:last-child{
+	width:51%;
+	height: 40px;
+	background-color: rgb(244,171,55);
+	color: white;
+	font-size: 16px;
+	border-radius:10px ;
+	    margin-left: 96px;
+}
+/*===========================================充值统计========================================*/
+.datainp{ width:200px; height:30px; border:1px #ccc solid;}
+.datep{ margin-bottom:40px;}
+#user_Recharges{
+	margin-left: 25px;
+	width: 96%;
+}
+#user_Recharges>p:nth-child(-n+4){
+	float: left;
+}
+#user_Recharges>p:nth-child(2)>input,#user_Recharges>p:nth-child(4)>input{
+	width: 81%;
+	height: 26px;
+	border: 1px solid #e5e5e5;
+    background: white;
+    border-radius: 0px;
+    font-family: "microsoft yahei";
+    font-size: 14px;
+    outline: none;
+    margin-right:4%;
+    color: #000;
+    background:white;
+    border: 1px solid rgb(204, 204, 204);
+}
+#user_Recharges>p:nth-child(5),#user_Recharges>p:nth-child(4){
+	margin-left: 0;
+	width: 32.3%;
+    font-family: "microsoft yahei";
+    font-size: 14px;
+    color: #3333333;
+    background: url() no-repeat left;
+    padding-left: 10px;
+     margin: auto;
+     float: left;
+}
+#user_Recharges>p:nth-child(4)>img{
+	    width: 10%;
+    margin: 0px;
+}
+#user_Recharges>p:nth-child(1),#user_Recharges>p:nth-child(3){
+	margin:0 1% ;
+	margin-top: 4px;
+	
+}
+#user_Recharges .datep {
+    margin-bottom: 50px;
+    width: 30%;
+}
+.user_security >div > #user_Recharges  {
+	    margin: 0px auto 50px;
+}
+#user_Recharges>button:last-child{
+	width: 102px;
+	height: 33px;
+	border: 0;
+	padding: 0;
+	background-color: white;
+	margin-top: -5px;
+	margin-left: 10px;
+	outline: none;
+}
+.user_security > div > #user_Recharges{
+	margin-left: 4%;
+}
+#user_Recharge table tbody tr td{
+	height: 34px;
+	line-height: 34px;
+}
+.block{
+	width: 300px;
+	height: 210px;
+	border: 1px solid #999;
+	background-color: white;
+	display: none;
+}
+.block div:first-child>div:last-child>img{
+	width: 80%;
+}
+.block div:first-child>div:first-child>p:nth-child(2){
+	    margin: 15px 0px;
+	    font-family: "microsoft yahei";
+	font-size:14px ;
+	color: #333;
+}
+.block div:first-child>div:first-child>p:nth-child(2)>span{
+	margin-left: 10px;
+}
+.block div:first-child>div:first-child>p:first-child{
+	font-family: "microsoft yahei";
+	font-size:18px ;
+	color: #666;
+}
+.block div:first-child>div:first-child>p:last-child{
+	font-family: "microsoft yahei";
+	font-size:14px ;
+	color: #333;
+}
+.block div:first-child>div:first-child>p:last-child>span:first-child{
+	padding-right: 10px;
+	border-right:1px solid #333;
+	margin-right: 10px;
+}
+.block div:first-child>div:first-child{
+	    margin-top: 10px;
+	    padding-left: 31px;
+	    padding-right: 0;
+}
+.block div:first-child>div:last-child{
+	text-align: center;
+	font-family: "microsoft yahei";
+	font-size:14px ;
+	color: #999;
+}
+.block div:first-child>div:last-child>p{
+	margin: 0;
+}
+.block>h5{
+	margin: 0;
+	padding-left: 14px;
+	font-family: "microsoft yahei";
+	font-size:14px ;
+	color: #e78000;
+}
+.block>p:last-child{
+	width: 100%;
+	white-space:normal;
+	word-break:break-all;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	padding: 0 10px;
+	padding-left: 16px;
+	font-family: "microsoft yahei";
+	font-size:14px ;
+	color: #999;
+	}
+.all_games_ul li a{
+	font-family:"microsoft yahei";
+	font-size: 14px;
+	color: #237db2;
+	padding: 0 9px;
+	text-decoration:none;
+}
+.all_games_ul li:first-child a{
+	border-right: 1px #000 solid;
+}
+.all_games_ul li:first-child:hover{
+	background-color: #4cb9dd;
+	border-top-left-radius:17px ;
+	border-bottom-left-radius:17px ;
+}
+.all_games_ul li:last-child:hover{
+	background-color: #4cb9dd;
+	border-top-right-radius:17px ;
+	border-bottom-right-radius:17px ;
+}
+.all_games_ul li{
+		list-style-type:none;
+		float: left;
+	    width: 47px;
+	    text-align: center;
+}
+.all_games_ul{
+	padding-left: 0;
+	padding-top: 0px;
+}
+.user_wd>div>div>div:last-child{
+	height:34px;
+	line-height: 34px;
+	    margin: auto;
+    width: 95px;
+    padding: 0;
+    background-color: #f2f2f2;
+    border-radius:17px ;
+    margin-bottom: 50px;
+}
+.user_wd div div>p{
+	text-align: center;
+	font-family: "microsoft yahei";
+	font-size:14px ;
+	color: #010101;
+	margin-top: 10px;
+}

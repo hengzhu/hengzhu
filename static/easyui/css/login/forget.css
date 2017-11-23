@@ -1,0 +1,124 @@
+.page_center>div:first-child{
+	width: 406px;
+	margin: auto;
+	    border: 1px solid rgb(230, 202, 168);
+    border-radius: 10px;
+    -webkit-box-shadow: 6px 6px 20px rgb(189, 178, 166);
+    -moz-box-shadow: 6px 6px 20px rgb(189, 178, 166);
+    box-shadow: 6px 6px 20px rgb(189, 178, 166);
+    margin-top: 52px;
+    margin-bottom: 250px;
+}
+.page_center>div:first-child>button{
+	margin-left: 40px;
+	margin-right: 40px;
+	width: 320px;
+	height: 40px;
+	border-radius: 10px;
+	border: 0;
+	padding: 0;
+	outline: none;
+	margin-bottom: 20px;
+}
+.page_center>div:first-child h3 {
+	text-align: left;
+	margin-left: 26px;
+	margin-right: 26px;
+	padding-bottom: 16px;
+	margin-top: 18px;
+	margin-bottom: 86px;
+	font-family: "microsoft yahei";
+	border-bottom: 1px dotted rgba(193, 193, 193, 0.85);
+	font-weight: 500;
+	padding-left: 23PX;
+}
+.page_center>div:first-child>button:last-child{
+	margin-top: 65px;
+	margin-bottom: 90px;
+}
+#email_un,#phone_un,#new_un{
+	width: 500px;
+}
+/*============================================邮箱找回===========================*/
+#email_un>p:first-child{
+	margin-top: 124px;
+	margin-left: 23px;
+	padding-left: 10px;
+	background: url(../../img/user/1.png)no-repeat left;
+	margin-bottom: 0px;
+}
+#email_un>p:first-child>input{
+	width: 320px;
+	height: 40px;
+	border-radius: 10px;
+	border: 1px solid rgb(228,225,221);
+	font-size: 14px;
+	margin-left: 10px;
+	padding-left: 10PX;
+	outline: none;
+}
+#email_un>button{
+	margin-left: 127px;
+}
+/*=====================================手机短信找回===========================================*/
+#phone_un>p{
+	margin-top: 0px;
+	margin-left: 40px;
+	padding-left: 10px;
+	background: url(../../img/user/1.png)no-repeat left;
+	margin-bottom: 0px;
+}
+#phone_un>p:first-child{
+	margin-top: 94px;
+}
+#phone_un>p>input{
+	width: 306px;
+	height: 40px;
+	border-radius: 10px;
+	border: 1px solid rgb(228,225,221);
+	font-size: 14px;
+	margin-left: 10px;
+	padding-left: 10PX;
+	outline: none;
+}
+#phone_un>p:nth-child(4){
+	margin-left: 55px;
+	margin-top: 30px;
+}
+#phone_un>p:nth-child(4)>input{
+	width: 155px;
+	margin-right: 15px;
+}
+#phone_un>button{
+	margin-left: 117px;
+}
+/*============================================新密码=======================================*/
+#new_un>p{
+	margin-top: 0px;
+	margin-left: 27px;
+	padding-left: 10px;
+	background: url(../../img/user/1.png)no-repeat left;
+	margin-bottom: 0px;
+}
+#new_un>p>input{
+	width: 306px;
+	height: 40px;
+	border-radius: 10px;
+	border: 1px solid rgb(228,225,221);
+	font-size: 14px;
+	margin-left: 10px;
+	padding-left: 10PX;
+	outline: none;
+}
+#new_un>p:nth-child(4){
+	margin: 46px 0;
+	margin-left: 55px;
+	margin-bottom: 0;
+}
+#new_un>button{
+	margin-left: 115px;
+	margin-top: 46px;
+}
+#new_un>p:first-child{
+	margin-top: 94px;
+}

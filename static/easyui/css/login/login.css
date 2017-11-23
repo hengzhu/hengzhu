@@ -1,0 +1,86 @@
+.page_center>div:first-child{
+	width: 406px;
+	margin: auto;
+	    border: 1px solid rgb(230, 202, 168);
+    border-radius: 10px;
+    -webkit-box-shadow: 6px 6px 20px rgb(189, 178, 166);
+    -moz-box-shadow: 6px 6px 20px rgb(189, 178, 166);
+    box-shadow: 6px 6px 20px rgb(189, 178, 166);
+    margin-top: 52px;
+    margin-bottom: 250px;
+}
+.page_center>div:first-child>p{
+	font-family: "microsoft yahei";
+	font-size: 14px;
+	color: #333;
+	margin: 0;
+	margin-left: 50px;
+	margin-right: 50px;
+}
+.page_center>div:first-child h3 {
+	text-align: left;
+	margin-left: 26px;
+	margin-right: 26px;
+	padding-bottom: 16px;
+	margin-top: 18px;
+	margin-bottom: 23px;
+	font-family: "microsoft yahei";
+	border-bottom: 1px dotted rgba(193, 193, 193, 0.85);
+	font-weight: 500;
+	padding-left: 23PX;
+}
+.page_center>div:first-child>input{
+	width: 320px;
+	height: 40px;
+	border-radius: 10px;
+	border: 1px solid rgb(228,225,221);
+	font-size: 14px;
+	margin-left: 40px;
+	margin-right: 40px;
+	padding-left: 10PX;
+	outline: none;
+}
+._span{
+	margin-bottom: 40px;
+	margin-left: 50px;
+}
+._spani{
+	margin-left: 50px;
+}
+.page_center>div:first-child>input:nth-child(5){
+	margin-bottom: 12px;
+}
+input[type=radio], input[type=checkbox] {
+    margin: -1px 4px 0px;
+    line-height: normal;
+    vertical-align:middle; margin-top:0px; margin-bottom:1px;}
+label{
+	font-family: "microsoft yahei";
+	font-size: 12px;
+	color: #333;
+	font-weight: 500;
+}
+.page_center>div:first-child>p:nth-child(6)>span>a{
+	font-family: "microsoft yahei";
+	font-size: 12px;
+	color: #e89d3f;
+}
+.page_center>div:first-child>p:nth-child(6)>span:nth-child(3){
+	margin: 0 25px;
+}
+.page_center>div:first-child>p:nth-child(7){
+		margin-left: 40px;
+	margin-right: 40px;
+	margin-bottom: 52px;
+}
+.page_center>div:first-child>button:last-child{
+	margin-left: 40px;
+	margin-right: 40px;
+	width: 320px;
+	height: 40px;
+	border-radius: 10px;
+	border: 0;
+	padding: 0;
+	outline: none;
+	margin-bottom: 20px;
+}

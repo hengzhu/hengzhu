@@ -3,6 +3,7 @@ package admin
 import (
 	"github.com/astaxie/beego"
 	"hengzhu/admin/src/rbac"
+	"hengzhu/controllers"
 )
 
 func router() {
@@ -11,6 +12,11 @@ func router() {
 	beego.Router("/public/login", &rbac.MainController{}, "*:Login")
 	beego.Router("/public/logout", &rbac.MainController{}, "*:Logout")
 	beego.Router("/public/changepwd", &rbac.MainController{}, "*:Changepwd")
+
+	beego.Router("/manage", &rbac.MainController{}, "*:Index")
+	beego.Router("/manage/index", &rbac.MainController{}, "*:Index")
+	beego.Router("/manage/login", &rbac.MainController{}, "*:Login")
+	beego.Router("/manage/logout", &rbac.MainController{}, "*:Logout")
 
 	beego.Router("/rbac/user/AddUser", &rbac.UserController{}, "*:AddUser")
 	beego.Router("/rbac/user/UpdateUser", &rbac.UserController{}, "*:UpdateUser")
@@ -34,4 +40,7 @@ func router() {
 	beego.Router("/rbac/role/AddRoleToUser", &rbac.RoleController{}, "*:AddRoleToUser")
 	beego.Router("/rbac/role/Getlist", &rbac.RoleController{}, "*:Getlist")
 	beego.Router("/rbac/role/index", &rbac.RoleController{}, "*:Index")
+
+	beego.Router("/state/", &controllers.CabinetController{}, "*:State")
+	beego.Router("/state/index", &controllers.CabinetController{}, "*:State")
 }

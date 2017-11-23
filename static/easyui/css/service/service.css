@@ -1,0 +1,95 @@
+.cs_page,.cs_pages{
+	width: 75%;
+	margin: auto;
+	text-align: center;
+	border: 1px #edd8bf solid;
+	 -webkit-box-shadow:2px 2px 7px rgb(189, 178, 166);
+  -moz-box-shadow:2px 2px 7px rgb(189, 178, 166);
+      box-shadow: 2px 2px 7px rgb(189, 178, 166);
+      border-radius: 20px;
+      margin-top: 98px;
+      margin-bottom: 200px;
+      padding-bottom: 88px;
+	}
+	.cs_pages{
+		padding-bottom: 230px;
+	}
+.cs_pages>div{
+	text-align: left;
+	width: 67%;
+	margin: 0 auto;
+}
+.cs_page h3,.cs_pages h3{
+	text-align: left;
+	margin-left: 26px;
+	margin-right: 26px;
+	padding-bottom: 16px;
+    margin-top: 18px;
+    margin-bottom: 78px;
+    font-family: "microsoft yahei";
+    border-bottom: 1px dotted rgba(193, 193, 193, 0.85);
+    font-weight:500;
+}
+.cs_pages h3{
+	margin-bottom: 27px;
+}
+.cs_pages>div>h4{
+	font-family: "microsoft yahei";
+	font-weight:500;
+	margin-bottom: 55px;
+}
+.cs_page li{
+	list-style-type: none;
+	line-height: 32px;
+}
+.cs_page ul{
+	padding-left: 0;
+}
+.cs_page h4{
+	font-family: "microsoft yahei";
+	color: #010101;
+	font-weight:500;
+	margin-bottom: 20px;
+	margin-top: 30px;
+}
+.cs_page ul li a{
+	font-family: "microsoft yahei";
+	font-size: 14px;
+	color: #333333;
+	font-weight:500;
+}
+.cs_banner{
+	position: relative;
+}
+.cs_banner a button{
+	position: absolute;
+	top: 65%;
+    left: 57.7%;
+    background-color: rgba(0,0,0,0);
+    border: 1px solid white;
+    padding: 7px 20px;
+    border-radius: 5px;
+    outline:none;
+}
+.cs_banner a{
+	color: #fffffe;
+}
+.suspension{
+	width: 80px;
+	position: absolute;
+	top: 52em;
+    right: 10%;
+}
+.suspension p{
+	margin: 0;
+	text-align: center;
+}
+.suspension p:nth-child(2n) a{
+	padding: 10px 8px;
+	background-color:rgb(255,173,150);
+	color: white;
+	visibility: hidden;
+}
+.suspension p:nth-child(2n-1){
+	margin-top: 8px;
+}

@@ -6,6 +6,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/logs"
 	"time"
+	"hengzhu/models/usermodel"
 )
 
 type Logs struct {
@@ -16,7 +17,7 @@ type Logs struct {
 	Input       string `json:"input,omitempty" orm:"column(input);null"`
 	CreatedTime int64  `json:"created_time,omitempty" orm:"column(created_time);null"`
 
-	User *User `orm:"-" json:"user,omitempty"`
+	User *usermodel.User `orm:"-" json:"user,omitempty"`
 }
 
 func (t *Logs) TableName() string {
@@ -59,7 +60,7 @@ func GetLogsById(id int) (v *Logs, err error) {
 		return
 	}
 
-	u := &User{}
+	u := &usermodel.User{}
 	o.QueryTable(u).Filter("Id", v.UserId).One(u, "Name", "Nickname")
 	v.User = u
 	return

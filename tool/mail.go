@@ -5,7 +5,6 @@ import (
 	"github.com/bysir-zl/bygo/util"
 	"text/template"
 	"github.com/bysir-zl/bygo/log"
-	"hengzhu/models"
 )
 
 const (
@@ -55,15 +54,15 @@ func SendMessageEmail(subject, body string, to []string) error {
 	return err
 }
 
-func SendMessageEmailByDp(subject, body string, deId int){
-	users,_ := models.GetUsersByDevMent(deId)
-	toUsers := []string{}
-	for _,user :=range users{
-		toUsers = append(toUsers,user.Email)
-
-	}
-	SendMessageEmail(subject,body,toUsers)
-}
+//func SendMessageEmailByDp(subject, body string, deId int){
+//	users,_ := models.GetUsersByDevMent(deId)
+//	toUsers := []string{}
+//	for _,user :=range users{
+//		toUsers = append(toUsers,user.Email)
+//
+//	}
+//	SendMessageEmail(subject,body,toUsers)
+//}
 
 func init() {
 	mail = util.NewMail("kuaifazhushou@163.com", "wushuang", "smtp.163.com:25")

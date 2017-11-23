@@ -1,0 +1,64 @@
+.navbar-nav {
+	float: right;
+}
+
+nav a {
+	color: #4e4e4e;
+	font-family: "微软雅黑";
+	font-size: 16px;
+}
+
+.nav>li>a:hover,
+.nav>li>a:focus {
+	background-color: rgba(255, 255, 255, 0);
+}
+
+.active {
+	background: url(../../img/nav/nav_xuanzhong.png) no-repeat;
+	background-position: 8px 90%;
+}
+
+.navbar {
+	min-height: 90px;
+	margin-bottom: 0;
+}
+
+.nav_bg {
+	background: url(../../img/nav/nav_fengexian.png) no-repeat bottom;
+	width: 100%;
+    border: 0px;
+}
+
+.nav>li:first-child>a {
+	position: relative;
+	display: block;
+	padding: 10px 31px;
+	padding-top: 35px;
+	padding-bottom: 31px;
+}
+.nav_login{
+	position: absolute;
+	top: 5px;
+	left: 76.7%;
+}
+.nav_login>p{
+	margin: 0;
+	width: 80px;
+	height: 30px;
+	padding-left: 12px;
+}
+.nav_login>p>span>a{
+	font-family: "microsoft yahei";
+	font-size: 12px;
+	color: white;
+	text-decoration:none;
+}
+.nav_login>p>span:first-child{
+	margin-right: 15px;
+}
+.nav_login>img{
+	position: absolute;
+	width: 100%;
+	top: 0;
+	z-index: -1;
+}

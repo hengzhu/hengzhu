@@ -1,0 +1,72 @@
+.page_center>form:first-child{
+	width:740px;
+	margin: auto;
+	    border: 1px solid rgb(230, 202, 168);
+    border-radius: 10px;
+    -webkit-box-shadow: 6px 6px 20px rgb(189, 178, 166);
+    -moz-box-shadow: 6px 6px 20px rgb(189, 178, 166);
+    box-shadow: 6px 6px 20px rgb(189, 178, 166);
+    margin-top: 52px;
+    margin-bottom:178px;
+   	padding-left: 90px;
+}
+.page_center>form:first-child>p>input{
+		width: 306px;
+	height: 40px;
+	border-radius: 10px;
+	border: 1px solid rgb(228,225,221);
+	font-size: 14px;
+	padding-left: 10PX;
+	outline: none;
+	margin-left: 20px;
+	margin-right: 15px;
+}
+.page_center>form:first-child>p:nth-child(-n+4){
+	background: url(../../img/user/1.png)no-repeat left;
+}
+.page_center>form:first-child>p{
+	padding-left: 10px;
+	margin-bottom: 35px;
+}
+.page_center>form:first-child>p:nth-child(-n+3){
+	margin-left: 29px;
+}
+.page_center>form:first-child h3 {
+	text-align: left;
+	margin-left: 6px;
+	margin-right: 78px;
+	padding-bottom: 16px;
+	margin-top: 18px;
+	margin-bottom: 23px;
+	font-family: "microsoft yahei";
+	border-bottom: 1px dotted rgba(193, 193, 193, 0.85);
+	font-weight: 500;
+	padding-left: 23PX;
+}
+.page_center>form:first-child>p:nth-child(6)>input:first-child{
+  width: 22%;
+    margin-left: 12%;
+    }  
+    .page_center>form:first-child>p:nth-child(6)>input:last-child{
+     width: 20%;
+    }  
+.page_center>form:first-child>p:nth-child(7)>input:first-child{
+	width: 141px;
+}
+.page_center>form:first-child>p:nth-child(7){
+	margin-left: 15px;
+}
+.page_center>form:first-child>p:nth-child(7)>img:nth-child(3){
+	margin-right: 15px;
+	margin-left: 10px;
+}
+.page_center>form:first-child>img:last-child{
+	width: 303px;
+	height: 40px;
+	margin-left: 20%;
+	border-radius: 10px;
+	border: 0;
+	padding: 0;
+	outline: none;
+	margin-bottom: 20px;
+}

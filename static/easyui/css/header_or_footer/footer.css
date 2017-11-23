@@ -1,0 +1,44 @@
+footer li{
+	list-style-type:none;
+}
+.footer_nav{
+	margin:0 auto ;
+    width: 810px;
+}
+.footer_nav li{
+	float: left;
+}
+.footer_nav>li>a{
+	padding:0px 38px ;
+	color: white;
+	font-family: "微软雅黑";
+	font-size: 14px;
+	border-left: 1px solid white;
+}
+.footer_nav li:first-child>a{
+	border-left:0px;
+}
+.footer_nav>li{
+	padding:10px 0px ;
+	padding-top: 34px;
+}
+.footer_nu{
+	width: 100%;
+    height: 140px;
+}
+.footer_logo{
+	clear:left;
+	margin: 0 auto;
+	width: 245px;
+	color:white ;
+	height: 66px;
+	font-family: "微软雅黑";
+	font-size: 14px;
+}
+.footer_logo>img{
+	float: left;
+}
+.footer_logo>p{
+	line-height: 66px;
+	padding-left: 104px;
+}

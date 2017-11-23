@@ -49,8 +49,8 @@ func (this *NodeController) Index() {
 		this.Data["grouplist"] = string(b)
 		this.TplName = this.GetTemplatetype() + "/rbac/node.tpl"
 	}
-
 }
+
 func (this *NodeController) AddAndEdit() {
 	n := m.Node{}
 	if err := this.ParseForm(&n); err != nil {
@@ -83,7 +83,6 @@ func (this *NodeController) AddAndEdit() {
 		this.Rsp(false, err.Error())
 		return
 	}
-
 }
 
 func (this *NodeController) DelNode() {

@@ -183,7 +183,7 @@
 <body class="easyui-layout" style="text-align:left">
 <div region="north" border="false" style="overflow: hidden; width: 100%; height:82px; background:#D9E5FD;">
     <div style="overflow: hidden; width:200px; padding:2px 0 0 5px;">
-        <h2>BeegoAdmin</h2>
+        <h2>恒铸联网智能柜</h2>
     </div>
     <ul class="ht_nav">
         {{range .groups}}
