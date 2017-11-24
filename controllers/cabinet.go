@@ -35,7 +35,10 @@ func (c *CabinetController) State() {
 		c.RespJSON(bean.CODE_Not_Found, err.Error())
 		return
 	}
-	c.RespJSONDataWithTotal(ss, total)
+
+	models.AddOtherInfo(&ss)
+	//c.RespJSONDataWithTotal(ss, total)
+	c.Data["data"] = &map[string]interface{}{"total": total, "rows": ss}
 	fmt.Printf("c.GetTemplatetype():%v\n", c.GetTemplatetype())
 	c.TplName = c.GetTemplatetype() + "/state/index.tpl"
 }

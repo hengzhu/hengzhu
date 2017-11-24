@@ -1,98 +1,98 @@
 {{template "../manage/header.tpl"}}
 <script type="text/javascript">
     var URL = "/manage"
-    $(function () {
-        //生成树
-        $("#tree").tree({
-            url: URL + '/index',
-            onClick: function (node) {
-                if (node.attributes.url == "") {
-                    $(this).tree("toggle", node.target);
-                    return false;
-                }
-                var href = node.attributes.url;
-                var tabs = $("#tabs");
-                if (href) {
-                    var content = '<iframe scrolling="auto" frameborder="0"  src="' + href + '" style="width:100%;height:100%;"></iframe>';
-                } else {
-                    var content = '未实现';
-                }
-                //已经存在tabs则选中它
-                if (tabs.tabs('exists', node.text)) {
-                    //选中
-                    tabs.tabs('select', node.text);
-                    //refreshTab(node.text);
-                } else {
-                    //添加
-                    tabs.tabs('add', {
-                        title: node.text,
-                        content: content,
-                        closable: true,
-                        cache: false,
-                        fit: 'true'
-                    });
-                }
-            }
-        });
-        $("#tabs").tabs({
-            width: $("#tabs").parent().width(),
-            height: "auto",
-            fit: true,
-            border: false,
-            onContextMenu: function (e, title) {
-                e.preventDefault();
-                $("#mm").menu('show', {
-                    left: e.pageX,
-                    top: e.pageY
-                }).data('tabTitle', title);
-            }
-        });
-        $('#mm').menu({
-            onClick: function (item) {
-                var curTabTitle = $(this).data('tabTitle');
-                var type = $(item.target).attr('type');
-
-                if (type === 'refresh') {
-                    refreshTab(curTabTitle);
-                    return;
-                }
-
-                if (type === 'close') {
-                    var t = $("#tabs").tabs('getTab', curTabTitle);
-                    if (t.panel('options').closable) {
-                        $("#tabs").tabs('close', curTabTitle);
-                    }
-                    return;
-                }
-
-                var allTabs = $("#tabs").tabs('tabs');
-                var closeTabsTitle = [];
-
-                $.each(allTabs, function () {
-                    var opt = $(this).panel('options');
-                    if (opt.closable && opt.title != curTabTitle && type === 'closeOther') {
-                        closeTabsTitle.push(opt.title);
-                    } else if (opt.closable && type === 'closeAll') {
-                        closeTabsTitle.push(opt.title);
-                    }
-                });
-                for (var i = 0; i < closeTabsTitle.length; i++) {
-                    $("#tabs").tabs('close', closeTabsTitle[i]);
-                }
-            }
-        });
-        //修改配色方案
-        $("#changetheme").change(function () {
-            var theme = $(this).val();
-            $.cookie("theme", theme); //新建cookie
-            location.reload();
-        });
-        //设置已选theme的值
-//        var themed = $.cookie('theme');
-//        if(themed){
-//            $("#changetheme").val(themed);
-//        }
-    });
+//     $(function () {
+//         //生成树
+//         $("#tree").tree({
+//             url: URL + '/index',
+//             onClick: function (node) {
+//                 if (node.attributes.url == "") {
+//                     $(this).tree("toggle", node.target);
+//                     return false;
+//                 }
+//                 var href = node.attributes.url;
+//                 var tabs = $("#tabs");
+//                 if (href) {
+//                     var content = '<iframe scrolling="auto" frameborder="0"  src="' + href + '" style="width:100%;height:100%;"></iframe>';
+//                 } else {
+//                     var content = '未实现';
+//                 }
+//                 //已经存在tabs则选中它
+//                 if (tabs.tabs('exists', node.text)) {
+//                     //选中
+//                     tabs.tabs('select', node.text);
+//                     //refreshTab(node.text);
+//                 } else {
+//                     //添加
+//                     tabs.tabs('add', {
+//                         title: node.text,
+//                         content: content,
+//                         closable: true,
+//                         cache: false,
+//                         fit: 'true'
+//                     });
+//                 }
+//             }
+//         });
+//         $("#tabs").tabs({
+//             width: $("#tabs").parent().width(),
+//             height: "auto",
+//             fit: true,
+//             border: false,
+//             onContextMenu: function (e, title) {
+//                 e.preventDefault();
+//                 $("#mm").menu('show', {
+//                     left: e.pageX,
+//                     top: e.pageY
+//                 }).data('tabTitle', title);
+//             }
+//         });
+//         $('#mm').menu({
+//             onClick: function (item) {
+//                 var curTabTitle = $(this).data('tabTitle');
+//                 var type = $(item.target).attr('type');
+//
+//                 if (type === 'refresh') {
+//                     refreshTab(curTabTitle);
+//                     return;
+//                 }
+//
+//                 if (type === 'close') {
+//                     var t = $("#tabs").tabs('getTab', curTabTitle);
+//                     if (t.panel('options').closable) {
+//                         $("#tabs").tabs('close', curTabTitle);
+//                     }
+//                     return;
+//                 }
+//
+//                 var allTabs = $("#tabs").tabs('tabs');
+//                 var closeTabsTitle = [];
+//
+//                 $.each(allTabs, function () {
+//                     var opt = $(this).panel('options');
+//                     if (opt.closable && opt.title != curTabTitle && type === 'closeOther') {
+//                         closeTabsTitle.push(opt.title);
+//                     } else if (opt.closable && type === 'closeAll') {
+//                         closeTabsTitle.push(opt.title);
+//                     }
+//                 });
+//                 for (var i = 0; i < closeTabsTitle.length; i++) {
+//                     $("#tabs").tabs('close', closeTabsTitle[i]);
+//                 }
+//             }
+//         });
+//         //修改配色方案
+//         $("#changetheme").change(function () {
+//             var theme = $(this).val();
+//             $.cookie("theme", theme); //新建cookie
+//             location.reload();
+//         });
+//         //设置已选theme的值
+// //        var themed = $.cookie('theme');
+// //        if(themed){
+// //            $("#changetheme").val(themed);
+// //        }
+//     });
 
     function refreshTab(title) {
         var tab = $("#tabs").tabs("getTab", title);
@@ -223,7 +223,9 @@
 </div>
 </div>
 <div region="west" border="false" split="true" title="菜单" tools="#toolbar" style="width:200px;padding:5px;">
-    <ul id="tree"></ul>
+    <ul id="tree">
+        <li><span><a class="current" href="#">adf</a></span></li>
+    </ul>
 </div>
 <div region="center" border="false">
     <div id="tabs">

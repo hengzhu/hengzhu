@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<title>Beego admin</title>
+	<title>恒铸联网智能柜</title>
     <link rel="stylesheet" type="text/css" href="/static/easyui/jquery-easyui/themes/default/easyui.css" />
     <link rel="stylesheet" type="text/css" href="/static/easyui/jquery-easyui/themes/icon.css" />
     <link rel="stylesheet" type="text/css" href="/static/easyui/css/webuploader.css" />

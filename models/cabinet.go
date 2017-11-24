@@ -5,18 +5,26 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/astaxie/beego/orm"
 )
 
 type Cabinet struct {
-	Id        int    `json:"id" orm:"column(id);auto"`
-	CabinetID string `json:"cabinet_id" orm:"column(cabinet_ID);size(255);null" description:"柜子id"`
-	Isonline  int8   `json:"isonline" orm:"column(isonline);null" description:"是否在线,1:在线，2:不在线"`
-	TypeId    int    `json:"type_id" orm:"column(type_id);null" description:"柜子类型id"`
-	Address   string `json:"address" orm:"column(address);null" description:"柜子位置"`
-	Number    string `json:"number" orm:"column(number);null" description:"编号"`
-	Desc      string `json:"desc" orm:"column(desc);null" description:"备注"`
+	Id         int       `json:"id" orm:"column(id);auto"`
+	CabinetID  string    `json:"cabinet_id" orm:"column(cabinet_ID);size(255);null" description:"柜子id"`
+	TypeId     int       `json:"type_id" orm:"column(type_id);null" description:"柜子计费类型id，初始化时为默认类型"`
+	Address    string    `json:"address" orm:"column(address);null" description:"柜子位置"`
+	Number     string    `json:"number" orm:"column(number);null" description:"编号"`
+	Desc       string    `json:"desc" orm:"column(desc);null" description:"备注"`
+	CreateTime time.Time `json:"-" orm:"column(create_time);type(timestamp);null;auto_now_add" description:"创建时间"`
+	LastTime   time.Time `json:"-" orm:"column(last_time);type(timestamp);null" description:"最后一次上报时间"`
+
+	TypeName string `json:"type_name" orm:"-" description:"类型名称"`
+	IsOnline string `json:"is_online" orm:"-" description:"是否在线"`
+	Doors    int    `json:"doors" orm:"-" description:"门数"`
+	OnUse    int    `json:"on_use" orm:"-" description:"使用中数量"`
+	Close    int    `json:"open" orm:"-" description:"关闭状态门数量"`
 }
 
 func (t *Cabinet) TableName() string {
@@ -25,6 +33,28 @@ func (t *Cabinet) TableName() string {
 
 func init() {
 	orm.RegisterModel(new(Cabinet))
+}
+
+func AddOtherInfo(cabinets *[]Cabinet) {
+	if cabinets == nil || len(*cabinets) == 0 {
+		return
+	}
+
+	for i, cabinet := range *cabinets {
+		typ, err := GetTypeById(cabinet.TypeId)
+		if err == nil {
+			(*cabinets)[i].TypeName = typ.Name
+		}
+
+		(*cabinets)[i].Doors = GetTotalDoors(cabinet.Id)
+		(*cabinets)[i].OnUse = GetTotalOnUse(cabinet.Id)
+		(*cabinets)[i].Close = GetTotalClose(cabinet.Id)
+
+		(*cabinets)[i].IsOnline = "是"
+		if time.Now().Unix()-cabinet.LastTime.Unix() > 90 {
+			(*cabinets)[i].IsOnline = "否"
+		}
+	}
 }
 
 // AddCabinet insert a new Cabinet into database and returns

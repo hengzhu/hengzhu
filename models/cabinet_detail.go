@@ -21,12 +21,42 @@ type CabinetDetail struct {
 	UseState  int       `orm:"column(use_state);null" description:"启用状态，1:启用，2:停用"`
 }
 
+type Total struct {
+	Doors int `json:"-" orm:"column(doors)"`
+	OnUse int `json:"-" orm:"column(onUse)"`
+	Close int `json:"-" orm:"column(close)"`
+}
+
 func (t *CabinetDetail) TableName() string {
 	return "cabinet_detail"
 }
 
 func init() {
 	orm.RegisterModel(new(CabinetDetail))
+}
+
+// 根据柜子id，获取该柜子的总门数
+func GetTotalDoors(cabinetId int) (total int) {
+	tot := Total{}
+	sql := "SELECT COUNT(id) AS doors FROM cabinet_detail WHERE cabinet_id=?"
+	orm.NewOrm().Raw(sql, cabinetId).QueryRow(&tot)
+	return tot.Doors
+}
+
+// 根据柜子id，获取该柜子的总使用中的门数
+func GetTotalOnUse(cabinetId int) (onUse int) {
+	tot := Total{}
+	sql := "SELECT COUNT(`using`) AS onUse FROM cabinet_detail WHERE cabinet_id=? AND `using`=2"
+	orm.NewOrm().Raw(sql, cabinetId).QueryRow(&tot)
+	return tot.OnUse
+}
+
+// 根据柜子id，获取该柜子的总关闭状态门数
+func GetTotalClose(cabinetId int) (close int) {
+	tot := Total{}
+	sql := "SELECT COUNT(open_state) AS `close` FROM cabinet_detail WHERE cabinet_id=? AND open_state=1"
+	orm.NewOrm().Raw(sql, cabinetId).QueryRow(&tot)
+	return tot.Close
 }
 
 // AddCabinetDetail insert a new CabinetDetail into database and returns
