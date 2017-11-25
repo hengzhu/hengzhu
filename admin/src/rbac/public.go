@@ -65,10 +65,10 @@ func (this *MainController) Login() {
 	isajax := this.GetString("isajax")
 	if isajax == "1" {
 		glog.Info("Captcha is %v, name:%v", this.Ctx.Request.Form.Get(Cpt.FieldIDName), this.Ctx.Request.Form.Get(Cpt.FieldCaptchaName))
-        if needCaptcha && !Cpt.VerifyReq(this.Ctx.Request) {
-            this.Rsp(false, "验证码错误")
-            return
-        }
+        //if needCaptcha && !Cpt.VerifyReq(this.Ctx.Request) {
+        //    this.Rsp(false, "验证码错误")
+        //    return
+        //}
 		username := this.GetString("username")
 		password := this.GetString("password")
 		user, err := CheckLogin(username, password)

@@ -4,7 +4,7 @@ import (
 	"github.com/astaxie/beego"
 	"hengzhu/admin"
 	"hengzhu/controllers"
-	"hengzhu/ucenter"
+	//"hengzhu/ucenter"
 )
 
 func init() {
@@ -23,5 +23,5 @@ func init() {
 	beego.Router("/service", &controllers.ServiceController{}, "*:Service")
 	beego.Router("/detail", &controllers.ServiceController{}, "*:Detail")
 	admin.Run()
-	ucenter.Run()
+	//ucenter.Run()
 }

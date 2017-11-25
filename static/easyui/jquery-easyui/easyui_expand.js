@@ -45,19 +45,19 @@ $.extend($.fn.validatebox.defaults.rules, {
     },
     password:{
         validator:function(value, param){
-                if (value.length < param[0] || value.length > param[1]) {
-                    $.fn.validatebox.defaults.rules.password.message = '密码长度必须在' + param[0] + '至' + param[1] + '范围';
+            if (value.length < param[0] || value.length > param[1]) {
+                $.fn.validatebox.defaults.rules.password.message = '密码长度必须在' + param[0] + '至' + param[1] + '范围';
+                return false;
+            } else {
+                if (!/^[\w|\!|\@|\#|\$|\%|\^|\&|\*|\~|\(|\)]+$/.test(value)) {
+                    $.fn.validatebox.defaults.rules.password.message = '密码格式不正确.';
                     return false;
                 } else {
-                    if (!/^[\w|\!|\@|\#|\$|\%|\^|\&|\*|\~|\(|\)]+$/.test(value)) {
-                        $.fn.validatebox.defaults.rules.password.message = '密码格式不正确.';
-                        return false;
-                    } else {
-                        return true;
-                    }
+                    return true;
                 }
-            }, message: ''
-        }
+            }
+        }, message: ''
+    }
 })
 //时间格式化
 Date.prototype.format = function(format){
@@ -144,16 +144,16 @@ $.extend($.fn.datagrid.methods, {
 });
 //这是自己添加的代码，为了释放tabs中引入iframe内存未释放的问题。
 $.fn.panel.defaults = $.extend({},$.fn.panel.defaults,{onBeforeDestroy:function(){
-	var frame=$('iframe', this);
-	if(frame.length>0){
-		frame[0].contentWindow.document.write('');
-		frame[0].contentWindow.close();
-		frame.remove();
-		if($.support.leadingWhitespace){
-			CollectGarbage();
-		}
-	}
-	}
+        var frame=$('iframe', this);
+        if(frame.length>0){
+            frame[0].contentWindow.document.write('');
+            frame[0].contentWindow.close();
+            frame.remove();
+            // if($.support.leadingWhitespace){
+            //     CollectGarbage();
+            // }
+        }
+    }
 });
 //扩展日历选中时间的格式化
 $.fn.datebox.defaults.formatter = function(date){

@@ -42,6 +42,10 @@ func (this *CommonController) GetTree() []Tree {
 	return tree
 }
 
+func (c *CommonController) Uid() int {
+	return c.Ctx.Input.GetData("uid").(int)
+}
+
 func (c *CommonController) RespJSON(code int, data interface{}) {
 	c.AllowCross()
 	c.Ctx.Output.SetStatus(code)

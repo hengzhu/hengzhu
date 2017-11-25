@@ -35,6 +35,13 @@ func init() {
 	orm.RegisterModel(new(CabinetDetail))
 }
 
+// 根据柜子id，获取该柜子的门的详情
+func GetDetailsByCabinetId(cabinetId int) (details []CabinetDetail, err error) {
+	o := orm.NewOrm()
+	_, err = o.QueryTable(new(CabinetDetail)).Filter("CabinetId", cabinetId).All(&details)
+	return
+}
+
 // 根据柜子id，获取该柜子的总门数
 func GetTotalDoors(cabinetId int) (total int) {
 	tot := Total{}

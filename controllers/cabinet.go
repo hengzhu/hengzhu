@@ -19,28 +19,52 @@ type CabinetController struct {
 
 // 获取状态信息
 func (c *CabinetController) State() {
-	filter, err := tool.BuildFilter(c.Controller, 20)
-	if err != nil {
-		c.RespJSON(bean.CODE_Params_Err, err.Error())
+	if c.IsAjax() {
+		filter, err := tool.BuildFilter(c.Controller, 20)
+		if err != nil {
+			c.RespJSON(bean.CODE_Params_Err, err.Error())
+			return
+		}
+
+		filter.Order = []string{"asc"}
+		filter.Sortby = []string{"id"}
+
+		ss := []models.Cabinet{}
+
+		total, err := tool.GetAllByFilterWithTotal(new(models.Cabinet), &ss, filter)
+		if err != nil {
+			c.RespJSON(bean.CODE_Not_Found, err.Error())
+			return
+		}
+
+		models.AddOtherInfo(&ss)
+		//c.RespJSONDataWithTotal(ss, total)
+		c.Data["json"] = &map[string]interface{}{"total": total, "rows": ss}
+		c.ServeJSON()
+		return
+	} else {
+		c.TplName = c.GetTemplatetype() + "/state/index.tpl"
+	}
+}
+
+// 获取某个柜子的详情
+func (c *CabinetController) Detail() {
+	id, _ := strconv.Atoi(c.Ctx.Input.Param(":id"))
+	if id == 0 {
 		return
 	}
+	cabinet, _ := models.GetCabinetById(id)
+	models.AddInfo(cabinet)
+	models.AddDetails(cabinet)
+	c.Data["cabinet"] = cabinet
+	c.TplName = c.GetTemplatetype() + "/state/detail.tpl"
+}
 
-	filter.Order = []string{"asc"}
-	filter.Sortby = []string{"id"}
+// 清除柜子的存物状态
+func (c *CabinetController) Flush() {
 
-	ss := []models.Cabinet{}
-
-	total, err := tool.GetAllByFilterWithTotal(new(models.Cabinet), &ss, filter)
-	if err != nil {
-		c.RespJSON(bean.CODE_Not_Found, err.Error())
-		return
-	}
-
-	models.AddOtherInfo(&ss)
-	//c.RespJSONDataWithTotal(ss, total)
-	c.Data["data"] = &map[string]interface{}{"total": total, "rows": ss}
-	fmt.Printf("c.GetTemplatetype():%v\n", c.GetTemplatetype())
-	c.TplName = c.GetTemplatetype() + "/state/index.tpl"
+	fmt.Printf("user:%v\n", c)
+	fmt.Printf("user:%v\n", c.Uid())
 }
 
 // Post ...

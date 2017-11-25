@@ -17,7 +17,6 @@ $(function(){
         rownumbers:true,
         singleSelect:true,
         idField:'Id',
-        pagination:true,
         pageSize:20,
         pageList:[10,20,30,50,100],
         columns:[[

@@ -6,7 +6,6 @@
     <link rel="stylesheet" type="text/css" href="/static/easyui/jquery-easyui/themes/default/easyui.css" />
     <link rel="stylesheet" type="text/css" href="/static/easyui/jquery-easyui/themes/icon.css" />
     <link rel="stylesheet" type="text/css" href="/static/easyui/css/webuploader.css" />
-    <link rel="stylesheet" type="text/css" href="/static/easyui/css/gift/jquery.datetimepicker.css"/>
     <script type="text/javascript" src="/static/easyui/jquery-easyui/jquery.min.js"></script>
     <!--<script type="text/javascript" src="/static/easyui/js/jedate/jedate.js"></script>-->
     <script type="text/javascript" charset="utf-8" src="/static/easyui/js/gift/jquery.gift.js"></script>
