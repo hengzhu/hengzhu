@@ -4,7 +4,6 @@ import (
 	"github.com/astaxie/beego"
 	"hengzhu/admin/src/rbac"
 	"hengzhu/controllers"
-	"hengzhu/filters"
 )
 
 func router() {
@@ -47,5 +46,5 @@ func router() {
 	beego.Router("/state/detail/?:id", &controllers.CabinetController{}, "*:Detail")
 	beego.Router("/state/flush/?:id", &controllers.CabinetController{}, "*:Flush")
 
-	beego.InsertFilter("/*", beego.BeforeRouter, filters.AuthLogin, true) // 验证登陆
+	//beego.InsertFilter("/*", beego.BeforeRouter, filters.AuthLogin, true) // 验证登陆
 }

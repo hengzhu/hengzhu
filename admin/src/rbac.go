@@ -20,7 +20,7 @@ func AccessRegister() {
 		var accesslist map[string]bool
 		if user_auth_type > 0 {
 			params := strings.Split(strings.ToLower(strings.Split(ctx.Request.RequestURI, "?")[0]), "/")
-			fmt.Printf("params:%v\n", params)
+			fmt.Printf("params:%v--len:%v\n", params, len(params))
 			if CheckAccess(params) {
 				uinfo := ctx.Input.Session("userinfo")
 				if uinfo == nil {
