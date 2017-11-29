@@ -6,45 +6,48 @@ import (
 	"hengzhu/models"
 	"strconv"
 	"strings"
-	"hengzhu/admin/src/rbac"
 	"hengzhu/tool"
-	"hengzhu/models/bean"
 	"fmt"
 )
 
 // CabinetController operations for Cabinet
 type CabinetController struct {
-	rbac.CommonController
+	BaseController
 }
 
-// 获取状态信息
-func (c *CabinetController) State() {
-	if c.IsAjax() {
-		filter, err := tool.BuildFilter(c.Controller, 20)
-		if err != nil {
-			c.RespJSON(bean.CODE_Params_Err, err.Error())
-			return
-		}
+func (self *CabinetController) List() {
+	self.Data["pageTitle"] = "状态管理"
+	self.display()
+	//self.TplName = "admin/list.html"
+}
 
-		filter.Order = []string{"asc"}
-		filter.Sortby = []string{"id"}
+func (c *CabinetController) Table() {
+	filter, _ := tool.BuildFilter(c.Controller, 20)
 
-		ss := []models.Cabinet{}
+	filter.Order = []string{"asc"}
+	filter.Sortby = []string{"id"}
+	//查询条件
+	filters := make([]interface{}, 0)
+	filters = append(filters, "status", 1)
 
-		total, err := tool.GetAllByFilterWithTotal(new(models.Cabinet), &ss, filter)
-		if err != nil {
-			c.RespJSON(bean.CODE_Not_Found, err.Error())
-			return
-		}
+	ss := []models.Cabinet{}
+	total, _ := tool.GetAllByFilterWithTotal(new(models.Cabinet), &ss, filter)
 
-		models.AddOtherInfo(&ss)
-		//c.RespJSONDataWithTotal(ss, total)
-		c.Data["json"] = &map[string]interface{}{"total": total, "rows": ss}
-		c.ServeJSON()
-		return
-	} else {
-		c.TplName = c.GetTemplatetype() + "/state/index.tpl"
-	}
+	//result, count := admin.AdminGetList(page, self.pageSize, filters...)
+	//list := make([]map[string]interface{}, len(result))
+	//for k, v := range result {
+	//	row := make(map[string]interface{})
+	//	row["id"] = v.Id
+	//	row["login_name"] = v.LoginName
+	//	row["real_name"] = v.RealName
+	//	row["phone"] = v.Phone
+	//	row["email"] = v.Email
+	//	row["role_ids"] = v.RoleIds
+	//	row["create_time"] = beego.Date(time.Unix(v.CreateTime, 0), "Y-m-d H:i:s")
+	//	row["update_time"] = beego.Date(time.Unix(v.UpdateTime, 0), "Y-m-d H:i:s")
+	//	list[k] = row
+	//}
+	c.ajaxList("成功", MSG_OK, total, ss)
 }
 
 // 获取某个柜子的详情
@@ -57,14 +60,14 @@ func (c *CabinetController) Detail() {
 	models.AddInfo(cabinet)
 	models.AddDetails(cabinet)
 	c.Data["cabinet"] = cabinet
-	c.TplName = c.GetTemplatetype() + "/state/detail.tpl"
+	c.TplName = "/state/detail.html"
 }
 
 // 清除柜子的存物状态
 func (c *CabinetController) Flush() {
 
 	fmt.Printf("user:%v\n", c)
-	fmt.Printf("user:%v\n", c.Uid())
+	fmt.Printf("user:%v\n", c.userId)
 }
 
 // Post ...

@@ -17,43 +17,58 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/`hengzhu` /*!40100 DEFAULT CHARACTER SET
 
 USE `hengzhu`;
 
-/*Table structure for table `admin_user` */
+/*Table structure for table `admin` */
 
-DROP TABLE IF EXISTS `admin_user`;
+DROP TABLE IF EXISTS `admin`;
 
-CREATE TABLE `admin_user` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `username` varchar(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `password` varchar(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `nickname` varchar(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `email` varchar(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `remark` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `status` int(11) NOT NULL DEFAULT '2',
-  `lastlogintime` datetime DEFAULT NULL,
-  `createtime` datetime NOT NULL,
+CREATE TABLE `admin` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `login_name` varchar(20) NOT NULL DEFAULT '' COMMENT '用户名',
+  `real_name` varchar(32) NOT NULL DEFAULT '0' COMMENT '真实姓名',
+  `password` char(32) NOT NULL DEFAULT '' COMMENT '密码',
+  `role_ids` varchar(255) NOT NULL DEFAULT '0' COMMENT '角色id字符串，如：2,3,4',
+  `phone` varchar(20) NOT NULL DEFAULT '0' COMMENT '手机号码',
+  `email` varchar(50) NOT NULL DEFAULT '' COMMENT '邮箱',
+  `salt` char(10) NOT NULL DEFAULT '' COMMENT '密码盐',
+  `last_login` int(11) NOT NULL DEFAULT '0' COMMENT '最后登录时间',
+  `last_ip` char(15) NOT NULL DEFAULT '' COMMENT '最后登录IP',
+  `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '状态，1-正常 0禁用',
+  `create_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '创建者ID',
+  `update_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '修改者ID',
+  `create_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
+  `update_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '修改时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `username` (`username`),
-  UNIQUE KEY `nickname` (`nickname`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  UNIQUE KEY `idx_user_name` (`login_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COMMENT='管理员表';
 
-/*Data for the table `admin_user` */
+/*Data for the table `admin` */
 
-insert  into `admin_user`(`id`,`username`,`password`,`nickname`,`email`,`remark`,`status`,`lastlogintime`,`createtime`) values (1,'admin','21232f297a57a5a743894a0e4a801fc3','ClownFish','osgochina@gmail.com','I\'m admin',2,NULL,'2017-11-20 07:37:32'),(2,'test','098f6bcd4621d373cade4e832627b4f6','test','23','',2,NULL,'2017-11-20 07:56:58');
+insert  into `admin`(`id`,`login_name`,`real_name`,`password`,`role_ids`,`phone`,`email`,`salt`,`last_login`,`last_ip`,`status`,`create_id`,`update_id`,`create_time`,`update_time`) values (1,'admin','超管','4fd71bffda5ccb3d750931d764fd9979','1','13888888889','124@163.com','d9Fr',1511969937,'[',1,0,1,0,1511970211);
 
-/*Table structure for table `admin_user_roles` */
+/*Table structure for table `auth` */
 
-DROP TABLE IF EXISTS `admin_user_roles`;
+DROP TABLE IF EXISTS `auth`;
 
-CREATE TABLE `admin_user_roles` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `admin_user_id` bigint(20) NOT NULL,
-  `role_id` bigint(20) NOT NULL,
+CREATE TABLE `auth` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+  `pid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '上级ID，0为顶级',
+  `auth_name` varchar(64) NOT NULL DEFAULT '0' COMMENT '权限名称',
+  `auth_url` varchar(255) NOT NULL DEFAULT '0' COMMENT 'URL地址',
+  `sort` int(1) unsigned NOT NULL DEFAULT '999' COMMENT '排序，越小越前',
+  `icon` varchar(255) NOT NULL,
+  `is_show` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否显示，0-隐藏，1-显示',
+  `user_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '操作者ID',
+  `create_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '创建者ID',
+  `update_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '修改者ID',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT '状态，1-正常，0-删除',
+  `create_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
+  `update_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COMMENT='权限因子';
 
-/*Data for the table `admin_user_roles` */
+/*Data for the table `auth` */
 
-insert  into `admin_user_roles`(`id`,`admin_user_id`,`role_id`) values (1,2,2);
+insert  into `auth`(`id`,`pid`,`auth_name`,`auth_url`,`sort`,`icon`,`is_show`,`user_id`,`create_id`,`update_id`,`status`,`create_time`,`update_time`) values (1,0,'所有权限','/',1,'',0,1,1,1,1,1505620970,1505620970),(2,1,'权限管理','/',999,'fa-id-card',1,1,0,1,1,0,1505622360),(3,2,'管理员','/admin/list',1,'fa-user-o',1,1,1,1,1,1505621186,1505621186),(4,2,'角色管理','/role/list',2,'fa-user-circle-o',1,1,0,1,1,0,1505621852),(5,3,'新增','/admin/add',1,'',0,1,0,1,1,0,1505621685),(6,3,'修改','/admin/edit',2,'',0,1,0,1,1,0,1505621697),(7,3,'删除','/admin/ajaxdel',3,'',0,1,1,1,1,1505621756,1505621756),(8,4,'新增','/role/add',1,'',1,1,0,1,1,0,1505698716),(9,4,'修改','/role/edit',2,'',0,1,1,1,1,1505621912,1505621912),(10,4,'删除','/role/ajaxdel',3,'',0,1,1,1,1,1505621951,1505621951),(11,2,'权限因子','/auth/list',3,'fa-list',1,1,1,1,1,1505621986,1505621986),(12,11,'新增','/auth/add',1,'',0,1,1,1,1,1505622009,1505622009),(13,11,'修改','/auth/edit',2,'',0,1,1,1,1,1505622047,1505622047),(14,11,'删除','/auth/ajaxdel',3,'',0,1,1,1,1,1505622111,1505622111),(15,1,'个人中心','profile/edit',1001,'fa-user-circle-o',1,1,0,1,1,0,1506001114),(24,15,'资料修改','/user/edit',1,'fa-edit',1,1,0,1,1,0,1506057468),(39,1,'状态详情','cabinet',1,'fa-id-card',1,1,0,1,1,0,1511972856),(40,39,'状态','/cabinet/list',1,'th-list',1,1,0,1,1,0,1511973105);
 
 /*Table structure for table `cabinet` */
 
@@ -95,23 +110,6 @@ CREATE TABLE `cabinet_detail` (
 
 insert  into `cabinet_detail`(`id`,`cabinet_id`,`door`,`open_state`,`using`,`userID`,`store_time`,`use_state`) values (1,1,1,1,2,'alipay-123','2017-11-25 10:23:23',1),(2,1,2,1,1,NULL,NULL,2);
 
-/*Table structure for table `group` */
-
-DROP TABLE IF EXISTS `group`;
-
-CREATE TABLE `group` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `title` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `status` int(11) NOT NULL DEFAULT '2',
-  `sort` int(11) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-/*Data for the table `group` */
-
-insert  into `group`(`id`,`name`,`title`,`status`,`sort`) values (1,'APP','System',2,1);
-
 /*Table structure for table `log` */
 
 DROP TABLE IF EXISTS `log`;
@@ -127,73 +125,39 @@ CREATE TABLE `log` (
 
 /*Data for the table `log` */
 
-/*Table structure for table `logs` */
-
-DROP TABLE IF EXISTS `logs`;
-
-CREATE TABLE `logs` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) DEFAULT NULL,
-  `action` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `status_code` int(11) DEFAULT NULL,
-  `input` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `created_time` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-/*Data for the table `logs` */
-
-/*Table structure for table `node` */
-
-DROP TABLE IF EXISTS `node`;
-
-CREATE TABLE `node` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `title` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `name` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `level` int(11) NOT NULL DEFAULT '1',
-  `pid` bigint(20) NOT NULL DEFAULT '0',
-  `remark` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `status` int(11) NOT NULL DEFAULT '2',
-  `group_id` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-/*Data for the table `node` */
-
-insert  into `node`(`id`,`title`,`name`,`level`,`pid`,`remark`,`status`,`group_id`) values (1,'RBAC','rbac',1,0,'',2,1),(2,'Node','node/index',2,1,'',2,1),(3,'node list','index',3,2,'',2,1),(4,'add or edit','AddAndEdit',3,2,'',2,1),(5,'del node','DelNode',3,2,'',2,1),(6,'User','user/index',2,1,'',2,1),(7,'user list','Index',3,6,'',2,1),(8,'add user','AddUser',3,6,'',2,1),(9,'update user','UpdateUser',3,6,'',2,1),(10,'del user','DelUser',3,6,'',2,1),(11,'Group','group/index',2,1,'',2,1),(12,'group list','index',3,11,'',2,1),(13,'add group','AddGroup',3,11,'',2,1),(14,'update group','UpdateGroup',3,11,'',2,1),(15,'del group','DelGroup',3,11,'',2,1),(16,'Role','role/index',2,1,'',2,1),(17,'role list','index',3,16,'',2,1),(18,'add or edit','AddAndEdit',3,16,'',2,1),(19,'del role','DelRole',3,16,'',2,1),(20,'get roles','Getlist',3,16,'',2,1),(21,'show access','AccessToNode',3,16,'',2,1),(22,'add accsee','AddAccess',3,16,'',2,1),(23,'show role to userlist','RoleToUserList',3,16,'',2,1),(24,'add role to user','AddRoleToUser',3,16,'',2,1),(25,'状态','state/index',1,0,'',2,1);
-
-/*Table structure for table `node_roles` */
-
-DROP TABLE IF EXISTS `node_roles`;
-
-CREATE TABLE `node_roles` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `node_id` bigint(20) NOT NULL,
-  `role_id` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-/*Data for the table `node_roles` */
-
-insert  into `node_roles`(`id`,`node_id`,`role_id`) values (13,1,2),(14,16,2),(15,17,2),(16,18,2),(17,19,2),(18,20,2),(19,21,2),(20,22,2),(21,23,2),(22,24,2),(23,25,2),(24,26,2);
-
 /*Table structure for table `role` */
 
 DROP TABLE IF EXISTS `role`;
 
 CREATE TABLE `role` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `title` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `name` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `remark` varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `status` int(11) NOT NULL DEFAULT '2',
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `role_name` varchar(32) NOT NULL DEFAULT '0' COMMENT '角色名称',
+  `detail` varchar(255) NOT NULL DEFAULT '0' COMMENT '备注',
+  `create_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '创建者ID',
+  `update_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '修改这ID',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '1' COMMENT '状态1-正常，0-删除',
+  `create_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '添加时间',
+  `update_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '修改时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COMMENT='角色表';
 
 /*Data for the table `role` */
 
-insert  into `role`(`id`,`title`,`name`,`remark`,`status`) values (1,'Admin role','Admin','I\'m a admin role',2),(2,'','Manager','',2);
+insert  into `role`(`id`,`role_name`,`detail`,`create_id`,`update_id`,`status`,`create_time`,`update_time`) values (1,'超级管理员','超级管理员，拥有所有权限',0,1,1,1511970063,1511970063),(2,'普通管理员','拥有部分权限',0,1,1,1511970017,1511970017);
+
+/*Table structure for table `role_auth` */
+
+DROP TABLE IF EXISTS `role_auth`;
+
+CREATE TABLE `role_auth` (
+  `role_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '角色ID',
+  `auth_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '权限ID',
+  PRIMARY KEY (`role_id`,`auth_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='权限和角色关系表';
+
+/*Data for the table `role_auth` */
+
+insert  into `role_auth`(`role_id`,`auth_id`) values (1,0),(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13),(1,14),(1,15),(1,24),(1,39),(1,40),(2,0),(2,1),(2,15),(2,24),(2,39),(2,40);
 
 /*Table structure for table `setting` */
 
@@ -229,81 +193,6 @@ CREATE TABLE `type` (
 /*Data for the table `type` */
 
 insert  into `type`(`id`,`name`,`default`,`charge_mode`,`toll_time`,`price`,`unit`,`create_time`) values (1,'类型1',1,1,1,1,NULL,'2017-11-25 15:24:09'),(2,'类型2',2,2,2,2,30,'2017-11-25 15:28:53');
-
-/*Table structure for table `user` */
-
-DROP TABLE IF EXISTS `user`;
-
-CREATE TABLE `user` (
-  `user_id` int(11) NOT NULL AUTO_INCREMENT,
-  `mail` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `mobile` varchar(11) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `user_name` varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `nick_name` varchar(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `password` varchar(32) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `create_time` int(10) unsigned NOT NULL DEFAULT '0',
-  `user_type` tinyint(4) NOT NULL DEFAULT '0',
-  `register_wlan` varchar(17) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `game_id` int(11) NOT NULL DEFAULT '0',
-  `account_mark` tinyint(4) NOT NULL DEFAULT '0',
-  `initialpwd` varchar(12) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `solidify` tinyint(4) NOT NULL DEFAULT '0',
-  `chinese_name` varchar(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `id_card_no` varchar(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-/*Data for the table `user` */
-
-/*Table structure for table `user_bindmobile` */
-
-DROP TABLE IF EXISTS `user_bindmobile`;
-
-CREATE TABLE `user_bindmobile` (
-  `bind_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `mobile` varchar(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `seccode` varchar(6) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `create_time` int(11) NOT NULL DEFAULT '0',
-  `send_time` int(10) unsigned NOT NULL DEFAULT '0',
-  `seccode_time` int(10) unsigned NOT NULL DEFAULT '0',
-  `expire_time` int(11) NOT NULL DEFAULT '0',
-  `mark` tinyint(4) DEFAULT NULL,
-  `send_times` tinyint(4) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`bind_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-/*Data for the table `user_bindmobile` */
-
-/*Table structure for table `user_info` */
-
-DROP TABLE IF EXISTS `user_info`;
-
-CREATE TABLE `user_info` (
-  `user_id` int(11) NOT NULL,
-  `nick_name` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `sex` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `birth` date NOT NULL,
-  `headpic` varchar(64) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `real_name` varchar(32) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `identity_card` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `user_tel` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `user_mobile` varchar(11) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `user_address` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `user_postcode` varchar(6) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `user_job` tinyint(4) NOT NULL DEFAULT '0',
-  `user_salary` tinyint(4) NOT NULL DEFAULT '0',
-  `user_education` tinyint(4) NOT NULL DEFAULT '0',
-  `user_marital` tinyint(4) NOT NULL DEFAULT '0',
-  `area` varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `exp` int(10) unsigned NOT NULL DEFAULT '0',
-  `level` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `nosign` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `create_time` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-/*Data for the table `user_info` */
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

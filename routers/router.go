@@ -2,26 +2,34 @@ package routers
 
 import (
 	"github.com/astaxie/beego"
-	"hengzhu/admin"
 	"hengzhu/controllers"
-	//"hengzhu/ucenter"
 )
 
 func init() {
-	beego.Router("/", &controllers.MainController{})
-	//beego.Include(&controllers.UserController{})
-	//beego.Router("/login", &controllers.UserController{}, "*:Login")
-	//beego.Router("/logout", &controllers.UserController{}, "*:Logout")
-	//beego.Router("/reg", &controllers.UserController{}, "*:Register")
-	//beego.Router("/account", &controllers.UserController{}, "*:Index")
+	// 默认登录
+	beego.Router("/", &controllers.LoginController{}, "*:LoginIn")
+	beego.Router("/login", &controllers.LoginController{}, "*:LoginIn")
+	beego.Router("/login_out", &controllers.LoginController{}, "*:LoginOut")
+	beego.Router("/no_auth", &controllers.LoginController{}, "*:NoAuth")
 
-	beego.Router("/account", &controllers.AccountController{}, "*:Index")
-	beego.Router("/account/changepwd", &controllers.AccountController{}, "*:ChangePwd")
-	beego.Router("/account/bind", &controllers.AccountController{}, "*:Bind")
-	beego.Router("/account/updatedetail", &controllers.AccountController{}, "*:UpdateDetail")
-	beego.Router("/sendvcode", &controllers.UserController{}, "post:SendVCode")
-	beego.Router("/service", &controllers.ServiceController{}, "*:Service")
-	beego.Router("/detail", &controllers.ServiceController{}, "*:Detail")
-	admin.Run()
+	beego.Router("/home", &controllers.HomeController{}, "*:Index")
+	beego.Router("/home/start", &controllers.HomeController{}, "*:Start")
+
+	beego.AutoRouter(&controllers.CabinetController{})
+	beego.AutoRouter(&controllers.AuthController{})
+	beego.AutoRouter(&controllers.RoleController{})
+	beego.AutoRouter(&controllers.AdminController{})
+	beego.AutoRouter(&controllers.UserController{})
+
+
+
+	//beego.Router("/account", &controllers.AccountController{}, "*:Index")
+	//beego.Router("/account/changepwd", &controllers.AccountController{}, "*:ChangePwd")
+	//beego.Router("/account/bind", &controllers.AccountController{}, "*:Bind")
+	//beego.Router("/account/updatedetail", &controllers.AccountController{}, "*:UpdateDetail")
+	//beego.Router("/sendvcode", &controllers.UserController{}, "post:SendVCode")
+	//beego.Router("/service", &controllers.ServiceController{}, "*:Service")
+	//beego.Router("/detail", &controllers.ServiceController{}, "*:Detail")
+	//admin.Run()
 	//ucenter.Run()
 }

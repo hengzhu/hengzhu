@@ -42,6 +42,7 @@ func BuildFilter(c beego.Controller, defaultLimit int64) (f *Filter, err error) 
 	var query = make(map[string]string)
 	var limit int64 = defaultLimit
 	var offset int64
+	var page int64
 
 	// fields: col1,col2,entity.col3
 	if v := c.GetString("fields"); v != "" {
@@ -53,6 +54,10 @@ func BuildFilter(c beego.Controller, defaultLimit int64) (f *Filter, err error) 
 		//if limit > 50 {
 		//	limit = 50
 		//}
+	}
+	if v, err := c.GetInt64("page"); err == nil {
+		page = v
+		offset = (page - 1) * limit
 	}
 	// offset: 0 (default is 0)
 	if v, err := c.GetInt64("offset"); err == nil {
