@@ -32,6 +32,7 @@ func (c *CabinetController) Table() {
 
 	ss := []models.Cabinet{}
 	total, _ := tool.GetAllByFilterWithTotal(new(models.Cabinet), &ss, filter)
+	models.AddOtherInfo(&ss)
 
 	//result, count := admin.AdminGetList(page, self.pageSize, filters...)
 	//list := make([]map[string]interface{}, len(result))
