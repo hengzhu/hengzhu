@@ -5,20 +5,18 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
-
 	"github.com/astaxie/beego/orm"
 )
 
 type CabinetDetail struct {
-	Id        int       `orm:"column(id);auto"`
-	CabinetId int       `orm:"column(cabinet_id);null" description:"柜子的id"`
-	Door      int       `orm:"column(door);null" description:"门号"`
-	OpenState int       `orm:"column(open_state);null" description:"开关状态，1:关，2:开"`
-	Using     int       `orm:"column(using);null" description:"占用状态，1:空闲，2:占用"`
-	UserID    string    `orm:"column(userID);size(255);null" description:"存物ID"`
-	StoreTime time.Time `orm:"column(store_time);type(datetime);null" description:"存物时间"`
-	UseState  int       `orm:"column(use_state);null" description:"启用状态，1:启用，2:停用"`
+	Id        int    `orm:"column(id);auto"`
+	CabinetId int    `orm:"column(cabinet_id);null" description:"柜子的id"`
+	Door      int    `orm:"column(door);null" description:"门号"`
+	OpenState int    `orm:"column(open_state);null" description:"开关状态，1:关，2:开"`
+	Using     int    `orm:"column(using);null" description:"占用状态，1:空闲，2:占用"`
+	UserID    string `orm:"column(userID);size(255);null" description:"存物ID"`
+	StoreTime int    `orm:"column(store_time);null" description:"存物时间"`
+	UseState  int    `orm:"column(use_state);null" description:"启用状态，1:启用，2:停用"`
 }
 
 type Total struct {

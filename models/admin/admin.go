@@ -39,6 +39,16 @@ func AdminGetByName(loginName string) (*Admin, error) {
 	return a, nil
 }
 
+func GetAdminById(id int) (admin *Admin, err error)  {
+	o := orm.NewOrm()
+	admin = &Admin{Id: id}
+	if err = o.Read(admin); err == nil {
+		return admin, nil
+	}
+	return nil, err
+
+}
+
 func AdminGetList(page, pageSize int, filters ...interface{}) ([]*Admin, int64) {
 	offset := (page - 1) * pageSize
 	list := make([]*Admin, 0)

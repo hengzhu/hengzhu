@@ -84,6 +84,7 @@
                 <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
             </div>
         </div>
+    </form>
     <table class="layui-table"
            id="idTest"
            lay-data="{width: 'full-10', height: 'full-105', url:'/cabinetDetail/table?id='+{{.cabinet.Id}}, page:false, id:'idTest'}"
@@ -153,8 +154,18 @@
             } else if(obj.event === 'open'){
               layer.msg('CabinetID：'+ {{ .cabinet.Id}} + 'doorId:' + data.Id + ' 的查看操作');
             } else if(obj.event === 'clear'){
-              layer.confirm('确定清楚么？', function(index){
-                obj.del();
+              layer.confirm('确定清除么？', function(index){
+                var data = {id:1};
+                $.post('{{urlfor "CabinetDetailController.Clear"}}', data, function (out) {
+                    if (out.status == 0) {
+                        layer.msg("操作成功",{icon: 1},function () {
+                            window.location.reload()
+                        })
+                    } else {
+                        layer.msg(out.message)
+                    }
+                }, "json");
+                return false;
                 layer.close(index);
               });
             } else if(obj.event === 'record'){

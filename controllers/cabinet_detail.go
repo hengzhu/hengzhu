@@ -6,6 +6,8 @@ import (
 	"hengzhu/models"
 	"strconv"
 	"strings"
+	"time"
+	"hengzhu/models/admin"
 )
 
 // CabinetDetailController operations for CabinetDetail
@@ -26,6 +28,7 @@ func (c *CabinetDetailController) Table() {
 	c.ajaxList("成功", MSG_OK, 0, details)
 }
 
+// 更改柜子的启用状态
 func (c *CabinetDetailController) ChangeUse() {
 	id, _ := c.GetInt("id")
 	if id == 0 {
@@ -43,6 +46,35 @@ func (c *CabinetDetailController) ChangeUse() {
 	if err := models.UpdateCabinetDetailById(cabinetDetail); err != nil {
 		c.ajaxMsg(err.Error(), MSG_ERR)
 	}
+	c.ajaxMsg("修改成功", MSG_OK)
+}
+
+// 清除柜子的储物状态
+func (c *CabinetDetailController) Clear() {
+	id, _ := c.GetInt("id")
+	if id == 0 {
+		c.ajaxMsg(errors.New("参数错误"), MSG_ERR)
+	}
+
+	cabinetDetail, _ := models.GetCabinetDetailById(id)
+	cabinetDetail.Using = 1
+	cabinetDetail.UserID = ""
+	cabinetDetail.StoreTime = 0
+
+	if err := models.UpdateCabinetDetailById(cabinetDetail); err != nil {
+		c.ajaxMsg(err.Error(), MSG_ERR)
+	}
+
+	user, _ := admin.GetAdminById(c.userId)
+
+	log := models.Log{}
+	log.CabinetDetailId = id
+	log.Action = "清除"
+	log.Time = time.Now()
+	log.User = user.RealName
+
+	models.AddLog(&log)
+
 	c.ajaxMsg("修改成功", MSG_OK)
 }
 
