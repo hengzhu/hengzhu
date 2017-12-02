@@ -50,6 +50,7 @@ func (c *CabinetController) Detail() {
 	//models.AddDetails(cabinet)
 	c.Data["cabinet"] = cabinet
 	c.Data["types"] = types
+	c.Data["pageTitle"] = "状态详情"
 	c.display()
 	//c.TplName = "/state/detail.html"
 }

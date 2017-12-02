@@ -26,6 +26,26 @@ func (c *CabinetDetailController) Table() {
 	c.ajaxList("成功", MSG_OK, 0, details)
 }
 
+func (c *CabinetDetailController) ChangeUse() {
+	id, _ := c.GetInt("id")
+	if id == 0 {
+		c.ajaxMsg(errors.New("参数错误"), MSG_ERR)
+	}
+
+	cabinetDetail, _ := models.GetCabinetDetailById(id)
+
+	useState, _ := c.GetInt("use")
+	if useState != 1 && useState != 2 {
+		c.ajaxMsg(errors.New("状态错误"), MSG_ERR)
+	}
+	cabinetDetail.UseState = useState
+
+	if err := models.UpdateCabinetDetailById(cabinetDetail); err != nil {
+		c.ajaxMsg(err.Error(), MSG_ERR)
+	}
+	c.ajaxMsg("修改成功", MSG_OK)
+}
+
 // Post ...
 // @Title Post
 // @Description create CabinetDetail

@@ -28,7 +28,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">类型：</label>
             <div class="layui-input-inline">
-                <select name="type" disabled id="type1">
+                <select name="type" disabled id="type1" required lay-verify="required">
                 <option value="">请选择一个类型</option>
                 {{range $index, $elem := .types}}
                     <option value="{{$elem.Id}}" {{if eq $elem.Id $.cabinet.TypeId }}
@@ -46,11 +46,11 @@
             <label class="layui-form-label">位置：</label>
             <div class="layui-input-inline">
                 <input id="address" type="text" name="address" required lay-verify="required" placeholder="请输入位置"
-                       autocomplete="off" class="layui-input" value="{{.cabinet.Address}}" disabled>
+                       autocomplete="off" class="layui-input" value="{{.cabinet.Address}}" readonly>
             </div>
             <div class="layui-input-inline">
                 <button class="layui-btn" type="button"
-                        onclick="(function(){document.getElementById('address').removeAttribute('disabled')})()">修改
+                        onclick="(function(){document.getElementById('address').readOnly=false})()">修改
                 </button>
             </div>
         </div>
@@ -58,23 +58,23 @@
             <label class="layui-form-label">编号：</label>
             <div class="layui-input-inline">
                 <input id="number" type="text" name="number" required lay-verify="required" placeholder="请输入编号"
-                       autocomplete="off" class="layui-input" value="{{.cabinet.Number}}" disabled>
+                       autocomplete="off" class="layui-input" value="{{.cabinet.Number}}" readonly>
             </div>
             <div class="layui-input-inline">
                 <button class="layui-btn" type="button"
-                        onclick="(function(){document.getElementById('number').removeAttribute('disabled')})()">修改
+                        onclick="(function(){document.getElementById('number').readOnly=false})()">修改
                 </button>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">备注：</label>
             <div class="layui-input-inline">
-                <input id="desc" type="text" name="desc" required lay-verify="required" placeholder="请输入编号"
-                       autocomplete="off" class="layui-input" value="{{.cabinet.Desc}}" disabled>
+                <input id="desc" type="text" name="desc" placeholder="请输入备注"
+                       autocomplete="off" class="layui-input" value="{{.cabinet.Desc}}" readonly>
             </div>
             <div class="layui-input-inline">
                 <button class="layui-btn" type="button"
-                        onclick="(function(){document.getElementById('desc').removeAttribute('disabled')})()">修改
+                        onclick="(function(){document.getElementById('desc').readOnly=false})()">修改
                 </button>
             </div>
         </div>
@@ -84,7 +84,6 @@
                 <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
             </div>
         </div>
-    </form>
     <table class="layui-table"
            id="idTest"
            lay-data="{width: 'full-10', height: 'full-105', url:'/cabinetDetail/table?id='+{{.cabinet.Id}}, page:false, id:'idTest'}"
@@ -96,13 +95,13 @@
             <th lay-data="{field:'Using', width:150, align:'center'}">占用</th>
             <th lay-data="{field:'UserID', width:150, align:'center'}">存物ID</th>
             <th lay-data="{field:'StoreTime', width:200, align:'center'}">存物时间</th>
-            <th lay-data="{field:'TypeName', width:150, align:'center', templet:'#switchTpl'}">启用</th>
+            <th lay-data="{field:'Id', width:150, align:'center', templet:'#switchTpl'}">启用</th>
             <th lay-data="{fixed:'right', width:150, align:'center', toolbar: '#barDemo'}">操作</th>
         </tr>
         </thead>
     </table>
     <script type="text/html" id="switchTpl">
-        <input type="checkbox" name="sex" value="{{.Id}}" lay-skin="switch" lay-text="开|关" checked
+        <input type="checkbox" name="use" value="{{.Id}}" lay-skin="switch" lay-text="开|关" checked lay-filter="switch"
         {{/*{{if eq d.UseState 1}}checked{{end}}*/}}></script>
     <script type="text/html" id="barDemo">
         <a class="layui-btn layui-btn-xs" lay-event="open">开门</a>
@@ -129,10 +128,29 @@
             return false;
           });
 
+          //监听开关
+          form.on('switch(switch)', function(data){
+            console.log(this.value, this.checked)
+            layer.msg('开关checked：'+ (this.checked ? 'true' : 'false'));
+            var data = {id:1, use:(this.checked ? 1 : 2)};
+            $.post('{{urlfor "CabinetDetailController.ChangeUse"}}', data, function (out) {
+                if (out.status == 0) {
+                    layer.msg("操作成功",{icon: 1},function () {
+                        window.location.reload()
+                    })
+                } else {
+                    layer.msg(out.message)
+                }
+            }, "json");
+           return false;
+          });
+
             //监听工具条
           table.on('tool(demo)', function(obj){
             var data = obj.data;
-            if(obj.event === 'open'){
+            if(obj.event === 'use'){
+              layer.msg(data)
+            } else if(obj.event === 'open'){
               layer.msg('CabinetID：'+ {{ .cabinet.Id}} + 'doorId:' + data.Id + ' 的查看操作');
             } else if(obj.event === 'clear'){
               layer.confirm('确定清楚么？', function(index){

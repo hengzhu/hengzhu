@@ -7,7 +7,6 @@ import (
 	"github.com/astaxie/beego"
 	"hengzhu/libs"
 	"hengzhu/models/admin"
-	"fmt"
 )
 
 const (
@@ -68,7 +67,6 @@ func (self *BaseController) auth() {
 			isHasAuth := strings.Contains(self.allowUrl, self.controllerName+"/"+self.actionName)
 			noAuth := "ajaxsave/ajaxdel/table/loginin/loginout/getnodes/start/show/ajaxapisave"
 			isNoAuth := strings.Contains(noAuth, self.actionName)
-			fmt.Printf("isNoAuth:%v,noAuth:%v,actionName:%v\n", isNoAuth, noAuth, self.actionName)
 			if isHasAuth == false && isNoAuth == false {
 				self.Ctx.WriteString("没有权限")
 				self.ajaxMsg("没有权限", MSG_ERR)
