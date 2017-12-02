@@ -6,22 +6,24 @@ import (
 	"hengzhu/models"
 	"strconv"
 	"strings"
-
-	"github.com/astaxie/beego"
 )
 
 // CabinetDetailController operations for CabinetDetail
 type CabinetDetailController struct {
-	beego.Controller
+	BaseController
 }
 
-// URLMapping ...
-func (c *CabinetDetailController) URLMapping() {
-	c.Mapping("Post", c.Post)
-	c.Mapping("GetOne", c.GetOne)
-	c.Mapping("GetAll", c.GetAll)
-	c.Mapping("Put", c.Put)
-	c.Mapping("Delete", c.Delete)
+func (c *CabinetDetailController) Table() {
+	id, _ := c.GetInt("id", 0)
+	if id == 0 {
+		return
+	}
+
+	details, err := models.GetDetailsByCabinetId(id)
+	if err != nil {
+		c.ajaxList("失败", MSG_ERR, 0, details)
+	}
+	c.ajaxList("成功", MSG_OK, 0, details)
 }
 
 // Post ...

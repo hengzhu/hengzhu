@@ -53,15 +53,18 @@ func (c *CabinetController) Table() {
 
 // 获取某个柜子的详情
 func (c *CabinetController) Detail() {
-	id, _ := strconv.Atoi(c.Ctx.Input.Param(":id"))
+	id, _ := c.GetInt("id", 0)
 	if id == 0 {
 		return
 	}
 	cabinet, _ := models.GetCabinetById(id)
+	types := models.GetAllTypes()
 	models.AddInfo(cabinet)
-	models.AddDetails(cabinet)
+	//models.AddDetails(cabinet)
 	c.Data["cabinet"] = cabinet
-	c.TplName = "/state/detail.html"
+	c.Data["types"] = types
+	c.display()
+	//c.TplName = "/state/detail.html"
 }
 
 // 清除柜子的存物状态

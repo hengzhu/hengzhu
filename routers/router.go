@@ -15,7 +15,10 @@ func init() {
 	beego.Router("/home", &controllers.HomeController{}, "*:Index")
 	beego.Router("/home/start", &controllers.HomeController{}, "*:Start")
 
+	beego.Router("/cabinetDetail/table", &controllers.CabinetDetailController{}, "*:Table")
+
 	beego.AutoRouter(&controllers.CabinetController{})
+	beego.AutoRouter(&controllers.CabinetDetailController{})
 	beego.AutoRouter(&controllers.AuthController{})
 	beego.AutoRouter(&controllers.RoleController{})
 	beego.AutoRouter(&controllers.AdminController{})

@@ -1,163 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/static/layui/css/layui.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <script src="/static/layui/layui.js?s=36"></script>
+    <script src="/static/js/main.js?s=2124"></script>
+    <script src="/static/layui/layui.js" charset="utf-8"></script>
+    {{/*<script src="/static/layui/lay/modules/jquery.js"></script>*/}}
+    {{/*<script src="/static/layui/lay/modules/form.js"></script>*/}}
+</head>
 <body>
-<div style="padding:20px 20px 40px 80px;">
-    <form id="form1" method="post">
-        <table width="95%">
-            <tr>
-                <td width="10%">ID：</td>
-                <td colspan="3">{{.cabinet.CabinetID}}</td>
-            </tr>
-            <tr>
-                <td>门数：</td>
-                <td>{{.cabinet.Doors}}</td>
-            </tr>
-            <tr>
-                <td>使用：</td>
-                <td>{{.cabinet.OnUse}}/{{.cabinet.Doors}}</td>
-            </tr>
-            <tr>
-                <td>类型：</td>
-                <td width="30%"><input id="type" type="text" disabled value="{{.cabinet.TypeName}}"/></td>
-                <td><input type="button"
-                           onclick="(function(){document.getElementById('type').removeAttribute('disabled')})()"
-                           value="修改"></td>
-            </tr>
-            <tr>
-                <td>位置：</td>
-                <td><input id="address" type="text" disabled value="{{.cabinet.Address}}"/></td>
-                <td><input type="button"
-                           onclick="(function(){document.getElementById('address').removeAttribute('disabled')})()"
-                           value="修改"></td>
-            </tr>
-            <tr>
-                <td>编号：</td>
-                <td><input id="number" type="text" disabled value="{{.cabinet.Number}}"/></td>
-                <td><input type="button"
-                           onclick="(function(){document.getElementById('number').removeAttribute('disabled')})()"
-                           value="修改"></td>
-            </tr>
-            <tr>
-                <td>备注：</td>
-                <td><textarea id="desc" class="easyui-validatebox" disabled rows="2" cols="21"
-                              value="{{.cabinet.Desc}}">{{.cabinet.Desc}}</textarea></td>
-                <td><input type="button"
-                           onclick="(function(){document.getElementById('desc').removeAttribute('disabled')})()"
-                           value="修改"></td>
-            </tr>
-            <tr>
-                <td></td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <table width="100%">
-                        <tr>
-                            <th width="8%">门号</th>
-                            <th width="8%">开关状态</th>
-                            <th width="8%">占用</th>
-                            <th width="20%">存物ID</th>
-                            <th width="20%">存物时间</th>
-                            <th width="8%">启用</th>
-                            <th colspan="3">操作</th>
-                        </tr>
-                    {{range $index, $elem := .cabinet.Detail}}
-                        <tr>
-                            <td align="center">{{$elem.Door}}</td>
-                            <td align="center">
-                            {{if eq $elem.OpenState 1}}
-                                关
-                            {{else if eq $elem.OpenState 2}}
-                                开
-                            {{end}}</td>
-                            <td align="center">
-                            {{if eq $elem.Using 1}}
-                                空闲
-                            {{else if eq $elem.Using 2}}
-                                占用
-                            {{end}}</td>
-                            <td align="center">
-                            {{if eq $elem.UserID ""}}
-                                --
-                            {{else}}
-                                {{$elem.UserID}}
-                            {{end}}</td>
-                            <td align="center">
-                            {{if eq $elem.UserID ""}}
-                                --
-                            {{else}}
-                                {{dateformat $elem.StoreTime "2006-01-02 15:04:05"}}
-                            {{end}}</td>
-                            <td align="center">
-                                <label><input class="mui-switch" type="checkbox"{{if eq $elem.UseState 1}}checked{{end}}
-                                              onclick="alert('change')"></label>
-                            </td>
-                            <td align="center">
-                                <button>开门</button>
-                                <button onclick="flush({{$elem.Id}})">清除</button>
-                                <button>记录</button>
-                            </td>
-                        </tr>
-                    {{end}}
-                    </table>
-                </td>
-            </tr>
-        </table>
+<script type="text/javascript">
+        layui.use('table', function(){
+          var table = layui.table;
+
+        });
+
+</script>
+<script type="text/javascript">
+             function enable(){
+                console.log(document.getElementById('type1'))
+                document.getElementById('type1').removeAttr("disabled")
+
+                console.log(document.getElementById('type1'))
+             }
+
+</script>
+<div class="layui-layout layui-layout-admin" style="padding-left: 20px;">
+    <form id="form1" class="layui-form" method="post">
+        <div class="layui-form-item">
+            <label class="layui-form-label">ID：</label>
+            <label class="layui-form-mid">{{.cabinet.CabinetID}}</label>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">门数：</label>
+            <label class="layui-form-mid">{{.cabinet.Doors}}</label>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">使用：</label>
+            <label class="layui-form-mid">{{.cabinet.OnUse}}/{{.cabinet.Doors}}</label>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">类型：</label>
+            <div class="layui-input-inline">
+                <select id="type1" name="type" disabled>
+                <option value="">请选择一个类型</option>
+                {{range $index, $elem := .types}}
+                    <option value="{{$elem.Id}}" {{if eq $elem.Id $.cabinet.TypeId }}
+                            selected {{end}}>{{$elem.Name}}</option>
+                {{end}}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <button class="layui-btn" type="button"
+                        onclick="(function(){document.getElementById('type1').removeAttribute('disabled')})()">修改
+                </button>
+            </div>
+
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">位置：</label>
+            <div class="layui-input-inline">
+                <input id="address" type="text" name="title" required lay-verify="required" placeholder="请输入位置"
+                       autocomplete="off" class="layui-input" value="{{.cabinet.Address}}" disabled>
+            </div>
+            <div class="layui-input-inline">
+                <button class="layui-btn" type="button"
+                        onclick="(function(){document.getElementById('address').removeAttribute('disabled')})()">修改
+                </button>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">编号：</label>
+            <div class="layui-input-inline">
+                <input id="number" type="text" name="title" required lay-verify="required" placeholder="请输入编号"
+                       autocomplete="off" class="layui-input" value="{{.cabinet.Number}}" disabled>
+            </div>
+            <div class="layui-input-inline">
+                <button class="layui-btn" type="button"
+                        onclick="(function(){document.getElementById('number').removeAttribute('disabled')})()">修改
+                </button>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注：</label>
+            <div class="layui-input-inline">
+                <input id="desc" type="text" name="title" required lay-verify="required" placeholder="请输入编号"
+                       autocomplete="off" class="layui-input" value="{{.cabinet.Desc}}" disabled>
+            </div>
+            <div class="layui-input-inline">
+                <button class="layui-btn" type="button"
+                        onclick="(function(){document.getElementById('desc').removeAttribute('disabled')})()">修改
+                </button>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+            </div>
+        </div>
     </form>
+    <table class="layui-table"
+           id="idTest"
+           lay-data="{width: 'full-10', height: 'full-105', url:'/cabinetDetail/table?id='+{{.cabinet.Id}}, page:false, id:'idTest'}"
+           lay-filter="demo">
+        <thead>
+        <tr>
+            <th lay-data="{field:'Door', width:100, align:'center', templet:'#idTpl'}">门号</th>
+            <th lay-data="{field:'OpenState', width:150, align:'center'}">开关状态</th>
+            <th lay-data="{field:'Using', width:150, align:'center'}">占用</th>
+            <th lay-data="{field:'UserID', width:150, align:'center'}">存物ID</th>
+            <th lay-data="{field:'StoreTime', width:200, align:'center'}">存物时间</th>
+            <th lay-data="{field:'TypeName', width:150, align:'center', templet:'#switchTpl'}">启用</th>
+            <th lay-data="{fixed:'right', width:150, align:'center', toolbar: '#barDemo'}">操作</th>
+        </tr>
+        </thead>
+    </table>
+    <script type="text/html" id="switchTpl">
+        <input type="checkbox" name="sex" value="{{.Id}}" lay-skin="switch" lay-text="开|关" checked
+        {{/*{{if eq d.UseState 1}}checked{{end}}*/}}></script>
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">开门</a>
+        <a class="layui-btn layui-btn-xs" lay-event="edit">清除</a>
+        <a class="layui-btn layui-btn-xs" lay-event="detail">记录</a>
+    </script>
+
 </div>
 </div>
 </body>
-<script type="text/javascript">
-    var URL = "/state";
-    function flush(id) {
-        alert(id)
-        vac.ajax(URL + '/flush/' + id, null, 'POST', function (r) {
-            if (!r.status) {
-                vac.alert(r.info);
-            } else {
-                $("#datagrid").datagrid("reload");
-            }
-        })
-    }
-</script>
-<style>
-    .mui-switch {
-        width: 52px;
-        height: 31px;
-        position: relative;
-        border: 1px solid #dfdfdf;
-        background-color: #fdfdfd;
-        box-shadow: #dfdfdf 0 0 0 0 inset;
-        border-radius: 20px;
-        border-top-left-radius: 20px;
-        border-top-right-radius: 20px;
-        border-bottom-left-radius: 20px;
-        border-bottom-right-radius: 20px;
-        background-clip: content-box;
-        display: inline-block;
-        -webkit-appearance: none;
-        user-select: none;
-        outline: none;
-    }
-    .mui-switch:before {
-        content: '';
-        width: 29px;
-        height: 29px;
-        position: absolute;
-        top: 0px;
-        left: 0;
-        border-radius: 20px;
-        border-top-left-radius: 20px;
-        border-top-right-radius: 20px;
-        border-bottom-left-radius: 20px;
-        border-bottom-right-radius: 20px;
-        background-color: #fff;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-    }
-    .mui-switch:checked {
-        border-color: #64bd63;
-        box-shadow: #64bd63 0 0 0 16px inset;
-        background-color: #64bd63;
-    }
-    .mui-switch:checked:before {
-        left: 21px;
-    }
-</style>
 </html>

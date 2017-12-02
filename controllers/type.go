@@ -6,22 +6,11 @@ import (
 	"hengzhu/models"
 	"strconv"
 	"strings"
-
-	"github.com/astaxie/beego"
 )
 
 // TypeController operations for Type
 type TypeController struct {
-	beego.Controller
-}
-
-// URLMapping ...
-func (c *TypeController) URLMapping() {
-	c.Mapping("Post", c.Post)
-	c.Mapping("GetOne", c.GetOne)
-	c.Mapping("GetAll", c.GetAll)
-	c.Mapping("Put", c.Put)
-	c.Mapping("Delete", c.Delete)
+	BaseController
 }
 
 // Post ...

@@ -37,6 +37,12 @@ func AddType(m *Type) (id int64, err error) {
 	return
 }
 
+func GetAllTypes() (types []Type) {
+	o := orm.NewOrm()
+	o.QueryTable(new(Type)).All(&types)
+	return
+}
+
 // GetTypeById retrieves Type by Id. Returns error if
 // Id doesn't exist
 func GetTypeById(id int) (v *Type, err error) {
