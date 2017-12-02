@@ -19,6 +19,7 @@ type Cabinet struct {
 	Desc       string    `orm:"column(desc);null" description:"备注"`
 	CreateTime time.Time `orm:"column(create_time);type(timestamp);null;auto_now_add" description:"创建时间"`
 	LastTime   time.Time `orm:"column(last_time);type(timestamp);null" description:"最后一次上报时间"`
+	UpdateTime time.Time `orm:"column(update_time);type(timestamp);null" description:"更新时间"`
 
 	TypeName string          `orm:"-" description:"类型名称"`
 	IsOnline string          `orm:"-" description:"是否在线"`

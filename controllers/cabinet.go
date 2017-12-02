@@ -8,6 +8,7 @@ import (
 	"strings"
 	"hengzhu/tool"
 	"fmt"
+	"time"
 )
 
 // CabinetController operations for Cabinet
@@ -34,20 +35,6 @@ func (c *CabinetController) Table() {
 	total, _ := tool.GetAllByFilterWithTotal(new(models.Cabinet), &ss, filter)
 	models.AddOtherInfo(&ss)
 
-	//result, count := admin.AdminGetList(page, self.pageSize, filters...)
-	//list := make([]map[string]interface{}, len(result))
-	//for k, v := range result {
-	//	row := make(map[string]interface{})
-	//	row["id"] = v.Id
-	//	row["login_name"] = v.LoginName
-	//	row["real_name"] = v.RealName
-	//	row["phone"] = v.Phone
-	//	row["email"] = v.Email
-	//	row["role_ids"] = v.RoleIds
-	//	row["create_time"] = beego.Date(time.Unix(v.CreateTime, 0), "Y-m-d H:i:s")
-	//	row["update_time"] = beego.Date(time.Unix(v.UpdateTime, 0), "Y-m-d H:i:s")
-	//	list[k] = row
-	//}
 	c.ajaxList("成功", MSG_OK, total, ss)
 }
 
@@ -69,9 +56,28 @@ func (c *CabinetController) Detail() {
 
 // 清除柜子的存物状态
 func (c *CabinetController) Flush() {
-
 	fmt.Printf("user:%v\n", c)
 	fmt.Printf("user:%v\n", c.userId)
+}
+
+func (c *CabinetController) AjaxSave() {
+	id, _ := c.GetInt("id")
+	if id == 0 {
+		c.ajaxMsg(errors.New("参数错误"), MSG_ERR)
+	}
+
+	cabinet, _ := models.GetCabinetById(id)
+	typeId, _ := c.GetInt("type", 1)
+	cabinet.TypeId = typeId
+	cabinet.Address = c.GetString("address")
+	cabinet.Number = c.GetString("number")
+	cabinet.Desc = c.GetString("desc")
+	cabinet.UpdateTime = time.Now()
+
+	if err := models.UpdateCabinetById(cabinet); err != nil {
+		c.ajaxMsg(err.Error(), MSG_ERR)
+	}
+	c.ajaxMsg("修改成功", MSG_OK)
 }
 
 // Post ...

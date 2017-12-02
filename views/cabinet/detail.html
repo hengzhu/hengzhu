@@ -5,31 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="stylesheet" href="/static/layui/css/layui.css">
     <link rel="stylesheet" href="/static/css/main.css">
-    <script src="/static/layui/layui.js?s=36"></script>
-    <script src="/static/js/main.js?s=2124"></script>
-    <script src="/static/layui/layui.js" charset="utf-8"></script>
-    {{/*<script src="/static/layui/lay/modules/jquery.js"></script>*/}}
-    {{/*<script src="/static/layui/lay/modules/form.js"></script>*/}}
+    <script src="../../static/js/main.js?s=2124"></script>
+    <script src="../../static/layui/layui.js" charset="utf-8"></script>
+    <script src="../../static/layui/lay/modules/jquery.js"></script>
+    <script src="../../static/layui/lay/modules/form.js"></script>
 </head>
 <body>
-<script type="text/javascript">
-        layui.use('table', function(){
-          var table = layui.table;
-
-        });
-
-</script>
-<script type="text/javascript">
-             function enable(){
-                console.log(document.getElementById('type1'))
-                document.getElementById('type1').removeAttr("disabled")
-
-                console.log(document.getElementById('type1'))
-             }
-
-</script>
 <div class="layui-layout layui-layout-admin" style="padding-left: 20px;">
-    <form id="form1" class="layui-form" method="post">
+    <form id="form1" class="layui-form" method="post" action="">
         <div class="layui-form-item">
             <label class="layui-form-label">ID：</label>
             <label class="layui-form-mid">{{.cabinet.CabinetID}}</label>
@@ -45,7 +28,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">类型：</label>
             <div class="layui-input-inline">
-                <select id="type1" name="type" disabled>
+                <select name="type" disabled id="type1">
                 <option value="">请选择一个类型</option>
                 {{range $index, $elem := .types}}
                     <option value="{{$elem.Id}}" {{if eq $elem.Id $.cabinet.TypeId }}
@@ -55,15 +38,14 @@
             </div>
             <div class="layui-input-inline">
                 <button class="layui-btn" type="button"
-                        onclick="(function(){document.getElementById('type1').removeAttribute('disabled')})()">修改
+                        onclick="(function(){document.getElementById('type1').removeAttribute('disabled');layui.form.render('select')})()">修改
                 </button>
             </div>
-
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">位置：</label>
             <div class="layui-input-inline">
-                <input id="address" type="text" name="title" required lay-verify="required" placeholder="请输入位置"
+                <input id="address" type="text" name="address" required lay-verify="required" placeholder="请输入位置"
                        autocomplete="off" class="layui-input" value="{{.cabinet.Address}}" disabled>
             </div>
             <div class="layui-input-inline">
@@ -75,7 +57,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">编号：</label>
             <div class="layui-input-inline">
-                <input id="number" type="text" name="title" required lay-verify="required" placeholder="请输入编号"
+                <input id="number" type="text" name="number" required lay-verify="required" placeholder="请输入编号"
                        autocomplete="off" class="layui-input" value="{{.cabinet.Number}}" disabled>
             </div>
             <div class="layui-input-inline">
@@ -87,7 +69,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label">备注：</label>
             <div class="layui-input-inline">
-                <input id="desc" type="text" name="title" required lay-verify="required" placeholder="请输入编号"
+                <input id="desc" type="text" name="desc" required lay-verify="required" placeholder="请输入编号"
                        autocomplete="off" class="layui-input" value="{{.cabinet.Desc}}" disabled>
             </div>
             <div class="layui-input-inline">
@@ -96,6 +78,7 @@
                 </button>
             </div>
         </div>
+        <input type="hidden" id="id" name="id" value="{{.cabinet.Id}}">
         <div class="layui-form-item">
             <div class="layui-input-block">
                 <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
@@ -122,11 +105,46 @@
         <input type="checkbox" name="sex" value="{{.Id}}" lay-skin="switch" lay-text="开|关" checked
         {{/*{{if eq d.UseState 1}}checked{{end}}*/}}></script>
     <script type="text/html" id="barDemo">
-        <a class="layui-btn layui-btn-xs" lay-event="edit">开门</a>
-        <a class="layui-btn layui-btn-xs" lay-event="edit">清除</a>
-        <a class="layui-btn layui-btn-xs" lay-event="detail">记录</a>
+        <a class="layui-btn layui-btn-xs" lay-event="open">开门</a>
+        <a class="layui-btn layui-btn-xs" lay-event="clear">清除</a>
+        <a class="layui-btn layui-btn-xs" lay-event="record">记录</a>
     </script>
+    <script type="text/javascript">
+        layui.use(['form','table','jquery'], function(){
+          var table = layui.table;
+          var form = layui.form;
+          var $ = layui.jquery;
 
+          form.on('submit(formDemo)', function(data){
+            var form_data = $("form").serialize();
+            $.post('{{urlfor "CabinetController.AjaxSave"}}', form_data, function (out) {
+                if (out.status == 0) {
+                    layer.msg("操作成功",{icon: 1},function () {
+                        window.location.reload()
+                    })
+                } else {
+                    layer.msg(out.message)
+                }
+            }, "json");
+            return false;
+          });
+
+            //监听工具条
+          table.on('tool(demo)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'open'){
+              layer.msg('CabinetID：'+ {{ .cabinet.Id}} + 'doorId:' + data.Id + ' 的查看操作');
+            } else if(obj.event === 'clear'){
+              layer.confirm('确定清楚么？', function(index){
+                obj.del();
+                layer.close(index);
+              });
+            } else if(obj.event === 'record'){
+              layer.alert('编辑行：<br>'+ JSON.stringify(data))
+            }
+          });
+        });
+    </script>
 </div>
 </div>
 </body>
