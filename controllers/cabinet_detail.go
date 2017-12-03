@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 	"hengzhu/models/admin"
+	"fmt"
 )
 
 // CabinetDetailController operations for CabinetDetail
@@ -76,6 +77,31 @@ func (c *CabinetDetailController) Clear() {
 	models.AddLog(&log)
 
 	c.ajaxMsg("修改成功", MSG_OK)
+}
+
+// 获取某个柜子门的历史记录
+func (c *CabinetDetailController) Record() {
+	id, _ := c.GetInt("id", 0)
+	if id == 0 {
+		return
+	}
+
+	//startTime, _ := c.GetInt64("begin", 0)
+	//endTime, _ := c.GetInt64("end", time.Now().Unix())
+	begin := c.GetString("begin", "2017-12-01 00:00:00")
+	end := c.GetString("end", time.Now().Format("2006-01-02 15:04:05"))
+
+
+	cabinetDetail, _ := models.GetCabinetDetailById(id)
+	models.AddIDInfo(cabinetDetail)
+
+	fmt.Printf("begin:%v---end:%v\n", begin, end)
+	models.AddLogInfo(cabinetDetail, begin, end)
+
+	c.Data["record"] = cabinetDetail
+	c.Data["pageTitle"] = "历史记录"
+	c.TplName = "cabinet/record.html"
+	//c.display()
 }
 
 // Post ...

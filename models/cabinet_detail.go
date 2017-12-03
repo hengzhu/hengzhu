@@ -17,6 +17,9 @@ type CabinetDetail struct {
 	UserID    string `orm:"column(userID);size(255);null" description:"存物ID"`
 	StoreTime int    `orm:"column(store_time);null" description:"存物时间"`
 	UseState  int    `orm:"column(use_state);null" description:"启用状态，1:启用，2:停用"`
+
+	ID   string `orm:"-"`
+	Logs []Log  `orm:"-"`
 }
 
 type Total struct {
@@ -62,6 +65,32 @@ func GetTotalClose(cabinetId int) (close int) {
 	sql := "SELECT COUNT(open_state) AS `close` FROM cabinet_detail WHERE cabinet_id=? AND open_state=1"
 	orm.NewOrm().Raw(sql, cabinetId).QueryRow(&tot)
 	return tot.Close
+}
+
+// 给柜子门附加柜子ID信息
+func AddIDInfo(detail *CabinetDetail) {
+	if detail == nil {
+		return
+	}
+	cabinet := Cabinet{}
+	sql := "SELECT cabinet_ID FROM cabinet WHERE id=?"
+	orm.NewOrm().Raw(sql, detail.CabinetId).QueryRow(&cabinet)
+	detail.ID = cabinet.CabinetID
+	return
+}
+
+// 根据起始日期和终止日期，给柜子门附加历史记录
+func AddLogInfo(detail *CabinetDetail, beginTime string, endTime string) {
+	if detail == nil {
+		return
+	}
+	o := orm.NewOrm()
+	logs := make([]Log, 0)
+
+	o.QueryTable(new(Log)).Filter("CabinetDetailId", detail.Id).
+		Filter("time__gte", beginTime).
+		Filter("time__lte", endTime).OrderBy("-time").All(&logs)
+	detail.Logs = logs
 }
 
 // AddCabinetDetail insert a new CabinetDetail into database and returns

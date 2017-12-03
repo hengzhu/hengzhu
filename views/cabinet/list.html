@@ -8,9 +8,9 @@
         <link rel="stylesheet" href="/static/zTree3/css/demo.css?t=5" type="text/css">
         <link rel="stylesheet" href="/static/zTree3/css/zTreeStyle/zTreeStyle.css" type="text/css">
     {{end}}
-    <link rel="stylesheet" href="/static/layui/css/layui.css" media="all">
-    <link rel="stylesheet" href="/static/css/main.css">
-    <script src="../../static/layui/layui.js?s=36"></script>
+    <link rel="stylesheet" href="../../static/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../static/css/main.css">
+    <script src="../../static/layui/layui.js"></script>
     <script src="../../static/js/main.js?s=2124"></script>
 </head>
 <div class="layui-layout layui-layout-admin" style="padding-left: 20px;">
@@ -20,7 +20,7 @@
            lay-filter="demo">
         <thead>
         <tr>
-            <th lay-data="{field:'CabinetID', width:200, align:'center', templet:'#idTpl'}">ID</th>
+            <th lay-data="{field:'CabinetID', width:200, align:'center'}">ID</th>
             <th lay-data="{field:'IsOnline', width:150, align:'center'}">在线</th>
             <th lay-data="{field:'Doors', width:150, align:'center'}">门数</th>
             <th lay-data="{field:'OnUse', width:150, align:'center'}">使用情况</th>
@@ -30,13 +30,13 @@
         </tr>
         </thead>
     </table>
-    {{/*<script type="text/html" id="idTpl">*/}}
-        {{/*{{#  if(d.IsOnline === '否'){ }}*/}}
-            {{/*<span style="color: #F581B1;">{{ d.CabinetID }}</span>*/}}
-        {{/*{{#  } else {  }}*/}}
-            {{/*{{ d.CabinetID }}*/}}
-        {{/*{{#  }  }}*/}}
-    {{/*</script>*/}}
+    <script type="text/html" id="idTpl">
+        {{/*{{  if(d.IsOnline === '否'){ }}
+            <span style="color: #F581B1;">{{ d.CabinetID }}</span>
+        {{  } else {  }}
+            {{ d.CabinetID }}
+        {{  }  }}*/}}
+    </script>
     {{/*<script type="text/html" id="useTpl">*/}}
         {{/*{{ d.OnUse }}/{{ d.Doors }}*/}}
     {{/*</script>*/}}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../static/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../static/css/main.css">
+    <script src="../../static/js/main.js?s=2124"></script>
+    <script src="../../static/layui/layui.js"></script>
+    <script src="../../static/layui/lay/modules/jquery.js"></script>
+    <script src="../../static/layui/lay/modules/form.js"></script>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin" style="padding-left: 20px;">
+    <form id="form" class="layui-form" method="post" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">ID：</label>
+            <label class="layui-form-mid">{{.record.ID}}</label>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">门号：</label>
+            <label class="layui-form-mid">{{.record.Door}}</label>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">起止时间</label>
+                <div class="layui-input-inline">
+                    <input type="text" class="layui-input" id="begin" name="begin" placeholder="开始时间">
+                </div>
+                <label class="layui-form-mid" style="text-align: center">--</label>
+                <div class="layui-input-inline">
+                    <input type="text" class="layui-input" id="end" name="end" placeholder="结束时间">
+                </div>
+                <div class="layui-input-inline">
+                    <input type="hidden" id="id" name="id" value="{{.record.Id}}">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">提交</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <table lay-filter="demo">
+        <thead>
+        <tr>
+            <th lay-data="{field:'action', width:300, align:'center'}">操作</th>
+            <th lay-data="{field:'user', width:300, align:'center'}">存物ID/管理员</th>
+            <th lay-data="{field:'time', width:'300', align:'center'}">时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range $index, $elem := .record.Logs}}
+        <tr>
+            <td>{{$elem.Action}}</td>
+            <td>{{$elem.User}}</td>
+            <td>{{dateformat $elem.Time "2006-01-02 15:04:05"}}</td>
+        </tr>
+        {{end}}
+        </tbody>
+    </table>
+    <script type="text/javascript">
+        layui.use(['form','table','laydate','jquery'], function(){
+          var table = layui.table;
+          var form = layui.form;
+          var laydate = layui.laydate;
+          var $ = layui.jquery;
+
+          form.on('submit(formDemo)', function(data){
+            var form_data = $("form").serialize();
+            console.log("form_data:",form_data, typeof(form_data))
+            $.get('/cabinetdetail/record', form_data);
+            {{/*window.location.href="/cabinetdetail/record?"+form_data*/}}
+          });
+
+          //转换静态表格
+          table.init('demo', {
+            height: 315 //设置高度
+          });
+
+          //时间选择器
+          laydate.render({
+            elem: '#begin'
+            ,type: 'datetime'
+          });
+          laydate.render({
+            elem: '#end'
+            ,type: 'datetime'
+          });
+        });
+
+    </script>
+</div>
+</div>
+</body>
+</html>
