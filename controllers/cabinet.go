@@ -17,7 +17,7 @@ type CabinetController struct {
 }
 
 func (self *CabinetController) List() {
-	self.Data["pageTitle"] = "状态管理"
+	self.Data["pageTitle"] = "状态列表"
 	self.display()
 	//self.TplName = "admin/list.html"
 }
@@ -27,9 +27,6 @@ func (c *CabinetController) Table() {
 
 	filter.Order = []string{"asc"}
 	filter.Sortby = []string{"id"}
-	//查询条件
-	filters := make([]interface{}, 0)
-	filters = append(filters, "status", 1)
 
 	ss := []models.Cabinet{}
 	total, _ := tool.GetAllByFilterWithTotal(new(models.Cabinet), &ss, filter)

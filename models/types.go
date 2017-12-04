@@ -5,61 +5,59 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
-
 	"github.com/astaxie/beego/orm"
 )
 
-type Type struct {
-	Id         int       `orm:"column(id);auto"`
-	Name       string    `orm:"column(name);size(255);null" description:"类型名称"`
-	Default    int       `orm:"column(default);null" description:"是否默认，1:默认，2:否"`
-	ChargeMode int       `orm:"column(charge_mode);null" description:"计费方式，1:计次，2:计时"`
-	TollTime   int       `orm:"column(toll_time);null" description:"收费时间，1:存物时，2:取物时"`
-	Price      float64   `orm:"column(price);null" description:"价格，若方式为计次，则价格为每次存取物价格，若方式为计时，则价格为unit时间内价格"`
-	Unit       int       `orm:"column(unit);null" description:"计时单位（分钟），当计费方式为计时时有"`
-	CreateTime time.Time `orm:"column(create_time);type(datetime);null;auto_now_add" description:"创建时间"`
+type Types struct {
+	Id         int     `orm:"column(id);auto"`
+	Name       string  `orm:"column(name);size(255);null" description:"类型名称"`
+	Default    int     `orm:"column(default);null" description:"是否默认，1:默认，2:否"`
+	ChargeMode int     `orm:"column(charge_mode);null" description:"计费方式，1:计次，2:计时"`
+	TollTime   int     `orm:"column(toll_time);null" description:"收费时间，1:存物时，2:取物时"`
+	Price      float64 `orm:"column(price);null" description:"价格，若方式为计次，则价格为每次存取物价格，若方式为计时，则价格为unit时间内价格"`
+	Unit       int     `orm:"column(unit);null" description:"计时单位（分钟），当计费方式为计时时有"`
+	CreateTime int     `orm:"column(create_time);null" description:"创建时间"`
 }
 
-func (t *Type) TableName() string {
+func (t *Types) TableName() string {
 	return "type"
 }
 
 func init() {
-	orm.RegisterModel(new(Type))
+	orm.RegisterModel(new(Types))
 }
 
-// AddType insert a new Type into database and returns
+// AddType insert a new Types into database and returns
 // last inserted Id on success.
-func AddType(m *Type) (id int64, err error) {
+func AddType(m *Types) (id int64, err error) {
 	o := orm.NewOrm()
 	id, err = o.Insert(m)
 	return
 }
 
-func GetAllTypes() (types []Type) {
+func GetAllTypes() (types []Types) {
 	o := orm.NewOrm()
-	o.QueryTable(new(Type)).All(&types)
+	o.QueryTable(new(Types)).All(&types)
 	return
 }
 
-// GetTypeById retrieves Type by Id. Returns error if
+// GetTypeById retrieves Types by Id. Returns error if
 // Id doesn't exist
-func GetTypeById(id int) (v *Type, err error) {
+func GetTypeById(id int) (v *Types, err error) {
 	o := orm.NewOrm()
-	v = &Type{Id: id}
+	v = &Types{Id: id}
 	if err = o.Read(v); err == nil {
 		return v, nil
 	}
 	return nil, err
 }
 
-// GetAllType retrieves all Type matches certain condition. Returns empty list if
+// GetAllType retrieves all Types matches certain condition. Returns empty list if
 // no records exist
 func GetAllType(query map[string]string, fields []string, sortby []string, order []string,
 	offset int64, limit int64) (ml []interface{}, err error) {
 	o := orm.NewOrm()
-	qs := o.QueryTable(new(Type))
+	qs := o.QueryTable(new(Types))
 	// query k=v
 	for k, v := range query {
 		// rewrite dot-notation to Object__Attribute
@@ -109,7 +107,7 @@ func GetAllType(query map[string]string, fields []string, sortby []string, order
 		}
 	}
 
-	var l []Type
+	var l []Types
 	qs = qs.OrderBy(sortFields...)
 	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
 		if len(fields) == 0 {
@@ -132,11 +130,11 @@ func GetAllType(query map[string]string, fields []string, sortby []string, order
 	return nil, err
 }
 
-// UpdateType updates Type by Id and returns error if
+// UpdateType updates Types by Id and returns error if
 // the record to be updated doesn't exist
-func UpdateTypeById(m *Type) (err error) {
+func UpdateTypeById(m *Types) (err error) {
 	o := orm.NewOrm()
-	v := Type{Id: m.Id}
+	v := Types{Id: m.Id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
@@ -147,15 +145,15 @@ func UpdateTypeById(m *Type) (err error) {
 	return
 }
 
-// DeleteType deletes Type by Id and returns error if
+// DeleteType deletes Types by Id and returns error if
 // the record to be deleted doesn't exist
 func DeleteType(id int) (err error) {
 	o := orm.NewOrm()
-	v := Type{Id: id}
+	v := Types{Id: id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
-		if num, err = o.Delete(&Type{Id: id}); err == nil {
+		if num, err = o.Delete(&Types{Id: id}); err == nil {
 			fmt.Println("Number of records deleted in database:", num)
 		}
 	}

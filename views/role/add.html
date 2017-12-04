@@ -65,7 +65,7 @@ var $,form;
             var nodes_data = nodes_select_data(nodes,{});
             var data = {'role_name':role_name,'detail':detail,'nodes_data':nodes_data}
             console.log(data)
-            $.post('{{urlfor "RoleController.AjaxSave"}}', data, function (out) {
+            $.post('<% urlfor "RoleController.AjaxSave" %>', data, function (out) {
                 if (out.status == 0) {
                     layer.alert('保存成功了', {icon: 1},function(index){
                         window.location.reload();

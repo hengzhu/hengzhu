@@ -15,11 +15,11 @@
     <form id="form" class="layui-form" method="post" action="">
         <div class="layui-form-item">
             <label class="layui-form-label">ID：</label>
-            <label class="layui-form-mid">{{.record.ID}}</label>
+            <label class="layui-form-mid"><% .record.ID %></label>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">门号：</label>
-            <label class="layui-form-mid">{{.record.Door}}</label>
+            <label class="layui-form-mid"><% .record.Door %></label>
         </div>
         <div class="layui-form-item">
             <div class="layui-inline">
@@ -32,7 +32,7 @@
                     <input type="text" class="layui-input" id="end" name="end" placeholder="结束时间">
                 </div>
                 <div class="layui-input-inline">
-                    <input type="hidden" id="id" name="id" value="{{.record.Id}}">
+                    <input type="hidden" id="id" name="id" value="<% .record.Id %>">
                     <button class="layui-btn" lay-submit lay-filter="formDemo">提交</button>
                 </div>
             </div>
@@ -47,13 +47,13 @@
         </tr>
         </thead>
         <tbody>
-        {{range $index, $elem := .record.Logs}}
+        <% range $index, $elem := .record.Logs %>
         <tr>
-            <td>{{$elem.Action}}</td>
-            <td>{{$elem.User}}</td>
-            <td>{{dateformat $elem.Time "2006-01-02 15:04:05"}}</td>
+            <td><% $elem.Action %></td>
+            <td><% $elem.User %></td>
+            <td><% dateformat $elem.Time "2006-01-02 15:04:05" %></td>
         </tr>
-        {{end}}
+        <% end %>
         </tbody>
     </table>
     <script type="text/javascript">
@@ -67,7 +67,6 @@
             var form_data = $("form").serialize();
             console.log("form_data:",form_data, typeof(form_data))
             $.get('/cabinetdetail/record', form_data);
-            {{/*window.location.href="/cabinetdetail/record?"+form_data*/}}
           });
 
           //转换静态表格

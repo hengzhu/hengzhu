@@ -20,6 +20,7 @@ func init() {
 
 	beego.AutoRouter(&controllers.CabinetController{})
 	beego.AutoRouter(&controllers.CabinetDetailController{})
+	beego.AutoRouter(&controllers.TypesController{})
 	beego.AutoRouter(&controllers.AuthController{})
 	beego.AutoRouter(&controllers.RoleController{})
 	beego.AutoRouter(&controllers.AdminController{})

@@ -21,7 +21,7 @@
                 <div class="layui-form-item">
                     <label class="layui-form-label">角色名称</label>
                     <div class="layui-input-inline">
-                        <input type="text" name="role_name" id="role_name" lay-verify="required" autocomplete="off" placeholder="请输入角色名称" class="layui-input" value="{{.role.role_name}}">
+                        <input type="text" name="role_name" id="role_name" lay-verify="required" autocomplete="off" placeholder="请输入角色名称" class="layui-input" value="<% .role.role_name %>">
                     </div>
                     <div class="layui-form-mid layui-word-aux"></div>
                 </div>
@@ -29,11 +29,11 @@
                 <div class="layui-form-item layui-form-text">
                     <label class="layui-form-label">备注</label>
                     <div class="layui-input-block">
-                        <textarea name="detail" id="detail" placeholder="请输入内容" class="layui-textarea">{{.role.detail}}</textarea>
+                        <textarea name="detail" id="detail" placeholder="请输入内容" class="layui-textarea"><% .role.detail %></textarea>
                     </div>
                 </div>
 
-                <input type="hidden" value="{{.role.id}}" name="id" id="id">
+                <input type="hidden" value="<% .role.id %>" name="id" id="id">
                 
                 <div class="layui-form-item">
                     <div class="layui-input-block">
@@ -68,7 +68,7 @@ var $,form;
             var nodes_data = nodes_select_data(nodes,{});
             var data = {'role_name':role_name,'id':id,'detail':detail,'nodes_data':nodes_data}
             console.log(data)
-            $.post('{{urlfor "RoleController.AjaxSave"}}', data, function (out) {
+            $.post('<% urlfor "RoleController.AjaxSave" %>', data, function (out) {
                 if (out.status == 0) {
                     layer.alert('保存成功了', {icon: 1},function(index){
                         layer.close(index);
@@ -90,7 +90,7 @@ var $,form;
 
 <script type="text/javascript">
     var zNodes = [{ id:1, pId:0, name:"数据错误"}]; 
-    var checked = {{.auth}}
+    var checked = <% .auth %>
     console.log(checked)
     // $(document).ready(function(){ 
         var setting = {

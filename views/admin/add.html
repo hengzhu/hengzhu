@@ -40,9 +40,9 @@
     <div class="layui-form-item">
         <label class="layui-form-label">选择角色</label>
         <div class="layui-input-block">
-            {{range $k, $v := .role}}
-                <input type="checkbox" name="role_ids" lay-filter="role_ids" title="{{$v.role_name}}" value="{{$v.id}}">
-            {{end}}
+            <% range $k, $v := .role %>
+                <input type="checkbox" name="role_ids" lay-filter="role_ids" title="<% $v.role_name %>" value="<% $v.id %>">
+            <% end %>
         </div>
         <div class="layui-form-mid layui-word-aux">*</div>
     </div>
@@ -81,7 +81,7 @@ var $;
         });
         form.on('submit(sub)', function(data){
             var form_data = $("form").serialize();
-            $.post('{{urlfor "AdminController.AjaxSave"}}', form_data, function (out) {
+            $.post('<% urlfor "AdminController.AjaxSave" %>', form_data, function (out) {
                 if (out.status == 0) {
                     layer.msg("操作成功",{icon: 1},function () {
                         window.location.reload()

@@ -37,7 +37,7 @@
         } else if(obj.event === 'del'){
             layer.confirm('真的删除【'+data.role_name+'】角色么', function(index){
             var jsData = {'id':data.id}
-            $.post('{{urlfor "RoleController.AjaxDel"}}', jsData, function (out) {
+            $.post('<% urlfor "RoleController.AjaxDel" %>', jsData, function (out) {
                 if (out.status == 0) {
                     layer.alert('删除成功了', {icon: 1},function(index){
                         layer.close(index);

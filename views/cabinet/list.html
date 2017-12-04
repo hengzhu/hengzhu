@@ -3,11 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>{{.siteName}}</title>
-    {{if .zTree}}
+    <title><% .siteName %></title>
+    <% if .zTree %>
         <link rel="stylesheet" href="/static/zTree3/css/demo.css?t=5" type="text/css">
         <link rel="stylesheet" href="/static/zTree3/css/zTreeStyle/zTreeStyle.css" type="text/css">
-    {{end}}
+    <% end %>
     <link rel="stylesheet" href="../../static/layui/css/layui.css" media="all">
     <link rel="stylesheet" href="../../static/css/main.css">
     <script src="../../static/layui/layui.js"></script>
@@ -20,26 +20,58 @@
            lay-filter="demo">
         <thead>
         <tr>
-            <th lay-data="{field:'CabinetID', width:200, align:'center'}">ID</th>
-            <th lay-data="{field:'IsOnline', width:150, align:'center'}">在线</th>
-            <th lay-data="{field:'Doors', width:150, align:'center'}">门数</th>
-            <th lay-data="{field:'OnUse', width:150, align:'center'}">使用情况</th>
-            <th lay-data="{field:'Close', width:150, align:'center'}">开关状态</th>
-            <th lay-data="{field:'TypeName', width:150, align:'center'}">类型</th>
+            <th lay-data="{field:'CabinetID', width:200, align:'center', templet: '#idTpl'}">ID</th>
+            <th lay-data="{field:'IsOnline', width:150, align:'center', templet: '#onlineTpl'}">在线</th>
+            <th lay-data="{field:'Doors', width:150, align:'center', templet: '#doorTpl'}">门数</th>
+            <th lay-data="{field:'OnUse', width:150, align:'center', templet: '#useTpl'}">使用情况</th>
+            <th lay-data="{field:'Close', width:150, align:'center', templet: '#closeTpl'}">开关状态</th>
+            <th lay-data="{field:'TypeName', width:150, align:'center', templet: '#typeTpl'}">类型</th>
             <th lay-data="{fixed:'right', width:150, align:'center', toolbar: '#barDemo'}"></th>
         </tr>
         </thead>
     </table>
     <script type="text/html" id="idTpl">
-        {{/*{{  if(d.IsOnline === '否'){ }}
-            <span style="color: #F581B1;">{{ d.CabinetID }}</span>
-        {{  } else {  }}
+        {{#  if(d.IsOnline === '否'){ }}
+            <span style="color: #A6A6A6;">{{ d.CabinetID }}</span>
+        {{#  } else {  }}
             {{ d.CabinetID }}
-        {{  }  }}*/}}
+        {{#  }  }}
     </script>
-    {{/*<script type="text/html" id="useTpl">*/}}
-        {{/*{{ d.OnUse }}/{{ d.Doors }}*/}}
-    {{/*</script>*/}}
+    <script type="text/html" id="onlineTpl">
+        {{#  if(d.IsOnline === '否'){ }}
+            <span style="color: #A6A6A6;">{{ d.IsOnline }}</span>
+        {{#  } else {  }}
+            {{ d.IsOnline }}
+        {{#  }  }}
+    </script>
+    <script type="text/html" id="doorTpl">
+        {{#  if(d.IsOnline === '否'){ }}
+            <span style="color: #A6A6A6;">{{ d.Doors }}</span>
+        {{#  } else {  }}
+            {{ d.Doors }}
+        {{#  }  }}
+    </script>
+    <script type="text/html" id="useTpl">
+        {{#  if(d.IsOnline === '否'){ }}
+            <span style="color: #A6A6A6;">{{ d.OnUse }}/{{ d.Doors}}</span>
+        {{#  } else {  }}
+            {{ d.OnUse }}/{{ d.Doors}}
+        {{#  }  }}
+    </script>
+    <script type="text/html" id="closeTpl">
+        {{#  if(d.IsOnline === '否'){ }}
+            <span style="color: #A6A6A6;">{{ d.Close }}/{{ d.Doors}}</span>
+        {{#  } else {  }}
+            {{ d.Close }}/{{ d.Doors}}
+        {{#  }  }}
+    </script>
+    <script type="text/html" id="typeTpl">
+        {{#  if(d.IsOnline === '否'){ }}
+            <span style="color: #A6A6A6;">{{ d.TypeName }}</span>
+        {{#  } else {  }}
+            {{ d.TypeName }}
+        {{#  }  }}
+    </script>
     <script type="text/html" id="barDemo">
         <a class="layui-btn layui-btn-mini" lay-event="detail">详情</a>
     </script>
@@ -50,130 +82,6 @@
         });
     </script>
 </div>
-{{/*<script type="text/javascript">*/}}
-{{/*var URL = "/state";*/}}
-{{/*$(function () {*/}}
-{{/*$("#datagrid").datagrid({*/}}
-{{/*title: '状态',*/}}
-{{/*url: URL + "/index",*/}}
-{{/*method: 'POST',*/}}
-{{/*pagination: true,*/}}
-{{/*fitColumns: true,*/}}
-{{/*striped: true,*/}}
-{{/*rownumbers: true,*/}}
-{{/*singleSelect: true,*/}}
-{{/*idField: 'Id',*/}}
-{{/*columns: [[*/}}
-{{/*{*/}}
-{{/*field: 'CabinetID', title: 'ID', width: 50, align: 'center',*/}}
-{{/*formatter: function (value, row) {*/}}
-{{/*if (row.IsOnline == "否") {*/}}
-{{/*return "<span style='color: gray'>" + value + "</span>"*/}}
-{{/*}*/}}
-{{/*return value*/}}
-{{/*}*/}}
-{{/*},*/}}
-{{/*{*/}}
-{{/*field: 'IsOnline', title: '在线', width: 150, align: 'center',*/}}
-{{/*formatter: function (value, row) {*/}}
-{{/*if (row.IsOnline == "否") {*/}}
-{{/*return "<span style='color: gray'>" + value + "</span>"*/}}
-{{/*}*/}}
-{{/*return value*/}}
-{{/*}*/}}
-{{/*},*/}}
-{{/*{*/}}
-{{/*field: 'Doors', title: '门数', width: 250, align: 'center',*/}}
-{{/*formatter: function (value, row) {*/}}
-{{/*if (row.IsOnline == "否") {*/}}
-{{/*return "<span style='color: gray'>" + value + "</span>"*/}}
-{{/*}*/}}
-{{/*return value*/}}
-{{/*}*/}}
-{{/*},*/}}
-{{/*{*/}}
-{{/*field: 'OnUse', title: '使用情况', width: 100, align: 'center',*/}}
-{{/*formatter: function (value, row) {*/}}
-{{/*if (row.IsOnline == "否") {*/}}
-{{/*return "<span style='color: gray'>" + value + "/" + row.Doors + "</span>"*/}}
-{{/*}*/}}
-{{/*return value + "/" + row.Doors*/}}
-{{/*}*/}}
-{{/*},*/}}
-{{/*{*/}}
-{{/*field: 'Close', title: '开关状态', width: 200, align: 'center',*/}}
-{{/*formatter: function (value, row) {*/}}
-{{/*if (row.IsOnline == "否") {*/}}
-{{/*return "<span style='color: gray'>" + value + "/" + row.Doors + "</span>"*/}}
-{{/*}*/}}
-{{/*return value + "/" + row.Doors*/}}
-{{/*}*/}}
-{{/*},*/}}
-{{/*{*/}}
-{{/*field: 'TypeName', title: '类型', width: 200, align: 'center',*/}}
-{{/*formatter: function (value, row) {*/}}
-{{/*if (row.IsOnline == "否") {*/}}
-{{/*return "<span style='color: gray'>" + value + "</span>"*/}}
-{{/*}*/}}
-{{/*return value*/}}
-{{/*}*/}}
-{{/*},*/}}
-{{/*{*/}}
-{{/*field: 'action', title: '查看', width: 200, align: 'center',*/}}
-{{/*formatter:function(value,row){*/}}
-{{/*var a = '<a href="/state/detail/'+row.Id+'" icon="icon-add" plain="true" class="easyui-linkbutton" target="_self">详情</a>'*/}}
-{{/*return a;*/}}
-{{/*}*/}}
-{{/*}*/}}
-{{/*]],*/}}
-{{/*});*/}}
-{{/*})*/}}
-{{/*//创建状态详情窗口*/}}
-{{/*/*$("#dialog").dialog({*/}}
-{{/*modal:true,*/}}
-{{/*resizable:true,*/}}
-{{/*top:50,*/}}
-{{/*closed:true,*/}}
-{{/*buttons:[{*/}}
-{{/*text:'保存',*/}}
-{{/*iconCls:'icon-save',*/}}
-{{/*handler:function(){*/}}
-{{/*$("#form1").form('submit',{*/}}
-{{/*url:URL+'/AddUser',*/}}
-{{/*onSubmit:function(){*/}}
-{{/*return $("#form1").form('validate');*/}}
-{{/*},*/}}
-{{/*success:function(r){*/}}
-{{/*var r = $.parseJSON( r );*/}}
-{{/*if(r.status){*/}}
-{{/*$("#dialog").dialog("close");*/}}
-{{/*$("#datagrid").datagrid('reload');*/}}
-{{/*}else{*/}}
-{{/*vac.alert(r.info);*/}}
-{{/*}*/}}
-{{/*}*/}}
-{{/*});*/}}
-{{/*}*/}}
-{{/*},{*/}}
-{{/*text:'取消',*/}}
-{{/*iconCls:'icon-cancel',*/}}
-{{/*handler:function(){*/}}
-{{/*$("#dialog").dialog("close");*/}}
-{{/*}*/}}
-{{/*}]*/}}
-{{/*});*/}}
-{{/*//状态详情弹窗*/}}
-{{/*// function detail(id){*/}}
-{{/*//     $("#dialog").dialog('open');*/}}
-{{/*//     $("#form1").form('clear');*/}}
-{{/*// }*/}}
-{{/*//刷新*/}}
-{{/*function reloadrow() {*/}}
-{{/*$("#datagrid").datagrid("reload");*/}}
-{{/*}*/}}
-
-
-{{/*</script>*/}}
 <body>
 <script>
     var $;

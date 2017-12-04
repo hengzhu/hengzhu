@@ -43,5 +43,6 @@ func init() {
 
 	orm.Debug = beego.BConfig.RunMode == "dev"
 	orm.RunSyncdb("default", false, true)
+
 	//logs.SetLogger(logs.AdapterFile, `{"filename":"info.log","level":6,"maxlines":0,"maxsize":0,"daily":true,"maxdays":1000}`)
 }
