@@ -43,7 +43,7 @@ CREATE TABLE `admin` (
 
 /*Data for the table `admin` */
 
-insert  into `admin`(`id`,`login_name`,`real_name`,`password`,`role_ids`,`phone`,`email`,`salt`,`last_login`,`last_ip`,`status`,`create_id`,`update_id`,`create_time`,`update_time`) values (1,'admin','超管','4fd71bffda5ccb3d750931d764fd9979','1','13888888889','124@163.com','d9Fr',1511969937,'[',1,0,1,0,1511970211);
+insert  into `admin`(`id`,`login_name`,`real_name`,`password`,`role_ids`,`phone`,`email`,`salt`,`last_login`,`last_ip`,`status`,`create_id`,`update_id`,`create_time`,`update_time`) values (1,'admin','超管啊','4fd71bffda5ccb3d750931d764fd9979','1','13888888889','124@163.com','d9Fr',1512404492,'[',1,0,1,0,1512404296);
 
 /*Table structure for table `auth` */
 
@@ -64,11 +64,11 @@ CREATE TABLE `auth` (
   `create_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '创建时间',
   `update_time` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '更新时间',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COMMENT='权限因子';
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COMMENT='权限因子';
 
 /*Data for the table `auth` */
 
-insert  into `auth`(`id`,`pid`,`auth_name`,`auth_url`,`sort`,`icon`,`is_show`,`user_id`,`create_id`,`update_id`,`status`,`create_time`,`update_time`) values (1,0,'所有权限','/',1,'',0,1,1,1,1,1505620970,1505620970),(2,1,'权限管理','/',999,'fa-id-card',1,1,0,1,1,0,1505622360),(3,2,'管理员','/admin/list',1,'fa-user-o',1,1,1,1,1,1505621186,1505621186),(4,2,'角色管理','/role/list',2,'fa-user-circle-o',1,1,0,1,1,0,1505621852),(5,3,'新增','/admin/add',1,'',0,1,0,1,1,0,1505621685),(6,3,'修改','/admin/edit',2,'',0,1,0,1,1,0,1505621697),(7,3,'删除','/admin/ajaxdel',3,'',0,1,1,1,1,1505621756,1505621756),(8,4,'新增','/role/add',1,'',1,1,0,1,1,0,1505698716),(9,4,'修改','/role/edit',2,'',0,1,1,1,1,1505621912,1505621912),(10,4,'删除','/role/ajaxdel',3,'',0,1,1,1,1,1505621951,1505621951),(11,2,'权限因子','/auth/list',3,'fa-list',1,1,1,1,1,1505621986,1505621986),(12,11,'新增','/auth/add',1,'',0,1,1,1,1,1505622009,1505622009),(13,11,'修改','/auth/edit',2,'',0,1,1,1,1,1505622047,1505622047),(14,11,'删除','/auth/ajaxdel',3,'',0,1,1,1,1,1505622111,1505622111),(15,1,'个人中心','profile/edit',1001,'fa-user-circle-o',1,1,0,1,1,0,1506001114),(24,15,'资料修改','/user/edit',1,'fa-edit',1,1,0,1,1,0,1506057468),(39,1,'状态详情','cabinet',1,'fa-id-card',1,1,0,1,1,0,1511972856),(40,39,'状态','/cabinet/list',1,'th-list',1,1,0,1,1,0,1511973105);
+insert  into `auth`(`id`,`pid`,`auth_name`,`auth_url`,`sort`,`icon`,`is_show`,`user_id`,`create_id`,`update_id`,`status`,`create_time`,`update_time`) values (1,0,'所有权限','/',1,'',0,1,1,1,1,1505620970,1505620970),(2,1,'权限管理','/',999,'fa-id-card',1,1,0,1,1,0,1505622360),(3,2,'管理员','/admin/list',1,'fa-user-o',1,1,1,1,1,1505621186,1505621186),(4,2,'角色管理','/role/list',2,'fa-user-circle-o',1,1,0,1,1,0,1505621852),(5,3,'新增','/admin/add',1,'',0,1,0,1,1,0,1505621685),(6,3,'修改','/admin/edit',2,'',0,1,0,1,1,0,1505621697),(7,3,'删除','/admin/ajaxdel',3,'',0,1,1,1,1,1505621756,1505621756),(8,4,'新增','/role/add',1,'',1,1,0,1,1,0,1505698716),(9,4,'修改','/role/edit',2,'',0,1,1,1,1,1505621912,1505621912),(10,4,'删除','/role/ajaxdel',3,'',0,1,1,1,1,1505621951,1505621951),(11,2,'权限因子','/auth/list',3,'fa-list',1,1,1,1,1,1505621986,1505621986),(12,11,'新增','/auth/add',1,'',0,1,1,1,1,1505622009,1505622009),(13,11,'修改','/auth/edit',2,'',0,1,1,1,1,1505622047,1505622047),(14,11,'删除','/auth/ajaxdel',3,'',0,1,1,1,1,1505622111,1505622111),(15,1,'个人中心','profile/edit',1001,'fa-user-circle-o',1,1,0,1,1,0,1506001114),(24,15,'资料修改','/user/edit',1,'fa-edit',1,1,0,1,1,0,1506057468),(39,1,'状态详情','cabinet',1,'fa-id-card',1,1,0,1,1,0,1511972856),(40,39,'状态列表','/cabinet/list',1,'th-list',1,1,0,1,1,0,1512396518),(41,40,'详情','/cabinet/detail',1,'',1,1,0,1,1,0,1512185124),(42,40,'详情列表','/cabinetDetail/table',2,'',1,1,0,1,1,0,1512196800),(43,40,'柜子启用','/cabinetdetail/changeuse',3,'th-list',1,1,0,1,1,0,1512234272),(44,39,'状态','/cabinetdetail/clear',4,'th-list',1,1,1,1,0,1512236453,1512236453),(45,40,'柜子清除','/cabinetdetail/clear',4,'',0,1,1,1,1,1512236513,1512236513),(46,40,'柜子记录','/cabinetdetail/record',5,'',1,1,0,1,1,0,1512309176),(47,39,'类型列表','/types/list',1,'th-list',1,1,1,1,1,1512396568,1512396568);
 
 /*Table structure for table `cabinet` */
 
@@ -83,12 +83,13 @@ CREATE TABLE `cabinet` (
   `desc` text COLLATE utf8_unicode_ci COMMENT '备注',
   `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `last_time` timestamp NULL DEFAULT NULL COMMENT '最后一次上报时间',
+  `update_time` timestamp NULL DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 /*Data for the table `cabinet` */
 
-insert  into `cabinet`(`id`,`cabinet_ID`,`type_id`,`address`,`number`,`desc`,`create_time`,`last_time`) values (1,'012345',1,'爱的色放','asdf','备注',NULL,'2017-11-25 15:29:00'),(2,'123',2,NULL,NULL,NULL,'2017-11-24 22:17:13','2017-11-25 15:17:00');
+insert  into `cabinet`(`id`,`cabinet_ID`,`type_id`,`address`,`number`,`desc`,`create_time`,`last_time`,`update_time`) values (1,'012345',2,'赵昱狗','asdf','asdf',NULL,'2017-11-25 15:29:00','2017-12-03 23:19:24'),(2,'123',2,NULL,NULL,NULL,'2017-11-24 22:17:13','2017-12-05 00:14:00',NULL);
 
 /*Table structure for table `cabinet_detail` */
 
@@ -101,14 +102,14 @@ CREATE TABLE `cabinet_detail` (
   `open_state` int(11) DEFAULT '1' COMMENT '开关状态，1:关，2:开',
   `using` int(11) DEFAULT '1' COMMENT '占用状态，1:空闲，2:占用',
   `userID` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '存物ID',
-  `store_time` datetime DEFAULT NULL COMMENT '存物时间',
+  `store_time` int(11) DEFAULT NULL COMMENT '存物时间',
   `use_state` int(11) DEFAULT '1' COMMENT '启用状态，1:启用，2:停用',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 /*Data for the table `cabinet_detail` */
 
-insert  into `cabinet_detail`(`id`,`cabinet_id`,`door`,`open_state`,`using`,`userID`,`store_time`,`use_state`) values (1,1,1,1,2,'alipay-123','2017-11-25 10:23:23',1),(2,1,2,1,1,NULL,NULL,2);
+insert  into `cabinet_detail`(`id`,`cabinet_id`,`door`,`open_state`,`using`,`userID`,`store_time`,`use_state`) values (1,1,1,1,1,'',0,2),(2,1,2,1,1,NULL,NULL,2);
 
 /*Table structure for table `log` */
 
@@ -121,9 +122,11 @@ CREATE TABLE `log` (
   `user` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '存物ID/管理员',
   `time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 /*Data for the table `log` */
+
+insert  into `log`(`id`,`cabinet_detail_id`,`action`,`user`,`time`) values (1,1,'清除','超管','2017-12-03 01:42:42'),(2,1,'清除','超管','2017-12-03 21:47:06');
 
 /*Table structure for table `role` */
 
@@ -143,7 +146,7 @@ CREATE TABLE `role` (
 
 /*Data for the table `role` */
 
-insert  into `role`(`id`,`role_name`,`detail`,`create_id`,`update_id`,`status`,`create_time`,`update_time`) values (1,'超级管理员','超级管理员，拥有所有权限',0,1,1,1511970063,1511970063),(2,'普通管理员','拥有部分权限',0,1,1,1511970017,1511970017);
+insert  into `role`(`id`,`role_name`,`detail`,`create_id`,`update_id`,`status`,`create_time`,`update_time`) values (1,'超级管理员','超级管理员，拥有所有权限',0,1,1,1512396592,1512396592),(2,'普通管理员','拥有部分权限',0,1,1,1511970017,1511970017);
 
 /*Table structure for table `role_auth` */
 
@@ -157,7 +160,7 @@ CREATE TABLE `role_auth` (
 
 /*Data for the table `role_auth` */
 
-insert  into `role_auth`(`role_id`,`auth_id`) values (1,0),(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13),(1,14),(1,15),(1,24),(1,39),(1,40),(2,0),(2,1),(2,15),(2,24),(2,39),(2,40);
+insert  into `role_auth`(`role_id`,`auth_id`) values (1,0),(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13),(1,14),(1,15),(1,24),(1,39),(1,40),(1,41),(1,42),(1,43),(1,45),(1,46),(1,47);
 
 /*Table structure for table `setting` */
 
@@ -186,13 +189,13 @@ CREATE TABLE `type` (
   `toll_time` int(11) DEFAULT '1' COMMENT '收费时间，1:存物时，2:取物时',
   `price` double DEFAULT NULL COMMENT '价格，若方式为计次，则价格为每次存取物价格，若方式为计时，则价格为unit时间内价格',
   `unit` int(11) DEFAULT NULL COMMENT '计时单位（分钟），当计费方式为计时时有',
-  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `create_time` int(11) DEFAULT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 /*Data for the table `type` */
 
-insert  into `type`(`id`,`name`,`default`,`charge_mode`,`toll_time`,`price`,`unit`,`create_time`) values (1,'类型1',1,1,1,1,NULL,'2017-11-25 15:24:09'),(2,'类型2',2,2,2,2,30,'2017-11-25 15:28:53');
+insert  into `type`(`id`,`name`,`default`,`charge_mode`,`toll_time`,`price`,`unit`,`create_time`) values (1,'类型1',1,1,1,1,NULL,1512388048),(2,'类型2',2,2,2,2,30,1512393048);
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
