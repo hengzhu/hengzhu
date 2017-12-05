@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"github.com/astaxie/beego/orm"
+	"time"
 )
 
 type CabinetDetail struct {
@@ -18,8 +19,9 @@ type CabinetDetail struct {
 	StoreTime int    `orm:"column(store_time);null" description:"存物时间"`
 	UseState  int    `orm:"column(use_state);null" description:"启用状态，1:启用，2:停用"`
 
-	ID   string `orm:"-"`
-	Logs []Log  `orm:"-"`
+	ID                string `orm:"-"`
+	Logs              []Log  `orm:"-"`
+	StoreTimeFormated string `orm:"-"`
 }
 
 type Total struct {
@@ -41,6 +43,20 @@ func GetDetailsByCabinetId(cabinetId int) (details []CabinetDetail, err error) {
 	o := orm.NewOrm()
 	_, err = o.QueryTable(new(CabinetDetail)).Filter("CabinetId", cabinetId).All(&details)
 	return
+}
+
+//
+func AddAllInfo(details []CabinetDetail) {
+	if len(details) == 0 {
+		return
+	}
+	for i, detail := range details {
+		if detail.StoreTime != 0{
+			details[i].StoreTimeFormated = time.Unix(int64(detail.StoreTime), 0).Format("2006-01-02 15:04:05")
+		} else {
+			details[i].StoreTimeFormated = "--"
+		}
+	}
 }
 
 // 根据柜子id，获取该柜子的总门数

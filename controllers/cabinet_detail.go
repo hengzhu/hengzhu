@@ -23,6 +23,8 @@ func (c *CabinetDetailController) Table() {
 	}
 
 	details, err := models.GetDetailsByCabinetId(id)
+	models.AddAllInfo(details)
+
 	if err != nil {
 		c.ajaxList("失败", MSG_ERR, 0, details)
 	}
