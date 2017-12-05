@@ -156,7 +156,6 @@
 
           //监听开关
           form.on('switch(switch)', function(data){
-            console.log(this.value, this.checked)
             layer.msg('开关checked：'+ (this.checked ? 'true' : 'false'));
             var data = {id:this.value, use:(this.checked ? 1 : 2)};
             $.post('<% urlfor "CabinetDetailController.ChangeUse" %>', data, function (out) {
@@ -192,7 +191,6 @@
                 layer.close(index);
               });
             } else if(obj.event === 'record'){
-              console.log('编辑行：<br>'+ JSON.stringify(data))
               window.location.href="/cabinetdetail/record?id="+data.Id
             }
           });

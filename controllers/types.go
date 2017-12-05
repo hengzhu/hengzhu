@@ -5,6 +5,7 @@ import (
 	"hengzhu/models"
 	"strconv"
 	"hengzhu/tool"
+	"errors"
 )
 
 // TypesController operations for Types
@@ -25,8 +26,23 @@ func (c *TypesController) Table() {
 
 	ss := []models.Types{}
 	total, _ := tool.GetAllByFilterWithTotal(new(models.Types), &ss, filter)
+	models.AddTypesInfo(ss)
 
 	c.ajaxList("成功", MSG_OK, total, ss)
+}
+
+func (c *TypesController) Default() {
+	id, _ := c.GetInt("id")
+	if id == 0 {
+		c.ajaxMsg(errors.New("参数错误"), MSG_ERR)
+	}
+
+	err := models.SetDefault(id)
+	if err != nil {
+		c.ajaxMsg(err.Error(), MSG_ERR)
+	}
+
+	c.ajaxMsg("修改成功", MSG_OK)
 }
 
 // Post ...
@@ -50,7 +66,6 @@ func (c *TypesController) Post() {
 	}
 	c.ServeJSON()
 }
-
 
 // Put ...
 // @Title Put

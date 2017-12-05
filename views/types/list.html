@@ -21,27 +21,46 @@
         <thead>
         <tr>
             <th lay-data="{field:'Name', width:150, align:'center'}">类型</th>
-            <th lay-data="{field:'Default', width:100, align:'center'}">默认</th>
-            <th lay-data="{field:'ChargeMode', width:100, align:'center'}">计费方式</th>
-            <th lay-data="{field:'TollTime', width:150, align:'center'}">收费时间</th>
-            <th lay-data="{field:'Price', width:150, align:'center'}">价格</th>
-            <th lay-data="{field:'CreateTime', width:150, align:'center'}">创建时间</th>
+            <th lay-data="{field:'Default', width:100, align:'center', templet:'#defaultTpl'}">默认</th>
+            <th lay-data="{field:'ChargeMode', width:100, align:'center', templet:'#chargeTpl'}">计费方式</th>
+            <th lay-data="{field:'TollTime', width:150, align:'center', templet:'#tollTpl'}">收费时间</th>
+            <th lay-data="{field:'Price', width:150, align:'center', templet:'#priceTpl'}">价格</th>
+            <th lay-data="{field:'CreateTimeFormated', width:200, align:'center'}">创建时间</th>
             <th lay-data="{fixed:'right', width:240, align:'center', toolbar: '#barDemo'}">操作</th>
         </tr>
         </thead>
     </table>
-    <script type="text/html" id="idTpl">
-        {{/*{{  if(d.IsOnline === '否'){ }}
-            <span style="color: #F581B1;">{{ d.CabinetID }}</span>
-        {{  } else {  }}
-            {{ d.CabinetID }}
-        {{  }  }}*/}}
+    <script type="text/html" id="defaultTpl">
+        {{# if(d.Default === 1){ }}
+           是
+        {{# } else {  }}
+           否
+        {{# }  }}
     </script>
-    {{/*<script type="text/html" id="useTpl">*/}}
-        {{/*{{ d.OnUse }}/{{ d.Doors }}*/}}
-    {{/*</script>*/}}
+    <script type="text/html" id="chargeTpl">
+        {{# if(d.ChargeMode === 1){ }}
+           计次
+        {{# } else {  }}
+           计时
+        {{# }  }}
+    </script>
+    <script type="text/html" id="tollTpl">
+        {{# if(d.TollTime === 1){ }}
+            存物时
+        {{# } else {  }}
+            取物时
+        {{# }  }}
+    </script>
+    <script type="text/html" id="priceTpl">
+        {{# if(d.ChargeMode === 1){ }}
+            ￥{{ d.Price }}/次
+        {{# } else {  }}
+            ￥{{ d.Price }}/{{ d.Unit }}分钟
+        {{# }  }}
+    </script>
+
     <script type="text/html" id="barDemo">
-        <a class="layui-btn layui-btn-mini" lay-event="open">设为默认</a>
+        <a class="layui-btn layui-btn-mini" lay-event="default">设为默认</a>
         <a class="layui-btn layui-btn-mini" lay-event="clear">删除</a>
     </script>
     <script src="/static/layui/layui.js" charset="utf-8"></script>
@@ -55,25 +74,31 @@
 <script>
     var $;
     layui.config({
-            base : "js/"
+        base : "js/"
     }).use(['table','element','layer','jquery'], function(){
         var table = layui.table;
         var element = layui.element;
         $ = layui.jquery
-    //监听表格复选框选择
-    table.on('checkbox(demo)', function(obj){
-        console.log(obj);
-    });
 
-    //监听工具条
-    table.on('tool(demo)', function(obj){
-        var data = obj.data;
-        if(obj.event === 'detail'){
-            window.location.href="/cabinet/detail?id="+data.Id
-        }
+        //监听工具条
+        table.on('tool(demo)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'default'){
+                layer.confirm('设为默认?', function(index){
+                    var postdata = {id:data.Id};
+                    $.post('<% urlfor "TypesController.Default" %>', postdata, function(out) {
+                        if(out.status == 0) {
+                            layer.msg("操作成功", {icon:1}, function(){
+                                window.location.reload()
+                            })
+                        } else {
+                            layer.msg(out.message)
+                        }
+                    }, "json");
+                });
+            }
+        });
     });
-});
-
 </script>
 </body>
 </html>

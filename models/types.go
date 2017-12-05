@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"github.com/astaxie/beego/orm"
+	"time"
 )
 
 type Types struct {
@@ -17,6 +18,8 @@ type Types struct {
 	Price      float64 `orm:"column(price);null" description:"价格，若方式为计次，则价格为每次存取物价格，若方式为计时，则价格为unit时间内价格"`
 	Unit       int     `orm:"column(unit);null" description:"计时单位（分钟），当计费方式为计时时有"`
 	CreateTime int     `orm:"column(create_time);null" description:"创建时间"`
+
+	CreateTimeFormated string `orm:"-"`
 }
 
 func (t *Types) TableName() string {
@@ -25,6 +28,29 @@ func (t *Types) TableName() string {
 
 func init() {
 	orm.RegisterModel(new(Types))
+}
+
+//
+func AddTypesInfo(types []Types) {
+	if len(types) == 0 {
+		return
+	}
+	for i, typ := range types {
+		types[i].CreateTimeFormated = time.Unix(int64(typ.CreateTime), 0).Format("2006-01-02 15:04:05")
+	}
+}
+
+// 将id的类型设为默认，其他的改为非默认
+func SetDefault(id int) (err error) {
+	o := orm.NewOrm()
+	_, err = o.Raw("UPDATE `type` SET `default`=2").Exec()
+	if err != nil {
+		return
+	}
+
+	_, err = o.Raw("UPDATE `type` SET `default`=1 WHERE id=?", id).Exec()
+
+	return
 }
 
 // AddType insert a new Types into database and returns
