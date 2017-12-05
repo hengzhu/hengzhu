@@ -45,6 +45,19 @@ func (c *TypesController) Default() {
 	c.ajaxMsg("修改成功", MSG_OK)
 }
 
+func (c *TypesController) Delete()  {
+	id, _ := c.GetInt("id")
+	if id == 0 {
+		c.ajaxMsg(errors.New("参数错误"), MSG_ERR)
+	}
+
+	err := models.DeleteType(id)
+	if err != nil {
+		c.ajaxMsg(err.Error(), MSG_ERR)
+	}
+
+	c.ajaxMsg("修改成功", MSG_OK)
+}
 // Post ...
 // @Title Post
 // @Description create Types

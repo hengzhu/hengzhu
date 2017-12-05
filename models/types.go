@@ -178,6 +178,9 @@ func DeleteType(id int) (err error) {
 	v := Types{Id: id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
+		if v.Default == 1{
+			return errors.New("默认类型不可删除")
+		}
 		var num int64
 		if num, err = o.Delete(&Types{Id: id}); err == nil {
 			fmt.Println("Number of records deleted in database:", num)

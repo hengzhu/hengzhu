@@ -61,7 +61,7 @@
 
     <script type="text/html" id="barDemo">
         <a class="layui-btn layui-btn-mini" lay-event="default">设为默认</a>
-        <a class="layui-btn layui-btn-mini" lay-event="clear">删除</a>
+        <a class="layui-btn layui-btn-mini" lay-event="delete">删除</a>
     </script>
     <script src="/static/layui/layui.js" charset="utf-8"></script>
     <script>
@@ -87,6 +87,19 @@
                 layer.confirm('设为默认?', function(index){
                     var postdata = {id:data.Id};
                     $.post('<% urlfor "TypesController.Default" %>', postdata, function(out) {
+                        if(out.status == 0) {
+                            layer.msg("操作成功", {icon:1}, function(){
+                                window.location.reload()
+                            })
+                        } else {
+                            layer.msg(out.message)
+                        }
+                    }, "json");
+                });
+            } else if(obj.event === 'delete'){
+                layer.confirm('确定删除?', function(index){
+                    var postdata = {id:data.Id};
+                    $.post('<% urlfor "TypesController.Delete" %>', postdata, function(out) {
                         if(out.status == 0) {
                             layer.msg("操作成功", {icon:1}, function(){
                                 window.location.reload()
