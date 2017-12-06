@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"hengzhu/tool"
 	"errors"
+	"time"
 )
 
 // TypesController operations for Types
@@ -13,9 +14,34 @@ type TypesController struct {
 	BaseController
 }
 
-func (self *TypesController) List() {
-	self.Data["pageTitle"] = "类型列表"
-	self.display()
+func (c *TypesController) List() {
+	c.Data["pageTitle"] = "类型列表"
+	c.display()
+}
+
+func (c *TypesController) Add() {
+	c.Data["pageTitle"] = "增加类型"
+	c.display()
+}
+
+func (c *TypesController) AjaxSave() {
+	types := models.Types{}
+	types.Name = c.GetString("name")
+	types.Default = 2
+	charge_mode, _ := c.GetInt("charge_mode", 1)
+	types.ChargeMode = charge_mode
+	toll_time, _ := c.GetInt("toll_time", 1)
+	types.TollTime = toll_time
+	price, _ := c.GetFloat("price", 0)
+	types.Price = price
+	unit, _ := c.GetInt("unit", 0)
+	types.Unit = unit
+	types.CreateTime = time.Now().Unix()
+
+	if _, err := models.AddType(&types); err != nil {
+		c.ajaxMsg(err.Error(), MSG_ERR)
+	}
+	c.ajaxMsg("添加成功", MSG_OK)
 }
 
 func (c *TypesController) Table() {
@@ -45,7 +71,7 @@ func (c *TypesController) Default() {
 	c.ajaxMsg("修改成功", MSG_OK)
 }
 
-func (c *TypesController) Delete()  {
+func (c *TypesController) Delete() {
 	id, _ := c.GetInt("id")
 	if id == 0 {
 		c.ajaxMsg(errors.New("参数错误"), MSG_ERR)
@@ -58,6 +84,7 @@ func (c *TypesController) Delete()  {
 
 	c.ajaxMsg("修改成功", MSG_OK)
 }
+
 // Post ...
 // @Title Post
 // @Description create Types

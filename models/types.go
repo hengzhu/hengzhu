@@ -17,7 +17,7 @@ type Types struct {
 	TollTime   int     `orm:"column(toll_time);null" description:"收费时间，1:存物时，2:取物时"`
 	Price      float64 `orm:"column(price);null" description:"价格，若方式为计次，则价格为每次存取物价格，若方式为计时，则价格为unit时间内价格"`
 	Unit       int     `orm:"column(unit);null" description:"计时单位（分钟），当计费方式为计时时有"`
-	CreateTime int     `orm:"column(create_time);null" description:"创建时间"`
+	CreateTime int64   `orm:"column(create_time);null" description:"创建时间"`
 
 	CreateTimeFormated string `orm:"-"`
 }
@@ -178,7 +178,7 @@ func DeleteType(id int) (err error) {
 	v := Types{Id: id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
-		if v.Default == 1{
+		if v.Default == 1 {
 			return errors.New("默认类型不可删除")
 		}
 		var num int64

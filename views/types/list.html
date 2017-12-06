@@ -14,6 +14,7 @@
     <script src="../../static/js/main.js?s=2124"></script>
 </head>
 <div class="layui-layout layui-layout-admin" style="padding-left: 20px;">
+    <button class="layui-btn site-demo-active" data-type="tabAdd">添加类型</button>
     <table class="layui-table"
            id="idTest"
            lay-data="{width: 'full-10', height: 'full-105', url:'/types/table', page:true, id:'idTest'}"
@@ -73,12 +74,30 @@
 <body>
 <script>
     var $;
-    layui.config({
-        base : "js/"
-    }).use(['table','element','layer','jquery'], function(){
+    layui.use(['table','element','layer','jquery'], function(){
         var table = layui.table;
         var element = layui.element;
-        $ = layui.jquery
+        var $ = layui.jquery;
+
+        var active = {
+            tabAdd: function(){
+                parent.layui.element.tabAdd('kitTab', {
+                    title:'增加类型',
+                    content: '<iframe src="/types/add" frameborder="1" width="100%" height="400"></iframe>',
+                    id: 1000
+                })
+                parent.layui.element.tabChange('kitTab', 1000);
+            }
+        };
+
+        $('.site-demo-active').on('click', function(){
+            var othis = $(this), type = othis.data('type');
+            active[type] ? active[type].call(this, othis) : '';
+        });
+
+        parent.layui.element.on('tab(kitTab)', function(data){
+            window.location.reload()
+        });
 
         //监听工具条
         table.on('tool(demo)', function(obj){
