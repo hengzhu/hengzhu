@@ -54,6 +54,7 @@
         <div class="layui-form-item">
             <div class="layui-input-block">
                 <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                <button class="layui-btn site-demo-active" data-type="cancel">取消</button>
             </div>
         </div>
         <script>
@@ -76,6 +77,15 @@
                 }
             }, "json");
             return false;
+          });
+          var active = {
+             cancel: function(){
+                parent.layui.element.tabDelete('kitTab', 1000);
+             }
+          };
+          $('.site-demo-active').on('click', function(){
+            var othis = $(this), type = othis.data('type');
+            active[type] ? active[type].call(this, othis) : '';
           });
           form.on('radio(radio)', function(data){
             if(data.value==2){
