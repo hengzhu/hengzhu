@@ -37,11 +37,11 @@ func (self *BaseController) Prepare() {
 	self.Data["curRoute"] = self.controllerName + "." + self.actionName
 	self.Data["curController"] = self.controllerName
 	self.Data["curAction"] = self.actionName
-	// noAuth := "ajaxsave/ajaxdel/table/loginin/loginout/getnodes/start"
-	// isNoAuth := strings.Contains(noAuth, self.actionName)
-	// if isNoAuth == false {
-	self.auth()
-	// }
+	noAuth := "ajaxsave/ajaxdel/table/loginin/loginout/getnodes/start"
+	isNoAuth := strings.Contains(noAuth, self.actionName)
+	if isNoAuth == false {
+		self.auth()
+	}
 
 	self.Data["loginUserId"] = self.userId
 	self.Data["loginUserName"] = self.userName

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title><% .siteName %></title>
+    <% if .zTree %>
+        <link rel="stylesheet" href="/static/zTree3/css/demo.css?t=5" type="text/css">
+        <link rel="stylesheet" href="/static/zTree3/css/zTreeStyle/zTreeStyle.css" type="text/css">
+    <% end %>
+    <link rel="stylesheet" href="../../static/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../static/css/main.css">
+    <script src="../../static/layui/layui.js"></script>
+    <script src="../../static/js/main.js?s=2124"></script>
+</head>
+<div class="layui-layout layui-layout-admin" style="padding-left: 20px;">
+    <form id="form1" class="layui-form" method="post" action="">
+        <div class="layui-form-item">
+            <label class="layui-form-label">支付宝收款方：</label>
+            <div class="layui-input-inline">
+                <input id="alipay" type="text" name="alipay" placeholder="请输入支付宝收款方"
+                       autocomplete="off" class="layui-input" >
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">微信收款方：</label>
+            <div class="layui-input-inline">
+                <input id="wechat" type="text" name="wechat" placeholder="请输入微信收款方"
+                       autocomplete="off" class="layui-input" >
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">历史记录保存时间：</label>
+            <div class="layui-input-inline">
+                <input id="log_time" type="text" name="log_time" placeholder="保存时间" required lay-verify="required|number"
+                       autocomplete="off" class="layui-input" value="<% .setting.LogTime %>">
+            </div>
+            <div class="layui-form-mid layui-word-aux">天</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">客服电话：</label>
+            <div class="layui-input-inline">
+                <input id="customer" type="text" name="customer" required lay-verify="required|phone" placeholder="请输入客服电话"
+                       autocomplete="off" class="layui-input" value="<% .setting.Customer %>">
+            </div>
+        </div>
+        <input type="hidden" id="id" name="id" value="<% .setting.Id %>">
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                <!--<button class="layui-btn site-demo-active" data-type="cancel">取消</button>-->
+            </div>
+        </div>
+        <script>
+        layui.use(['form','jquery'], function(){
+          var form = layui.form
+          ,layer = layui.layer
+          var $ = layui.jquery;
+
+          //监听提交
+          form.on('submit(formDemo)', function(data){
+            var form_data = $("form").serialize();
+            layer.msg("test")
+            layer.msg(form_data)
+            $.post('<% urlfor "SettingController.AjaxSave" %>', form_data, function (out) {
+                if (out.status == 0) {
+                    layer.msg("操作成功",{icon: 1},function () {
+                        window.location.reload()
+                    })
+                } else {
+                    layer.msg(out.message)
+                }
+            }, "json");
+            return false;
+          });
+          var active = {
+             cancel: function(){
+                parent.layui.element.tabDelete('kitTab', 1000);
+             }
+          };
+          $('.site-demo-active').on('click', function(){
+            var othis = $(this), type = othis.data('type');
+            active[type] ? active[type].call(this, othis) : '';
+          });
+        });
+    </script>
+    </form>
+</div>
+</html>

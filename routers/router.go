@@ -18,9 +18,12 @@ func init() {
 	beego.Router("/cabinetDetail/table", &controllers.CabinetDetailController{}, "*:Table")
 	beego.Router("/cabinetDetail/edit", &controllers.CabinetDetailController{}, "*:Table")
 
+	//beego.Router("/setting/get", &controllers.SettingController{}, "*:Get")
+
 	beego.AutoRouter(&controllers.CabinetController{})
 	beego.AutoRouter(&controllers.CabinetDetailController{})
 	beego.AutoRouter(&controllers.TypesController{})
+	beego.AutoRouter(&controllers.SettingController{})
 	beego.AutoRouter(&controllers.AuthController{})
 	beego.AutoRouter(&controllers.RoleController{})
 	beego.AutoRouter(&controllers.AdminController{})

@@ -60,7 +60,7 @@ func (c *TypesController) Table() {
 func (c *TypesController) Default() {
 	id, _ := c.GetInt("id")
 	if id == 0 {
-		c.ajaxMsg(errors.New("参数错误"), MSG_ERR)
+		c.ajaxMsg("参数错误", MSG_ERR)
 	}
 
 	err := models.SetDefault(id)
