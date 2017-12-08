@@ -16,45 +16,39 @@
 <div class="layui-layout layui-layout-admin" style="padding-left: 20px;">
     <form id="form1" class="layui-form" method="post" action="">
         <div class="layui-form-item">
-            <label class="layui-form-label">名称：</label>
+            <label class="layui-form-label">支付宝收款方：</label>
             <div class="layui-input-inline">
-                <input id="name" type="text" name="name" required lay-verify="required" placeholder="请输入类型名称"
+                <input id="alipay" type="text" name="alipay" placeholder="请输入支付宝收款方"
                        autocomplete="off" class="layui-input" >
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">计费方式：</label>
-            <div class="layui-input-block">
-                <input type="radio" lay-filter="radio" name="charge_mode" value="1" title="计次" checked>
-                <input type="radio" lay-filter="radio" name="charge_mode" value="2" title="计时">
+            <label class="layui-form-label">微信收款方：</label>
+            <div class="layui-input-inline">
+                <input id="wechat" type="text" name="wechat" placeholder="请输入微信收款方"
+                       autocomplete="off" class="layui-input" >
             </div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">收费时间：</label>
-            <div class="layui-input-block">
-                <input type="radio" name="toll_time" value="1" title="存物时" checked>
-                <input type="radio" name="toll_time" value="2" title="取物时">
+            <label class="layui-form-label">历史记录保存时间：</label>
+            <div class="layui-input-inline">
+                <input id="log_time" type="text" name="log_time" placeholder="保存时间" required lay-verify="required|number"
+                       autocomplete="off" class="layui-input" value="<% .setting.LogTime %>">
             </div>
+            <div class="layui-form-mid layui-word-aux">天</div>
         </div>
         <div class="layui-form-item">
-            <label class="layui-form-label">价格：</label>
+            <label class="layui-form-label">客服电话：</label>
             <div class="layui-input-inline">
-                <input id="price" type="text" name="price" placeholder="￥" required lay-verify="required|data"
-                       autocomplete="off" class="layui-input">
+                <input id="customer" type="text" name="customer" required lay-verify="required|phone" placeholder="请输入客服电话"
+                       autocomplete="off" class="layui-input" value="<% .setting.Customer %>">
             </div>
         </div>
-        <div class="layui-form-item" id="unit" style="display: none">
-            <label class="layui-form-label">计时单位：</label>
-            <div class="layui-input-inline">
-                <input id="unit" type="text" name="unit" placeholder="计时单位" required lay-verify="required|number"
-                       autocomplete="off" class="layui-input" value="0">
-            </div>
-            <div class="layui-form-mid layui-word-aux">分钟</div>
-        </div>
+        <input type="hidden" id="id" name="id" value="<% .setting.Id %>">
         <div class="layui-form-item">
             <div class="layui-input-block">
                 <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
-                <button class="layui-btn site-demo-active" data-type="cancel">取消</button>
+                <!--<button class="layui-btn site-demo-active" data-type="cancel">取消</button>-->
             </div>
         </div>
         <script>
@@ -66,11 +60,12 @@
           //监听提交
           form.on('submit(formDemo)', function(data){
             var form_data = $("form").serialize();
-            $.post('<% urlfor "TypesController.AjaxSave" %>', form_data, function (out) {
+            layer.msg("test")
+            layer.msg(form_data)
+            $.post('<% urlfor "SettingController.AjaxSave" %>', form_data, function (out) {
                 if (out.status == 0) {
                     layer.msg("操作成功",{icon: 1},function () {
-                        parent.layui.element.tabDelete('kitTab', 1000);
-                        parent.layui.element.tabChange('kitTab', 1000);
+                        window.location.reload()
                     })
                 } else {
                     layer.msg(out.message)
@@ -86,20 +81,6 @@
           $('.site-demo-active').on('click', function(){
             var othis = $(this), type = othis.data('type');
             active[type] ? active[type].call(this, othis) : '';
-          });
-          form.on('radio(radio)', function(data){
-            if(data.value==2){
-              document.getElementById("unit").style.display="block"
-            } else {
-              document.getElementById("unit").style.display="none"
-            }
-          });
-          form.verify({
-            data: function(value, item){ //value：表单的值、item：表单的DOM对象
-              if(!new RegExp("^[0-9]+\.?[0-9]*").test(value)){
-                return '只能输入数字';
-              }
-            }
           });
         });
     </script>
