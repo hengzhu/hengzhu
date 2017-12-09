@@ -1070,7 +1070,7 @@ func (this WXPayQueryOrder) Post() (WXPayQueryOrderResponse, error) {
 //支付结果通用通知
 //微信服务器将会根据统一下单的NotifyURL POST以下数据到商机服务器处理
 type WXPayResultNotifyArgs struct {
-	xweb.XMLArgs  `xml:"-"`
+	xweb.XMLArgs           `xml:"-"`
 	XMLName       struct{} `xml:"xml"` //root node name
 	AppId         string   `xml:"appid" sign:"true"`
 	Attach        string   `xml:"attach" sign:"true"`
@@ -1128,10 +1128,10 @@ func (this WXPayResultNotifyArgs) IsError() error {
 
 //商户处理后返回格式
 type WXPayResultResponse struct {
-	xweb.XMLModel `xml:"-"`
-	XMLName       struct{} `xml:"xml"`                   //root node name
-	ReturnCode    string   `xml:"return_code,omitempty"` //SUCCESS or FAIL
-	ReturnMsg     string   `xml:"return_msg,omitempty"`  //OK
+	xweb.XMLModel       `xml:"-"`
+	XMLName    struct{} `xml:"xml"`                   //root node name
+	ReturnCode string   `xml:"return_code,omitempty"` //SUCCESS or FAIL
+	ReturnMsg  string   `xml:"return_msg,omitempty"`  //OK
 }
 
 func (this WXPayResultResponse) ToXML() string {
@@ -1317,6 +1317,15 @@ func (this WXUnifiedorderResponse) Error() error {
 		return errors.New("ERROR:" + this.ErrCode + "," + this.ErrCodeDes)
 	}
 	return nil
+}
+
+/*
+author lv
+统一下单返回数据签名校验
+*/
+func (this WXUnifiedorderResponse) SignValid() bool {
+	sign := WXSign(this)
+	return sign == this.Sign
 }
 
 func (this WXUnifiedorderRequest) Post() (WXUnifiedorderResponse, error) {
