@@ -60,7 +60,7 @@ func AdminGetList(page, pageSize int, filters ...interface{}) ([]*Admin, int64) 
 		}
 	}
 	total, _ := query.Count()
-	query.OrderBy("-id").Limit(pageSize, offset).All(&list)
+	query.OrderBy("id").Limit(pageSize, offset).All(&list)
 
 	return list, total
 }
