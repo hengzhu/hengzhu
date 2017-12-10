@@ -13,6 +13,7 @@ import (
 	"io"
 	"reflect"
 	"strings"
+	"time"
 )
 
 /**
@@ -1378,4 +1379,11 @@ func (this WXUnifiedorderRequest) ToXML() string {
 		panic(err)
 	}
 	return string(data)
+}
+
+//把这样格式"20171210193333"的字符串变成时间戳
+func DealStringTime(times string) int64 {
+	loc, _ := time.LoadLocation("Local")
+	tm2, _ := time.ParseInLocation("20060102030405", "20091225091010", loc)
+	return tm2.Unix()
 }

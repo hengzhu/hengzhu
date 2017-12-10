@@ -3,6 +3,7 @@ package controllers
 import (
 	"hengzhu/tool/payment"
 	"github.com/astaxie/beego"
+	"hengzhu/models"
 )
 
 type WxUnlockController struct {
@@ -30,4 +31,9 @@ func (c *WxUnlockController) GetOpenId() {
 		beego.Error("[WxUnlock] GetOpenId err in wxastoken.Get()")
 	}
 	beego.Debug("[WxUnlock]: GetOpenId get:", res.OpenId)
+	detailId := models.GetWxUserInUseByOpenId(res.OpenId)
+	if detailId == 0 {
+		//没有机器被该用户占用
+	}
+	//然后可以根据detailId开锁
 }
