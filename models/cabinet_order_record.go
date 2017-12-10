@@ -9,59 +9,51 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-type Recharge struct {
-	Id             int     `orm:"column(id);auto"`
-	RechargeNo     string  `orm:"column(recharge_no);size(20);null" description:"充值单号"`
-	UserId         uint    `orm:"column(user_id);null" description:"用户id"`
-	Amount         float64 `orm:"column(amount);null;digits(16);decimals(2)" description:"金额"`
-	Type           uint8   `orm:"column(type);null" description:"充值方式:1支付宝，2微信, 在支付回调后赋值"`
-	Status         uint8   `orm:"column(status);null" description:"充值状态 1:正在支付 2:支付成功 3:超时关闭 4:手动关闭"`
-	ThirdNo        string  `orm:"column(third_no);size(90);null" description:"第三方订单号"`
-	ExtraInfo      string  `orm:"column(extra_info);null" description:"扩展信息"`
-	CreateTime     uint    `orm:"column(create_time);null" description:"提交时间"`
-	PayTime        uint    `orm:"column(pay_time);null" description:"支付时间"`
-	SuccessTime    uint    `orm:"column(success_time);null" description:"充值成功时间"`
-	Ip             string  `orm:"column(ip);size(15);null" description:"用户ip"`
-	Wlan           string  `orm:"column(wlan);size(20);null" description:"用户mac地址"`
-	Device         string  `orm:"column(device);size(64);null" description:"用户设备"`
-	GameId         int     `orm:"column(game_id);null" description:"充值的游戏id"`
-	ActivityAmount float32 `orm:"column(activity_amount);null" description:"活动期的虚拟币金额"`
-	ActivityId     int     `orm:"column(activity_id);null" description:"关联活动id"`
+type CabinetOrderRecord struct {
+	Id              int    `orm:"column(order_no);pk" description:"内部生成的订单号"`
+	CustomerId      string `orm:"column(customer_id);size(255);null" description:"顾客id 微信 openid 支付宝？"`
+	PayType         int8   `orm:"column(pay_type)" description:"1 微信 2支付宝 3？"`
+	ThirdOrderNo    string `orm:"column(third_order_no);size(255);null" description:"第三方支付id"`
+	CabinetDetailId int    `orm:"column(cabinet_detail_id)"`
+	Fee             int    `orm:"column(fee)" description:"钱数 单位分"`
+	CreateDate      int    `orm:"column(create_date)"`
+	PayDate         int    `orm:"column(pay_date);null"`
+	IsPay           int8   `orm:"column(is_pay)" description:"是否支付 0 未支付 1已经支付"`
 }
 
-func (t *Recharge) TableName() string {
-	return "recharge"
+func (t *CabinetOrderRecord) TableName() string {
+	return "cabinet_order_record"
 }
 
 func init() {
-	orm.RegisterModel(new(Recharge))
+	orm.RegisterModel(new(CabinetOrderRecord))
 }
 
-// AddRecharge insert a new Recharge into database and returns
+// AddCabinetOrderRecord insert a new CabinetOrderRecord into database and returns
 // last inserted Id on success.
-func AddRecharge(m *Recharge) (id int64, err error) {
+func AddCabinetOrderRecord(m *CabinetOrderRecord) (id int64, err error) {
 	o := orm.NewOrm()
 	id, err = o.Insert(m)
 	return
 }
 
-// GetRechargeById retrieves Recharge by Id. Returns error if
+// GetCabinetOrderRecordById retrieves CabinetOrderRecord by Id. Returns error if
 // Id doesn't exist
-func GetRechargeById(id int) (v *Recharge, err error) {
+func GetCabinetOrderRecordById(id int) (v *CabinetOrderRecord, err error) {
 	o := orm.NewOrm()
-	v = &Recharge{Id: id}
+	v = &CabinetOrderRecord{Id: id}
 	if err = o.Read(v); err == nil {
 		return v, nil
 	}
 	return nil, err
 }
 
-// GetAllRecharge retrieves all Recharge matches certain condition. Returns empty list if
+// GetAllCabinetOrderRecord retrieves all CabinetOrderRecord matches certain condition. Returns empty list if
 // no records exist
-func GetAllRecharge(query map[string]string, fields []string, sortby []string, order []string,
+func GetAllCabinetOrderRecord(query map[string]string, fields []string, sortby []string, order []string,
 	offset int64, limit int64) (ml []interface{}, err error) {
 	o := orm.NewOrm()
-	qs := o.QueryTable(new(Recharge))
+	qs := o.QueryTable(new(CabinetOrderRecord))
 	// query k=v
 	for k, v := range query {
 		// rewrite dot-notation to Object__Attribute
@@ -111,7 +103,7 @@ func GetAllRecharge(query map[string]string, fields []string, sortby []string, o
 		}
 	}
 
-	var l []Recharge
+	var l []CabinetOrderRecord
 	qs = qs.OrderBy(sortFields...)
 	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
 		if len(fields) == 0 {
@@ -134,11 +126,11 @@ func GetAllRecharge(query map[string]string, fields []string, sortby []string, o
 	return nil, err
 }
 
-// UpdateRecharge updates Recharge by Id and returns error if
+// UpdateCabinetOrderRecord updates CabinetOrderRecord by Id and returns error if
 // the record to be updated doesn't exist
-func UpdateRechargeById(m *Recharge) (err error) {
+func UpdateCabinetOrderRecordById(m *CabinetOrderRecord) (err error) {
 	o := orm.NewOrm()
-	v := Recharge{Id: m.Id}
+	v := CabinetOrderRecord{Id: m.Id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
@@ -149,15 +141,15 @@ func UpdateRechargeById(m *Recharge) (err error) {
 	return
 }
 
-// DeleteRecharge deletes Recharge by Id and returns error if
+// DeleteCabinetOrderRecord deletes CabinetOrderRecord by Id and returns error if
 // the record to be deleted doesn't exist
-func DeleteRecharge(id int) (err error) {
+func DeleteCabinetOrderRecord(id int) (err error) {
 	o := orm.NewOrm()
-	v := Recharge{Id: id}
+	v := CabinetOrderRecord{Id: id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
-		if num, err = o.Delete(&Recharge{Id: id}); err == nil {
+		if num, err = o.Delete(&CabinetOrderRecord{Id: id}); err == nil {
 			fmt.Println("Number of records deleted in database:", num)
 		}
 	}

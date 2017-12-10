@@ -31,7 +31,7 @@ func init() {
 	//支付通知
 	beego.AutoRouter(&controllers.PayNotifyController{})
 	//预下单
-	beego.AutoRouter(&controllers.ReOrderController{})
+	beego.AutoRouter(&controllers.CabinetOrderRecordController{})
 
 
 
