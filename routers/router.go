@@ -28,6 +28,11 @@ func init() {
 	beego.AutoRouter(&controllers.RoleController{})
 	beego.AutoRouter(&controllers.AdminController{})
 	beego.AutoRouter(&controllers.UserController{})
+	//支付通知
+	beego.AutoRouter(&controllers.PayNotifyController{})
+	//预下单
+	beego.AutoRouter(&controllers.ReOrderController{})
+
 
 
 

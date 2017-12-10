@@ -1,0 +1,51 @@
+appname = hengzhu
+httpport = 8080
+runmode = dev
+TemplateLeft = "<%"
+TemplateRight = "%>"
+
+[prod]
+#mysql
+#db_host = 10.8.230.17
+#db_port = 3308
+#db_user = kuaifa_on
+#db_pass = kuaifazs
+#db_name = liuqilin
+db_host = localhost
+db_port = 3306
+db_user = root
+db_pass = 123456
+db_name = hengzhu
+db_type = mysql
+db_timezone = Asia/Shanghai
+
+[dev]
+#mysql
+#db_host = 10.8.230.17
+#db_port = 3308
+#db_user = kuaifa_on
+#db_pass = kuaifazs
+#db_name = liuqilin
+#db_host = localhost
+#db_port = 3306
+#db_user = root
+#db_pass = 123456
+#db_name = hengzhu
+#db_type = mysql
+#db_timezone = Asia/Shanghai
+db_host = 39.108.53.220
+db_port = 3306
+db_user = root
+db_pass = baiying333
+db_name = hengzhu
+db_type = mysql
+db_timezone = Asia/Shanghai
+
+
+register_captcha = true
+template_type=easyui
+
+copyrequestbody = true
+
+# 站点名称
+site.name = 恒铸智能柜管理平台
