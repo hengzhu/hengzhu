@@ -60,8 +60,6 @@
           //监听提交
           form.on('submit(formDemo)', function(data){
             var form_data = $("form").serialize();
-            layer.msg("test")
-            layer.msg(form_data)
             $.post('<% urlfor "SettingController.AjaxSave" %>', form_data, function (out) {
                 if (out.status == 0) {
                     layer.msg("操作成功",{icon: 1},function () {

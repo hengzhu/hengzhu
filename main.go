@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"hengzhu/models/admin"
 	_ "github.com/go-sql-driver/mysql"
+	"hengzhu/task"
 )
 
 func main() {
@@ -14,6 +15,7 @@ func main() {
 	//	beego.BConfig.WebConfig.DirectoryIndex = true
 	//	beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	//}
+	task.Run()
 	beego.Run()
 }
 
