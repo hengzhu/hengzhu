@@ -17,7 +17,11 @@ func init() {
 
 	beego.Router("/cabinetDetail/table", &controllers.CabinetDetailController{}, "*:Table")
 	beego.Router("/cabinetDetail/edit", &controllers.CabinetDetailController{}, "*:Table")
-
+	//预下单
+	beego.Router("/order/reorder", &controllers.OrderController{}, "*:ReOrder")
+	//支付通知
+	beego.Router("/pay_notify/ali", &controllers.PayNotifyController{},"*:AliNotify")
+	beego.Router("/pay_notify/wx", &controllers.PayNotifyController{},"*:WxNotify")
 	//beego.Router("/setting/get", &controllers.SettingController{}, "*:Get")
 
 	beego.AutoRouter(&controllers.CabinetController{})
@@ -28,13 +32,7 @@ func init() {
 	beego.AutoRouter(&controllers.RoleController{})
 	beego.AutoRouter(&controllers.AdminController{})
 	beego.AutoRouter(&controllers.UserController{})
-	//支付通知
 	beego.AutoRouter(&controllers.PayNotifyController{})
-	//预下单
-	beego.AutoRouter(&controllers.CabinetOrderRecordController{})
-
-
-
 
 	//beego.Router("/account", &controllers.AccountController{}, "*:Index")
 	//beego.Router("/account/changepwd", &controllers.AccountController{}, "*:ChangePwd")
