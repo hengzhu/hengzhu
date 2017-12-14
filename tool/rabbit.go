@@ -2,12 +2,12 @@ package tool
 
 import (
 	"github.com/bysir-zl/bygo/mq"
-	"github.com/bysir-zl/bygo/config"
+	"github.com/astaxie/beego"
 )
 
 var Rabbit *mq.Rabbit
 
 func init() {
-	url := config.GetString("url", "rabbit")
+	url := beego.AppConfig.String("rabbitmq_url")
 	Rabbit = mq.NewRabbit(url)
 }

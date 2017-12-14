@@ -9,6 +9,8 @@ import (
 	"encoding/pem"
 	a "github.com/smartwalle/alipay"
 	"time"
+	"github.com/astaxie/beego/orm"
+	"errors"
 )
 
 // 柜子订单支付
@@ -36,57 +38,75 @@ func (c *OrderController) URLMapping() {
 // @Title Post
 // @Description 预下单
 // @Param	pay_type		query 	int	true		"1.微信 ,2.支付宝"
+// @Param	cabinet_id		query 	int	true		"1.微信 ,2.支付宝"
 // @Success 201 {int}
 // @Failure 403 body is empty
-// @router /ReOrder [get]
+// @router /ReOrder [post]
 func (c *OrderController) ReOrder() {
 	var v models.CabinetOrderRecord
 	pay_type, _ := c.GetInt8("pay_type")
-	beego.Warn(pay_type)
+	cabinet_id, _ := c.GetInt("cabinet_id")
+	if pay_type != Al_Pay {
+		c.Ctx.Output.SetStatus(400)
+		c.Data["json"] = "[支付宝]:请求失败"
+		c.ServeJSON()
+		return
+	}
+	cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
+	if err == orm.ErrNoRows {
+		c.Ctx.Output.SetStatus(404)
+		c.Data["json"] = errors.New("没有空闲的门可分配").Error()
+		c.ServeJSON()
+		return
+	}
+	if err != nil {
+		c.Ctx.Output.SetStatus(500)
+		c.Data["json"] = errors.New("服务器崩溃").Error()
+		c.ServeJSON()
+		return
+	}
 	//alipay预下单
-	initRSA()
-
 	b_pri := []byte(pri)
 	b_pub := []byte(pub)
 	var client = a.New(beego.AppConfig.String("APPID"), beego.AppConfig.String("alipay_partner"), b_pub, b_pri, true)
 	//加密是rsa1
 	client.SignType = a.K_SIGN_TYPE_RSA
-
 	var p = a.AliPayTradePreCreate{}
 	order_no, _ := models.CreateOrderNo()
-
-	p.NotifyURL = beego.AppConfig.String("ali_notify")
-	p.Subject = beego.AppConfig.String("ali_subject")
 	p.OutTradeNo = order_no
-	p.TotalAmount = "0.1"
+	p.NotifyURL = beego.AppConfig.String("alipay_notify_url")
+	p.Subject = beego.AppConfig.String("ali_subject")
+	p.TotalAmount = beego.AppConfig.String("ali_fee")
 	//预下单到支付宝服务器
 	result, err := client.TradePreCreate(p)
-	if err != nil {
+
+	if err != nil || !result.IsSuccess() {
+		c.Ctx.Output.SetStatus(403)
 		c.Data["json"] = "[支付宝]:网络错误"
 		c.ServeJSON()
+		return
 	}
+
 	v = models.CabinetOrderRecord{
-		CustomerId:   "1",
-		PayType:      pay_type,
-		ThirdOrderNo: "",
-		Fee:          50,
-		CreateDate:   int(time.Now().Unix()),
+		CabinetDetailId: cd.Id,
+		PayType:         pay_type,
+		Fee:             50,
+		CreateDate:      int(time.Now().Unix()),
+		OrderNo:         order_no,
 	}
 	if _, err := models.AddCabinetOrderRecord(&v); err == nil {
 		c.Ctx.Output.SetStatus(201)
 	} else {
-		c.Data["json"] = err.Error()
+		c.Ctx.Output.SetStatus(501)
+		c.Data["json"] = "服务器异常"
+		beego.Warn(err)
 		c.ServeJSON()
-	}
-	_, err = models.AddCabinetOrderRecord(&v)
-	if err != nil {
-		c.Data["json"] = "网络错误"
-		c.ServeJSON()
+		return
 	}
 	//省略添加失败再重新请求
-	beego.Warn("+++++++++++: ", result, "\n", result.AliPayPreCreateResponse.QRCode)
 	c.Data["json"] = result.AliPayPreCreateResponse.QRCode
 	c.ServeJSON()
+	return
 }
 
 func initClient() {
@@ -119,7 +139,7 @@ func initClient() {
 	})
 }
 
-func initRSA() {
+func init() {
 	pri = `-----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQDrnmBAGqftFloprbmm3dqPjI3ryVZWqwNFm+UniokVp1U/gU2l
 yZNXLOXPUVb9Klje4DzIjtGFCxG2dvHM1u66s63R/rlgiXPaNNRBDEE/J8d+EBmK
@@ -134,7 +154,6 @@ pPk0d3nbV5BaKTUm2B5uB0vtGOqrjQs0PwJBAMKP30sLWeZHmXxVyHIKdz15tvJt
 MU6nel5/N/+NF7m6hEjD3m4oaO8gQSukpcDYhLrewvNPIH08gd2mkLHhps5gjaS3
 ogoSYFP0hHsc/B95g0MCQQCZ36tOM9VzeDjpJbXKNDmQmRkE6rcVvxFn6HqyNP6z
 81qxGn+fqK4YMt4ZA6Z33H6dQvsMtPbB8H9Cg2xoVDYq
-
 -----END RSA PRIVATE KEY-----
 `
 	pub = `-----BEGIN PUBLIC KEY-----

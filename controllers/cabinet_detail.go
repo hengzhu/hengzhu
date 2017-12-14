@@ -9,6 +9,7 @@ import (
 	"time"
 	"hengzhu/models/admin"
 	"fmt"
+	"github.com/astaxie/beego"
 )
 
 // CabinetDetailController operations for CabinetDetail
@@ -92,7 +93,6 @@ func (c *CabinetDetailController) Record() {
 	//endTime, _ := c.GetInt64("end", time.Now().Unix())
 	begin := c.GetString("begin", "2017-12-01 00:00:00")
 	end := c.GetString("end", time.Now().Format("2006-01-02 15:04:05"))
-
 
 	cabinetDetail, _ := models.GetCabinetDetailById(id)
 	models.AddIDInfo(cabinetDetail)
@@ -232,6 +232,42 @@ func (c *CabinetDetailController) Put() {
 		c.Data["json"] = err.Error()
 	}
 	c.ServeJSON()
+}
+
+// @Title 更新柜子门的开关状态
+// @Description 更新柜子门的开关状态
+// @Param	cabinet_id		query 	string	true		"The id for cabinet you want to update"
+// @Param	open_state		query 	string	true		""
+// @Param	door_no		    query 	string	true		""
+// @Success 200 {object}
+// @Failure 403
+// @router /ChangeOpen [put]
+func (c *CabinetDetailController) ChangeOpen() {
+	cid, _ := c.GetInt("cabinet_id")
+	if cid == 0 {
+		c.ajaxMsg(errors.New("参数错误"), MSG_ERR)
+	}
+	door_no, _ := c.GetInt("door_no")
+	if door_no == 0 {
+		c.ajaxMsg(errors.New("门号错误"), MSG_ERR)
+	}
+
+	cabinetDetail, _ := models.GetCabinetDetail(cid, door_no)
+
+	openState, _ := c.GetInt("open_state")
+	if openState != 1 && openState != 2 {
+		c.ajaxMsg(errors.New("状态错误"), MSG_ERR)
+	}
+	cabinetDetail.UseState = openState
+
+	if err := models.UpdateCabinetDetailById(cabinetDetail); err != nil {
+		c.ajaxMsg(err.Error(), MSG_ERR)
+	}
+	err := connections[cid].WriteMessage(4, []byte("ok"))
+	if err != nil {
+		beego.Error(err)
+	}
+	c.ajaxMsg("修改成功", MSG_OK)
 }
 
 // Delete ...

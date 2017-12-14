@@ -51,7 +51,7 @@ func AddAllInfo(details []CabinetDetail) {
 		return
 	}
 	for i, detail := range details {
-		if detail.StoreTime != 0{
+		if detail.StoreTime != 0 {
 			details[i].StoreTimeFormated = time.Unix(int64(detail.StoreTime), 0).Format("2006-01-02 15:04:05")
 		} else {
 			details[i].StoreTimeFormated = "--"
@@ -233,5 +233,52 @@ func DeleteCabinetDetail(id int) (err error) {
 			fmt.Println("Number of records deleted in database:", num)
 		}
 	}
+	return
+}
+
+//获取空闲的柜子门
+func GetFreeDoorByCabinetId(cabinet_id int) (v *CabinetDetail, err error) {
+	o := orm.NewOrm()
+	cd := CabinetDetail{}
+	err = o.QueryTable("cabinet_detail").Filter("open_state", 1).Filter("use_state", 1).Filter("using", 1).Filter("cabinet_id", cabinet_id).Limit(1).One(&cd)
+	if err != nil {
+		return
+	}
+	v = &cd
+	return
+}
+
+//更新柜子状态
+func UpdateCabinetDoorStatusById(m *CabinetDetail, status int) (err error) {
+	o := orm.NewOrm()
+	v := CabinetDetail{Id: m.Id}
+	// ascertain id exists in the database
+	if err = o.Read(&v); err == nil {
+		var num int64
+		m.Using = status
+		if num, err = o.Update(m, "using"); err == nil {
+			fmt.Println("Number of records updated in database:", num)
+		}
+	}
+	return
+}
+
+func GetCabinetDetail(cid int, door_no int) (v *CabinetDetail, err error) {
+	o := orm.NewOrm()
+	v = &CabinetDetail{CabinetId: cid, Door: door_no}
+	if err = o.Read(v, "cabinet_id", "door"); err == nil {
+		return v, nil
+	}
+	return nil, err
+}
+
+func GetCabinetByOutOrderNo(out_order_no string) (v *CabinetDetail, err error) {
+	o := orm.NewOrm()
+	c := CabinetDetail{}
+	err = o.Raw("select cabinet_id from cabinet_detail where id = (select cabinet_detail_id from cabinet_order_record where order_no = ?) limit 1;", out_order_no).QueryRow(&c)
+	if err != nil {
+		return
+	}
+	v = &c
 	return
 }

@@ -10,10 +10,12 @@ import (
 	"strconv"
 	"time"
 	"math/rand"
+	"github.com/astaxie/beego"
 )
 
 type CabinetOrderRecord struct {
-	Id              int    `orm:"column(order_no);pk" description:"内部生成的订单号"`
+	Id              int    `orm:"column(id);auto"`
+	OrderNo         string `orm:"column(order_no)" description:"内部生成的订单号"`
 	CustomerId      string `orm:"column(customer_id);size(255);null" description:"顾客id 微信 openid 支付宝？"`
 	PayType         int8   `orm:"column(pay_type)" description:"1 微信 2支付宝 3？"`
 	ThirdOrderNo    string `orm:"column(third_order_no);size(255);null" description:"第三方支付id"`
@@ -180,4 +182,28 @@ func RandString(length int) string {
 		}
 	}
 	return strings.Join(rs, "")
+}
+
+//修改订单状态为支付完成
+func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid string) (cd *CabinetDetail, err error) {
+	o := orm.NewOrm()
+	v := CabinetOrderRecord{OrderNo: order_no}
+	if err = o.Read(&v, "order_no"); err == nil {
+		var num int64
+		v.IsPay = 1
+		v.CustomerId = openid
+		v.PayDate = int(time.Now().Unix())
+		v.ThirdOrderNo = third_order_no
+		if num, err = o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err == nil {
+			fmt.Println("Number of records updated in database:", num)
+		}
+	}
+	cd, err = GetCabinetDetailById(v.CabinetDetailId)
+	if err != nil {
+		beego.Error(err)
+		return
+	}
+	//更新该柜子的门为使用中
+	err = UpdateCabinetDoorStatusById(cd, 2)
+	return
 }

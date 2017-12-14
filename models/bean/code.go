@@ -16,17 +16,21 @@ const (
 
 func CodeString(code int) string {
 	s := map[int]string{
-		CODE_Success:                      "OK",
-		CODE_Created:                      "Created",
-		CODE_Bad_Request:                  "Bad_Request",
-		CODE_Unauthorized:                 "Unauthorized",
-		CODE_Not_Found:                    "Not_Found",
-		CODE_Forbidden:                    "Forbidden",
-		CODE_Method_Not_Allowed:           "Method_Not_Allowed",
-		CODE_Not_Acceptable:               "Not_Acceptable",
-		CODE_Internal_Server_Error:        "Server_Error",
-		CODE_Params_Err:                   "Params_Error",
+		CODE_Success:               "OK",
+		CODE_Created:               "Created",
+		CODE_Bad_Request:           "Bad_Request",
+		CODE_Unauthorized:          "Unauthorized",
+		CODE_Not_Found:             "Not_Found",
+		CODE_Forbidden:             "Forbidden",
+		CODE_Method_Not_Allowed:    "Method_Not_Allowed",
+		CODE_Not_Acceptable:        "Not_Acceptable",
+		CODE_Internal_Server_Error: "Server_Error",
+		CODE_Params_Err:            "Params_Error",
 	}[code]
 	return s
 }
 
+type RabbitMqMessage struct {
+	CabinetId int `json:"cabinet_id"`
+	Door      int `json:"door"`
+}

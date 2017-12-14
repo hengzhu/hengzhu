@@ -200,3 +200,15 @@ func DeleteCabinet(id int) (err error) {
 	}
 	return
 }
+
+func GetCabinetAndDoorByUserId(user_id string) (cid int, door_no int, err error) {
+	o := orm.NewOrm()
+	cd := CabinetDetail{}
+	err = o.Raw("select cabinet_id,door from cabinet_detail where id = (select cabinet_detail_id from cabinet_order_record where customer_id = '?') limit 1;", user_id).QueryRow(&cd)
+	if err != nil {
+		return
+	}
+	cid = cd.CabinetId
+	door_no = cd.Door
+	return
+}

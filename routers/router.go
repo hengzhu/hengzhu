@@ -20,8 +20,10 @@ func init() {
 	//预下单
 	beego.Router("/order/reorder", &controllers.OrderController{}, "*:ReOrder")
 	//支付通知
-	beego.Router("/pay_notify/ali", &controllers.PayNotifyController{},"*:AliNotify")
-	beego.Router("/pay_notify/wx", &controllers.PayNotifyController{},"*:WxNotify")
+	beego.Router("/paynotify/alinotify", &controllers.PayNotifyController{}, "*:AliNotify")
+	beego.Router("/paynotify/wxnotify", &controllers.PayNotifyController{}, "*:WxNotify")
+	beego.Router("/paynotify/oauthnotify", &controllers.PayNotifyController{}, "*:OauthNotify")
+	beego.Router("/wshub/initwshub", &controllers.WsHubController{}, "*:InitWsHub")
 	//beego.Router("/setting/get", &controllers.SettingController{}, "*:Get")
 
 	beego.AutoRouter(&controllers.CabinetController{})
