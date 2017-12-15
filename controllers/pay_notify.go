@@ -10,9 +10,15 @@ import (
 	"hengzhu/models/bean"
 	"strconv"
 	"encoding/json"
+	"github.com/astaxie/beego/orm"
+	"errors"
 )
 
-const GrantType = "authorization_code"
+const (
+	GrantType = "authorization_code"
+	OpenDoor  = "open"
+	CloseDoor = "close"
+)
 
 var oauth_pri, oauth_pub string
 
@@ -21,44 +27,10 @@ type PayNotifyController struct {
 	BaseController
 }
 
-type post_json struct {
-	Charset   string `json:"charset"` // 编码格式
-	Version   string `json:"version"` // 接口版本
-	Method    string `json:"method"`  // 接口版本
-	GrantType string `json:"grant_type"`
-	Code      string `json:"code"`
-}
-
 // @Title 支付宝回调
 // @Description 支付宝回调
 // @router /alinotify [post]
 func (c *PayNotifyController) AliNotify() {
-	//beego.Warn("-------- ", auth_code, "====", c.Ctx.Request.Form, c.Ctx.Request.URL)
-	//a := payment.NewAPPayReqForApp()
-	//url := "https://openapi.alipay.com/gateway.do?" + a.String()
-	//cli := http.Client{}
-	//beego.Warn("+++++++++ ",url)
-	////req := &http.Request{}
-	////req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8")
-	//pj := post_json{
-	//	Method:    "alipay.system.oauth.token",
-	//	Code:      auth_code,
-	//	Version:   "1.0",
-	//	GrantType: "authorization_code",
-	//	Charset:   "UTF-8",
-	//}
-	//bs, _ := json.Marshal(pj)
-	//r := strings.NewReader(string(bs))
-	//resp, err := cli.Post(url, "application/x-www-form-urlencoded;charset=utf-8", r)
-	//if err != nil {
-	//	beego.Error(err)
-	//	c.Ctx.WriteString(err.Error())
-	//	return
-	//}
-	//data, err := ioutil.ReadAll(resp.Body)
-	//beego.Warn("========= ", string(data))
-
-	//----------------------------------------------------------------------------------------
 	b_pri := []byte(pri)
 	b_pub := []byte(pub)
 	client := alipay.New(beego.AppConfig.String("APPID"), beego.AppConfig.String("alipay_partner"), b_pub, b_pri, true)
@@ -67,15 +39,13 @@ func (c *PayNotifyController) AliNotify() {
 	var noti *alipay.TradeNotification
 	//忽略验签
 	noti, err := client.GetTradeNotification(c.Ctx.Request)
-	beego.Warn("回调买家标识:", noti)
 	if err != nil {
 		beego.Error(err)
 		c.Ctx.WriteString(err.Error())
 		return
 	}
 	if noti.TradeStatus != "TRADE_SUCCESS" {
-		beego.Error(err)
-		c.Ctx.WriteString("success")
+		c.Ctx.WriteString("noti.TradeStatus")
 		return
 	}
 
@@ -84,34 +54,43 @@ func (c *PayNotifyController) AliNotify() {
 		c.Ctx.WriteString(err.Error())
 		return
 	}
-
-	cabinet, err := models.GetCabinetByOutOrderNo(noti.OutTradeNo)
-	if err != nil {
-		c.Ctx.WriteString(err.Error())
-		return
+	//cor, err := models.GetOrderRecordByOerderNo(noti.OutTradeNo)
+	//if err != nil {
+	//	c.Ctx.WriteString(err.Error())
+	//	return
+	//}
+	//door_no := []byte{uint8(cd.Door)}
+	//err = connections[cabinet.CabinetId].WriteMessage(len([]byte{uint8(cd.Door)}), door_no)
+	rmm := bean.RabbitMqMessage{
+		CabinetId: cd.CabinetId,
+		Door:      cd.Door,
+		UserId:    noti.BuyerId,
+		DoorState: OpenDoor,
 	}
-	door_no := []byte{uint8(cd.Door)}
-	err = connections[cabinet.CabinetId].WriteMessage(len([]byte{uint8(cd.Door)}), door_no)
+	bs, _ := json.Marshal(&rmm)
+	err = tool.Rabbit.Publish("cabinet_"+strconv.Itoa(cd.CabinetId), bs)
 	if err != nil {
-		beego.Error(err)
+		beego.Error("[rabbitmq err:] ", err.Error())
 		c.Ctx.WriteString(err.Error())
 		return
 	}
 	c.Ctx.WriteString("success")
+
 }
 
 // @Title 支付宝授权用户信息
 // @Description 支付宝授权用户信息
 // @router /oauthnotify [post]
 func (c *PayNotifyController) OauthNotify() {
-
+	var cid, door_no int
 	auth_code := c.Ctx.Input.Query("auth_code")
+	cabinet_id, _ := strconv.Atoi(c.Ctx.Input.Query("state"))
 
 	o_pri := []byte(oauth_pri)
 	o_pub := []byte(oauth_pub)
 	client := alipay.New(beego.AppConfig.String("APPID"), beego.AppConfig.String("alipay_partner"), o_pub, o_pri, true)
-	client.AliPayPublicKey = o_pub
-	//client.SignType = alipay.K_SIGN_TYPE_RSA
+	//忽略验签
+	//client.AliPayPublicKey = o_pub
 	ao := bean.AliOauthClient{}
 	ao.Ali = client
 
@@ -125,26 +104,64 @@ func (c *PayNotifyController) OauthNotify() {
 		c.Ctx.WriteString(err.Error())
 		return
 	}
-	//根据扫码用户的user_id获取正在使用的柜子和门
-	cid, door_no, err := models.GetCabinetAndDoorByUserId(reults.AlipaySystemOauthTokenResponse.UserId)
+	openid := reults.AlipaySystemOauthTokenResponse.UserId
+	//先存后付授权开门
+	if cabinet_id != 0 {
+		cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
+		if err == orm.ErrNoRows {
+			c.Ctx.Output.SetStatus(404)
+			c.Data["json"] = errors.New("没有空闲的门可分配").Error()
+			c.ServeJSON()
+			return
+		}
+		if err != nil {
+			c.Ctx.Output.SetStatus(500)
+			c.Data["json"] = errors.New("服务器崩溃").Error()
+			c.ServeJSON()
+			return
+		}
+		//先绑定openid,上传关门信息时才修改为被占用
+		err, door := models.BindOpenIdForCabinetDoor(openid, cd.Id)
+		if err != nil {
+			c.Ctx.Output.SetStatus(501)
+			c.Data["json"] = errors.New("系统错误").Error()
+			c.ServeJSON()
+			return
+		}
+		cid = cabinet_id
+		door_no = door
+		goto A
+	}
+	//根据扫码用户的user_id获取已经支付并正在使用的柜子和门
+	cid, door_no, err = models.GetCabinetAndDoorByUserId(openid)
+	if err == orm.ErrNoRows {
+		c.Ctx.Output.SetStatus(404)
+		c.Data["json"] = errors.New("未使用已经支付的柜子").Error()
+		c.ServeJSON()
+		return
+	}
 	if err != nil {
 		beego.Error(err)
 		c.Ctx.WriteString(err.Error())
 		return
 	}
+A:
 	rmm := bean.RabbitMqMessage{
 		CabinetId: cid,
 		Door:      door_no,
+		UserId:    openid,
+		DoorState: OpenDoor,
 	}
 	bs, _ := json.Marshal(&rmm)
 	//下发开门信息
 	err = tool.Rabbit.Publish("cabinet_"+strconv.Itoa(cid), bs)
 	if err != nil {
-		beego.Error("[rabbitmq err:] ", err)
+		beego.Error("[rabbitmq err:] ", err.Error())
 		c.Ctx.WriteString(err.Error())
 		return
 	}
 	c.Ctx.WriteString("success")
+
 }
 
 // eg: transdata=%7B%22transtype%22%3A0%2C%22cporderid%22%3A%22re_4ba3YbGUo1%22%2C%22transid%22%3A%220001191495174433775563781837%22%2C%22pcuserid%22%3A%22263%22%2C%22appid%22%3A%221032017051111958%22%2C%22goodsid%22%3A%22153%22%2C%22feetype%22%3A1%2C%22money%22%3A1%2C%22fact_money%22%3A1%2C%22currency%22%3A%22CHY%22%2C%22result%22%3A1%2C%22transtime%22%3A%2220170519141414%22%2C%22pc_priv_info%22%3A%22%22%2C%22paytype%22%3A%221%22%7D&sign=4047a3826502b339b7f2a55145b99291&signtype=MD5

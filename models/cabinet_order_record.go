@@ -24,6 +24,7 @@ type CabinetOrderRecord struct {
 	CreateDate      int    `orm:"column(create_date)"`
 	PayDate         int    `orm:"column(pay_date);null"`
 	IsPay           int8   `orm:"column(is_pay)" description:"是否支付 0 未支付 1已经支付"`
+	ActionType      int8   `orm:"column(action_type)" description:"1.存付款 ,2.取付款"`
 }
 
 func (t *CabinetOrderRecord) TableName() string {
@@ -198,12 +199,37 @@ func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid strin
 			fmt.Println("Number of records updated in database:", num)
 		}
 	}
+	//先存后支付下单形式
+	//已经查到该用户在用
+	c := CabinetDetail{UserID: openid, Using: 2, UseState: 1}
+	if err = o.Read(&c, "userID", "using", "use_state", "open_state"); err == nil {
+
+		if err != nil {
+			return
+		}
+		cd, err = GetCabinetDetailById(c.Id)
+		if err != nil {
+			beego.Error(err)
+			return
+		}
+		return
+	}
 	cd, err = GetCabinetDetailById(v.CabinetDetailId)
 	if err != nil {
 		beego.Error(err)
 		return
 	}
 	//更新该柜子的门为使用中
-	err = UpdateCabinetDoorStatusById(cd, 2)
+	err, _ = BindOpenIdForCabinetDoor(openid, cd.Id)
 	return
+}
+
+//通过订单号查询支付记录
+func GetOrderRecordByOerderNo(order_no string) (v *CabinetOrderRecord, err error) {
+	o := orm.NewOrm()
+	v = &CabinetOrderRecord{OrderNo: order_no}
+	if err = o.Read(v, "order_no"); err == nil {
+		return v, nil
+	}
+	return nil, err
 }

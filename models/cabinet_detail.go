@@ -7,6 +7,7 @@ import (
 	"strings"
 	"github.com/astaxie/beego/orm"
 	"time"
+	"strconv"
 )
 
 type CabinetDetail struct {
@@ -248,20 +249,19 @@ func GetFreeDoorByCabinetId(cabinet_id int) (v *CabinetDetail, err error) {
 	return
 }
 
-//更新柜子状态
-func UpdateCabinetDoorStatusById(m *CabinetDetail, status int) (err error) {
-	o := orm.NewOrm()
-	v := CabinetDetail{Id: m.Id}
-	// ascertain id exists in the database
-	if err = o.Read(&v); err == nil {
-		var num int64
-		m.Using = status
-		if num, err = o.Update(m, "using"); err == nil {
-			fmt.Println("Number of records updated in database:", num)
-		}
-	}
-	return
-}
+////更新柜子状态
+//func UpdateCabinetDoorStatusById(m *CabinetDetail, openid string) (err error) {
+//	o := orm.NewOrm()
+//	v := CabinetDetail{Id: m.Id}
+//	// ascertain id exists in the database
+//	if err = o.Read(&v); err == nil {
+//		m.UserID = openid
+//		if _, err = o.Update(m, "using", "userID"); err == nil {
+//			fmt.Println("用户" + openid + "使用的门id为:" + strconv.Itoa(m.Id))
+//		}
+//	}
+//	return
+//}
 
 func GetCabinetDetail(cid int, door_no int) (v *CabinetDetail, err error) {
 	o := orm.NewOrm()
@@ -281,4 +281,24 @@ func GetCabinetByOutOrderNo(out_order_no string) (v *CabinetDetail, err error) {
 	}
 	v = &c
 	return
+}
+
+//绑定openid到柜子门号
+func BindOpenIdForCabinetDoor(openid string, cdid int) (err error, door_no int) {
+	o := orm.NewOrm()
+	v := CabinetDetail{Id: cdid}
+	if err = o.Read(&v); err == nil {
+		v.UserID = openid
+		if _, err = o.Update(&v, "userID"); err == nil {
+			fmt.Println("用户" + openid + "使用的门id为：" + strconv.Itoa(cdid))
+		}
+	}
+	return
+}
+
+func GetCabinetByOpenId(open_id string) (*CabinetDetail, error) {
+	o := orm.NewOrm()
+	cd := CabinetDetail{}
+	err := o.Raw("select * from cabinet_detail where userID = ? and use_state = 1 and open_state = 1 and using = 1", open_id).QueryRow(&cd)
+	return &cd, err
 }

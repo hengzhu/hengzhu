@@ -11,6 +11,7 @@ import (
 	"time"
 	"github.com/astaxie/beego/orm"
 	"errors"
+	"strconv"
 )
 
 // 柜子订单支付
@@ -26,8 +27,10 @@ var (
 )
 
 const (
-	Wx_Pay = 1 //微信
-	Al_Pay = 2 //支付宝
+	Wx_Pay    = 1 //微信
+	Al_Pay    = 2 //支付宝
+	First_In  = 1 //存付款
+	First_Out = 2 //取付款
 )
 
 // URLMapping ...
@@ -38,7 +41,8 @@ func (c *OrderController) URLMapping() {
 // @Title Post
 // @Description 预下单
 // @Param	pay_type		query 	int	true		"1.微信 ,2.支付宝"
-// @Param	cabinet_id		query 	int	true		"1.微信 ,2.支付宝"
+// @Param	cabinet_id		query 	int	true		"上报的柜子id"
+// @Param	action_type		query 	int	true		"1.存付款 ,2.取付款"
 // @Success 201 {int}
 // @Failure 403 body is empty
 // @router /ReOrder [post]
@@ -46,9 +50,23 @@ func (c *OrderController) ReOrder() {
 	var v models.CabinetOrderRecord
 	pay_type, _ := c.GetInt8("pay_type")
 	cabinet_id, _ := c.GetInt("cabinet_id")
+	action_type, _ := c.GetInt("action_type")
+	if action_type != First_In || action_type != First_Out {
+		c.Ctx.Output.SetStatus(401)
+		c.Data["json"] = "参数错误"
+		c.ServeJSON()
+		return
+	}
 	if pay_type != Al_Pay {
 		c.Ctx.Output.SetStatus(400)
 		c.Data["json"] = "[支付宝]:请求失败"
+		c.ServeJSON()
+		return
+	}
+	//先存后付
+	if action_type == 2 {
+		c.Ctx.Output.SetStatus(201)
+		c.Data["json"] = beego.AppConfig.String("oauth_url") + strconv.Itoa(cabinet_id)
 		c.ServeJSON()
 		return
 	}
@@ -65,6 +83,10 @@ func (c *OrderController) ReOrder() {
 		c.ServeJSON()
 		return
 	}
+	order_no, _ := models.CreateOrderNo()
+	if action_type == First_Out {
+	}
+
 	//alipay预下单
 	b_pri := []byte(pri)
 	b_pub := []byte(pub)
@@ -72,7 +94,6 @@ func (c *OrderController) ReOrder() {
 	//加密是rsa1
 	client.SignType = a.K_SIGN_TYPE_RSA
 	var p = a.AliPayTradePreCreate{}
-	order_no, _ := models.CreateOrderNo()
 	p.OutTradeNo = order_no
 	p.NotifyURL = beego.AppConfig.String("alipay_notify_url")
 	p.Subject = beego.AppConfig.String("ali_subject")
@@ -80,13 +101,12 @@ func (c *OrderController) ReOrder() {
 	//预下单到支付宝服务器
 	result, err := client.TradePreCreate(p)
 
-	if err != nil || !result.IsSuccess() {
+	if err != nil || result.AliPayPreCreateResponse.Code != "10000" {
 		c.Ctx.Output.SetStatus(403)
 		c.Data["json"] = "[支付宝]:网络错误"
 		c.ServeJSON()
 		return
 	}
-
 	v = models.CabinetOrderRecord{
 		CabinetDetailId: cd.Id,
 		PayType:         pay_type,
