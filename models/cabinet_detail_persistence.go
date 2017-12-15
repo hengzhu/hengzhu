@@ -5,12 +5,13 @@ import (
 	"github.com/astaxie/beego"
 	"hengzhu/tool/payment"
 	"time"
+	"strconv"
 )
 
 func GetIdleDoorByCabinetId(cid int64) CabinetDetail { //通过柜子id得到一个空闲的门
 	o := orm.NewOrm()
 	cabd := CabinetDetail{}
-	err := o.Raw(`select * from cabinet_detail where cabinet_id=? and using=1 limit 1`).QueryRow(&cabd)
+	err := o.Raw("select * from cabinet_detail where cabinet_id= ? and `using` = 1 limit 1;", cid).QueryRow(&cabd)
 	if err != nil {
 		beego.Error("[CabinetOrder]: GetIdleDoorByCabinetId err in select:", err)
 		return cabd
@@ -21,8 +22,10 @@ func GetIdleDoorByCabinetId(cid int64) CabinetDetail { //通过柜子id得到一
 func CreateNewWxOrder(order payment.WXUnifiedorderRequest) bool {
 	o := orm.NewOrm()
 	now := time.Now().Unix()
+	cid, _ := strconv.Atoi(order.ProductId)
+	fee, _ := strconv.Atoi(order.TotalFee)
 	_, err := o.Raw(`insert into cabinet_order_record set order_no=?,pay_type=?,cabinet_detail_id=?,fee=?,create_date=?`,
-		order.OutTradeNo, 1, order.ProductId, order.TotalFee, now).Exec() //fee虽然是字符串但是可以正确插入
+		order.OutTradeNo, 1, cid, fee, now).Exec() //fee虽然是字符串但是可以正确插入
 	if err != nil {
 		beego.Error("[CabinetOrder]: CreateNewWxOrder err in insert:", err)
 		return false

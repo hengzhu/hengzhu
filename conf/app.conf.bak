@@ -14,8 +14,11 @@ alipay_notify_url = http://39.108.53.220/paynotify/alinotify
 ali_subject = 智能储物柜
 ali_fee = 0.01
 
+wx_notify_url = http://39.108.53.220/paynotify/wxnotify
+
 cabinet_num = 100
-oauth_url = https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2017120500383892&scope=auth_userinfo&redirect_uri=http://39.108.53.220/paynotify/oauthnotify&state=
+ali_oauth_url = https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2017120500383892&scope=auth_userinfo&redirect_uri=http://39.108.53.220/paynotify/oauthnotify&state=
+wx_oauth_url = https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2017120500383892&scope=auth_userinfo&redirect_uri=http://39.108.53.220/paynotify/oauthnotify&state=
 
 
 [prod]

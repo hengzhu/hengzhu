@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"hengzhu/tool/pay_init"
 	"hengzhu/tool/payment"
 	"github.com/smartwalle/alipay"
 	"github.com/astaxie/beego"
@@ -12,6 +11,7 @@ import (
 	"encoding/json"
 	"github.com/astaxie/beego/orm"
 	"errors"
+	"encoding/xml"
 )
 
 const (
@@ -27,8 +27,8 @@ type PayNotifyController struct {
 	BaseController
 }
 
-// @Title 支付宝回调
-// @Description 支付宝回调
+// @Title 支付宝支付回调
+// @Description 支付宝支付回调
 // @router /alinotify [post]
 func (c *PayNotifyController) AliNotify() {
 	b_pri := []byte(pri)
@@ -165,29 +165,53 @@ A:
 }
 
 // eg: transdata=%7B%22transtype%22%3A0%2C%22cporderid%22%3A%22re_4ba3YbGUo1%22%2C%22transid%22%3A%220001191495174433775563781837%22%2C%22pcuserid%22%3A%22263%22%2C%22appid%22%3A%221032017051111958%22%2C%22goodsid%22%3A%22153%22%2C%22feetype%22%3A1%2C%22money%22%3A1%2C%22fact_money%22%3A1%2C%22currency%22%3A%22CHY%22%2C%22result%22%3A1%2C%22transtime%22%3A%2220170519141414%22%2C%22pc_priv_info%22%3A%22%22%2C%22paytype%22%3A%221%22%7D&sign=4047a3826502b339b7f2a55145b99291&signtype=MD5
-// @Title 微信回调
-// @Description 微信回调
-// @router /wx [post]
+// @Title 微信支付回调
+// @Description 微信支付回调
+// @router /wxnotify [post]
 func (c *PayNotifyController) WxNotify() {
-	transdata := c.GetString("transdata")
-	sign := c.GetString("sign")
+	//transdata := c.GetString("transdata")
+	//sign := c.GetString("sign")
+	//
+	//ap, err := pay_init.CheckBbnPayNotify(transdata, sign)
+	//if err != nil {
+	//	c.Ctx.WriteString(err.Error())
+	//	return
+	//}
+	//
+	//switch ap.Type {
+	//case pay_init.Type_Recharge:
+	//}
+	//c.Ctx.WriteString(payment.BbnResponse_Success)
 
-	ap, err := pay_init.CheckBbnPayNotify(transdata, sign)
+	notify := payment.WXPayResultNotifyArgs{}
+	err := xml.Unmarshal(c.Ctx.Input.RequestBody, &notify)
 	if err != nil {
-		c.Ctx.WriteString(err.Error())
+		beego.Error("[WxPay]: PayBack err in Unmarshal:", err)
+		c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "FAIL", ReturnMsg: "参数格式校验错误"}
+		c.ServeXML()
+		return
+	}
+	ok := notify.SignValid()
+	if !ok {
+		c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "FAIL", ReturnMsg: "签名失败"}
+		c.ServeXML()
 		return
 	}
 
-	switch ap.Type {
-	case pay_init.Type_Recharge:
-		//err := models.UpdateRechargeSuccessByNo(ap.OutTradeNO, ap.TradeNO, Bbn_Pay)
-		//if err != nil {
-		//	c.Ctx.WriteString(err.Error())
-		//	return
-		//}
-	}
+	//go func(){}()这里最好异步处理 需要同步给微信返回结果
 
-	c.Ctx.WriteString(payment.BbnResponse_Success)
+	detailId := models.GetCabDIdByOrderNo(notify.OutTradeNo)
+	if detailId == 0 {
+		//说明这个订单有问题
+		beego.Error("[WxPay]: get cabinet by out_order_no fail")
+	}
+	ok = models.WxPaySuccess(notify, detailId)
+	if !ok {
+		//处理失败
+		beego.Error("[WxPay]: WxPay fail")
+	}
+	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
+
 }
 
 func init() {
