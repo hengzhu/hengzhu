@@ -309,6 +309,14 @@ func HandleCabinetFromHardWare(msg *bean.RabbitMqMessage) (err error) {
 	//柜子门还空闲
 	if cd.Using == 1 {
 		_, err = o.Raw("update cabinet_detail set open_state = 2 and using = 2 and store_time = ? where userID = ? limit 1;", int(time.Now().Unix()), msg.UserId).Exec()
+		//添加日志记录
+		m := Log{
+			CabinetDetailId: cd.Id,
+			User:            msg.UserId,
+			Time:            time.Now(),
+			Action:          "存",
+		}
+		AddLog(&m)
 		return
 	}
 	//第二次(取物时关门)
@@ -321,6 +329,13 @@ func HandleCabinetFromHardWare(msg *bean.RabbitMqMessage) (err error) {
 		return
 	}
 	_, err = o.Raw("update cabinet_detail set open_state = 2 and userID = ? and using = ? and store_time = ? where id = ? ;", "", 1, 0, cd.Id).Exec()
-
+	//添加日志记录
+	m := Log{
+		CabinetDetailId: cd.Id,
+		User:            msg.UserId,
+		Time:            time.Now(),
+		Action:          "取",
+	}
+	AddLog(&m)
 	return
 }

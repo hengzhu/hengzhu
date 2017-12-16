@@ -12,6 +12,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"errors"
 	"encoding/xml"
+	"time"
 )
 
 const (
@@ -54,6 +55,14 @@ func (c *PayNotifyController) AliNotify() {
 		c.Ctx.WriteString(err.Error())
 		return
 	}
+	//添加日志记录
+	m := models.Log{
+		CabinetDetailId: cd.Id,
+		User:            noti.BuyerId,
+		Time:            time.Now(),
+		Action:          OpenDoor,
+	}
+	models.AddLog(&m)
 	//cor, err := models.GetOrderRecordByOerderNo(noti.OutTradeNo)
 	//if err != nil {
 	//	c.Ctx.WriteString(err.Error())
@@ -84,6 +93,7 @@ func (c *PayNotifyController) AliNotify() {
 // @router /oauthnotify [post]
 func (c *PayNotifyController) OauthNotify() {
 	var cid, door_no int
+	var cdid int
 	auth_code := c.Ctx.Input.Query("auth_code")
 	cabinet_id, _ := strconv.Atoi(c.Ctx.Input.Query("state"))
 
@@ -129,12 +139,13 @@ func (c *PayNotifyController) OauthNotify() {
 			c.ServeJSON()
 			return
 		}
+		cdid = cd.Id
 		cid = cabinet_id
 		door_no = door
 		goto A
 	}
 	//根据扫码用户的user_id获取已经支付并正在使用的柜子和门
-	cid, door_no, err = models.GetCabinetAndDoorByUserId(openid)
+	cid, door_no, cdid, err = models.GetCabinetAndDoorByUserId(openid)
 	if err == orm.ErrNoRows {
 		c.Ctx.Output.SetStatus(404)
 		c.Data["json"] = errors.New("未使用已经支付的柜子").Error()
@@ -147,6 +158,15 @@ func (c *PayNotifyController) OauthNotify() {
 		return
 	}
 A:
+//添加日志记录
+	m := models.Log{
+		CabinetDetailId: cdid,
+		User:            openid,
+		Time:            time.Now(),
+		Action:          OpenDoor,
+	}
+	models.AddLog(&m)
+
 	rmm := bean.RabbitMqMessage{
 		CabinetId: cid,
 		Door:      door_no,
@@ -203,6 +223,15 @@ func (c *PayNotifyController) WxNotify() {
 		c.Ctx.WriteString(err.Error())
 		return
 	}
+	//添加日志记录
+	m := models.Log{
+		CabinetDetailId: cd.Id,
+		User:            notify.OpenId,
+		Time:            time.Now(),
+		Action:          OpenDoor,
+	}
+	models.AddLog(&m)
+
 	rmm := bean.RabbitMqMessage{
 		CabinetId: cd.CabinetId,
 		Door:      cd.Door,
@@ -226,6 +255,7 @@ func (c *PayNotifyController) WxNotify() {
 // @router /wxoauthnotify [post]
 func (c *PayNotifyController) WxOauthNotify() {
 	var cid, door_no int
+	var cdid int
 	code := c.Input().Get("code")
 	cabinet_id, err := strconv.Atoi(c.Input().Get("state"))
 	wxastoken := payment.WXOAuth2AccessTokenRequest{
@@ -260,12 +290,13 @@ func (c *PayNotifyController) WxOauthNotify() {
 			c.ServeXML()
 			return
 		}
+		cdid = cd.Id
 		cid = cabinet_id
 		door_no = door
 		goto A
 	}
 	//根据扫码用户的open_id获取已经支付并正在使用的柜子和门
-	cid, door_no, err = models.GetCabinetAndDoorByUserId(res.OpenId)
+	cid, door_no, cdid, err = models.GetCabinetAndDoorByUserId(res.OpenId)
 	if err == orm.ErrNoRows {
 		c.Ctx.Output.SetStatus(404)
 		c.Data["xml"] = errors.New("未使用已经支付的柜子").Error()
@@ -279,6 +310,15 @@ func (c *PayNotifyController) WxOauthNotify() {
 		return
 	}
 A:
+//添加日志记录
+	m := models.Log{
+		CabinetDetailId: cdid,
+		User:            res.OpenId,
+		Time:            time.Now(),
+		Action:          OpenDoor,
+	}
+	models.AddLog(&m)
+
 	rmm := bean.RabbitMqMessage{
 		CabinetId: cid,
 		Door:      door_no,

@@ -9,12 +9,10 @@ import (
 	"time"
 	"hengzhu/models"
 	"errors"
-	"sync"
 )
 
 var Queues = make(map[string]string)
 var Rabbit *mq.Rabbit
-var WaitGroup *sync.WaitGroup
 
 func init() {
 	url := beego.AppConfig.String("rabbitmq_url")

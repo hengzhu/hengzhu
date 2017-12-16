@@ -20,7 +20,7 @@ type CabinetOrderRecord struct {
 	PayType         int8    `orm:"column(pay_type)" description:"1 微信 2支付宝 3？"`
 	ThirdOrderNo    string  `orm:"column(third_order_no);size(255);null" description:"第三方支付id"`
 	CabinetDetailId int     `orm:"column(cabinet_detail_id)"`
-	Fee             float32 `orm:"column(fee)" description:"钱数"`
+	Fee             float64 `orm:"column(fee)" description:"钱数"`
 	CreateDate      int     `orm:"column(create_date)"`
 	PayDate         int     `orm:"column(pay_date);null"`
 	IsPay           int8    `orm:"column(is_pay)" description:"是否支付 0 未支付 1已经支付"`
@@ -202,7 +202,7 @@ func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid strin
 	//先存后支付下单形式
 	//已经查到该用户在用
 	c := CabinetDetail{UserID: openid, Using: 2, UseState: 1}
-	if err = o.Read(&c, "userID", "using", "use_state", "open_state"); err == nil {
+	if err = o.Read(&c, "userID", "using", "use_state"); err == nil {
 
 		if err != nil {
 			return

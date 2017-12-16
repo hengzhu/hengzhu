@@ -21,9 +21,9 @@ WxAPPID = wxf2ba6d418bd9c512
 wx_notify_url = http://39.108.53.220/paynotify/wxnotify
 wx_return_url = http://39.108.53.220/paynotify/wxoauthnotify
 
-cabinet_num = 100
+#cabinet_num = 100
 ali_oauth_url = https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2017120500383892&scope=auth_userinfo&redirect_uri=http://39.108.53.220/paynotify/oauthnotify&state=
-wx_oauth_url = https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=http://39.108.53.220/paynotify/wxoauthnotify&response_type=code&scope=snsapi_base#wechat_redirect&state=
+wx_oauth_url = https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxf2ba6d418bd9c512&redirect_uri=http://39.108.53.220/paynotify/wxoauthnotify&response_type=code&scope=snsapi_base#wechat_redirect&state=
 
 
 [prod]
