@@ -89,6 +89,7 @@ func (c *OrderController) ReOrder() {
 	}
 	if pay_type == Wx_Pay {
 		c.NewOrder()
+		return
 	}
 
 	order_no, _ := models.CreateOrderNo()
@@ -136,30 +137,30 @@ func (c *OrderController) ReOrder() {
 }
 
 func (c *OrderController) NewOrder() {
-	var v models.CabinetOrderRecord
 	cabinetId := c.Input().Get("cabinet_id")
 	//ip := c.Ctx.Input.IP() //不知道你们的机制是不是这样获得ip
 	cid, err := strconv.ParseInt(cabinetId, 10, 64)
 	if err != nil {
 		beego.Error("[WxPay] NewOrder err in cabinet to int:", err)
+		c.Data["json"] = err.Error()
 	}
 	cabdetail := models.GetIdleDoorByCabinetId(cid) //根据用户当前扫码的柜子获得一个空闲的门
 	order_no, _ := models.CreateOrderNo()           //这里最好定义好一个订单生成规则 我们内部通过订单号就可以区分支付渠道最好
 	nonstr := order_no
-
 	//根据参数创建一个新的订单并且向微信下单获得微信返回的结果
 	wxOrderReq := payment.WXUnifiedorderRequest{//参数可选,签名可以自动生成
-		AppId: beego.AppConfig.String("APPID"),          //*必填 注意 这两个参数是在payment/wxpay 一开始就配置的
-		MchId: beego.AppConfig.String("alipay_partner"), //*必填 注意 这两个参数是在payment/wxpay 一开始就配置的
-		DeviceInfo: "",                                  // 选填 设备号
-		NonceStr: nonstr,                                //*必填 随机字符串
+		AppId: beego.AppConfig.String("WxAPPID"),  //*必填 注意 这两个参数是在payment/wxpay 一开始就配置的
+		MchId: beego.AppConfig.String("WxMCH_ID"), //*必填 注意 这两个参数是在payment/wxpay 一开始就配置的
+		DeviceInfo: "",                            // 选填 设备号
+		NonceStr: nonstr,                          //*必填 随机字符串
 		//Sign: "",                                        //*必填 但是post方法会自己生成签名,因此可以不用人工填写
-		Body: strconv.Itoa(First_In), //*必填 商品描述
-		Detail: "",                   // 选填 商品详情
-		Attach: "",                   // 选填 附加数据
-		OutTradeNo: order_no,         //*必填 商户系统内部订单号 这个重要
-		FeeType: "",                  //*选填 币种
-		TotalFee: "50",               //*必填 商品标价
+		//Body: strconv.Itoa(First_In), //*必填 商品描述
+		Body: "恒铸-储物柜:" + strconv.Itoa(cabdetail.Door), //*必填 商品描述
+		Detail: "",                                     // 选填 商品详情
+		Attach: "",                                     // 选填 附加数据
+		OutTradeNo: order_no,                           //*必填 商户系统内部订单号 这个重要
+		FeeType: "",                                    //*选填 币种
+		TotalFee: beego.AppConfig.String("wx_fee"),     //*必填 商品标价
 		SpBillCreateIp: "39.108.53.220",
 		//不知道你们这里是不是填这个//*必填 终端ip地址
 		TimeStart: "",                                      // 选填 交易起始时间
@@ -167,67 +168,53 @@ func (c *OrderController) NewOrder() {
 		GoodsTag: "",                                       // 选填 订单优惠标记
 		NotifyURL: beego.AppConfig.String("wx_notify_url"), //*必填 支付结果通知地址 非常重要
 		TradeType: "NATIVE",                                //*必填 交易类型 这里应为native 扫码支付
-		ProductId: string(cabdetail.CabinetId),             //*必填 商品id原本为选填,但是在扫码支付下必须填写
+		ProductId: strconv.Itoa(cabdetail.CabinetId),       //*必填 商品id原本为选填,但是在扫码支付下必须填写
 		LimitPay: "",                                       // 选填 限定支付方式
 		OpenId: "",                                         // 选填 在扫码支付的情况下不用填写
 	}
-	ok := models.CreateNewWxOrder(wxOrderReq) //创建一个本地订单
+	ok := models.CreateNewWxOrder(wxOrderReq, cabdetail.Id) //创建一个本地订单
 	if !ok {
 		beego.Error("[WxPay]: CreateNewWxOrder fail")
 		//创建一个订单失败
+		c.Data["json"] = "[WxPay]: CreateNewWxOrder fail"
 		return
 	}
 	res, err := wxOrderReq.Post()
 	if err != nil {
-		beego.Error("[WxPay]: NewOrder post err and order:", wxOrderReq)
+		beego.Error("[WxPay]: NewOrder post err and order:", wxOrderReq, err.Error())
 		//返回一个失败的结果
-		c.Ctx.WriteString(err.Error())
+		c.Data["json"] = err.Error()
 		return
 	}
 	ok = res.SignValid() //校验返回结果的签名
 	if !ok {
 		beego.Error("[WxPay]: NewOrder post response sign err,order:", wxOrderReq, "res:", res)
 		//签名错误 此处要返回结果
-		c.Ctx.WriteString("verify sign error")
+		c.Data["json"] = "verify sign error"
 		return
 	}
 	if res.ReturnCode != "SUCCESS" { //通信结果
 		beego.Error("[WxPay]: NewOrder post response communication err,order:", wxOrderReq, "res:", res) //通信失败
-		c.Ctx.WriteString("communication error")
+		c.Data["json"] = "communication error"
 		return
 	}
 	if res.ResultCode != "SUCCESS" { //业务结果 下单成功或者失败
 		beego.Error("[WxPay]: NewOrder post response order fail,order:", wxOrderReq, "res:", res)
-		c.Ctx.WriteString(" NewOrder post response order fail")
+		c.Data["json"] = " NewOrder post response order fail"
 		return
 	}
 	beego.Debug("[WxPay]: NewOrder success and code:", res.CodeURL)
 	//c.TplName = ""
-	v = models.CabinetOrderRecord{
-		CabinetDetailId: cabdetail.Id,
-		PayType:         Wx_Pay,
-		Fee:             50,
-		CreateDate:      int(time.Now().Unix()),
-		OrderNo:         order_no,
-	}
-	if _, err := models.AddCabinetOrderRecord(&v); err == nil {
-		c.Ctx.Output.SetStatus(201)
-	} else {
-		c.Ctx.Output.SetStatus(501)
-		c.Data["json"] = "服务器异常"
-		beego.Warn(err)
-		c.ServeJSON()
-		return
-	}
 	c.Data["json"] = res.CodeURL
 	c.ServeJSON()
+
 }
 
 func (c *OrderController) GetCode(cabinet_id int) {
 	state := beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id)
 	wxauth2 := payment.WXOAuth2Authorize{
-		RedirectURI: "",    //这里只用指定这个其它的默认就行
-		State:       state, //这个用来标识自己的会话
+		RedirectURI: beego.AppConfig.String("wxoauthnotify"), //这里只用指定这个其它的默认就行
+		State:       state,                                   //这个用来标识自己的会话
 	}
 	redirectUrl := wxauth2.ToURL()
 	beego.Debug("[WxUnlock] redirect to:", redirectUrl)
@@ -259,9 +246,9 @@ UJrUvJvWukvR5hy0KwIDAQAB
 -----END PUBLIC KEY-----`
 
 	config := payment.WXKeyConfig{}
-	config.APP_ID = "wx2421b1c4370ec43b"
-	config.MCH_ID = "10000100"
-	config.MCH_KEY = ""
+	config.APP_ID = beego.AppConfig.String("WxAPPID")
+	config.MCH_ID = beego.AppConfig.String("WxMCH_ID")
+	config.MCH_KEY = beego.AppConfig.String("WxKey")
 	payment.InitWXKey(config)
 
 }

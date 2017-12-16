@@ -19,10 +19,9 @@ func GetIdleDoorByCabinetId(cid int64) CabinetDetail { //通过柜子id得到一
 	return cabd
 }
 
-func CreateNewWxOrder(order payment.WXUnifiedorderRequest) bool {
+func CreateNewWxOrder(order payment.WXUnifiedorderRequest, cid int) bool {
 	o := orm.NewOrm()
 	now := time.Now().Unix()
-	cid, _ := strconv.Atoi(order.ProductId)
 	fee, _ := strconv.Atoi(order.TotalFee)
 	_, err := o.Raw(`insert into cabinet_order_record set order_no=?,pay_type=?,cabinet_detail_id=?,fee=?,create_date=?`,
 		order.OutTradeNo, 1, cid, fee, now).Exec() //fee虽然是字符串但是可以正确插入

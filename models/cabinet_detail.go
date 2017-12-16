@@ -8,6 +8,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"time"
 	"strconv"
+	"hengzhu/models/bean"
 )
 
 type CabinetDetail struct {
@@ -296,9 +297,30 @@ func BindOpenIdForCabinetDoor(openid string, cdid int) (err error, door_no int) 
 	return
 }
 
-func GetCabinetByOpenId(open_id string) (*CabinetDetail, error) {
+//处理柜子上报的信息
+func HandleCabinetFromHardWare(msg *bean.RabbitMqMessage) (err error) {
 	o := orm.NewOrm()
 	cd := CabinetDetail{}
-	err := o.Raw("select * from cabinet_detail where userID = ? and use_state = 1 and open_state = 1 and using = 1", open_id).QueryRow(&cd)
-	return &cd, err
+	//先查是否有绑定关系的
+	err = o.Raw("select id,using from cabinet_detail where cabinet_id = ? and door = ? and userID = ? and use_state = 1 limit 1;", msg.CabinetId, msg.Door, msg.UserId).QueryRow(&cd)
+	if err != nil {
+		return
+	}
+	//柜子门还空闲
+	if cd.Using == 1 {
+		_, err = o.Raw("update cabinet_detail set open_state = 2 and using = 2 and store_time = ? where userID = ? limit 1;", int(time.Now().Unix()), msg.UserId).Exec()
+		return
+	}
+	//第二次(取物时关门)
+	//判断是否回收柜子门
+	cor := CabinetOrderRecord{}
+	//如果同一用户又用了同一个门?
+	err = o.Raw("select * from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and is_pay = 1 limit 1;", msg.UserId, cd.Id).QueryRow(&cor)
+	if err == orm.ErrNoRows {
+		err = errors.New("系统异常")
+		return
+	}
+	_, err = o.Raw("update cabinet_detail set open_state = 2 and userID = ? and using = ? and store_time = ? where id = ? ;", "", 1, 0, cd.Id).Exec()
+
+	return
 }

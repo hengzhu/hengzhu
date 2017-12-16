@@ -8,6 +8,7 @@ import (
 	"hengzhu/models/admin"
 	_ "github.com/go-sql-driver/mysql"
 	"hengzhu/task"
+	"hengzhu/tool"
 )
 
 func main() {
@@ -15,6 +16,7 @@ func main() {
 	//	beego.BConfig.WebConfig.DirectoryIndex = true
 	//	beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	//}
+	go tool.GetMessageFromHardWare(tool.Queues)
 	task.Run()
 	beego.Run()
 }

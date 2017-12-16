@@ -74,6 +74,7 @@ func (c *PayNotifyController) AliNotify() {
 		c.Ctx.WriteString(err.Error())
 		return
 	}
+	tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + strconv.Itoa(cd.CabinetId)
 	c.Ctx.WriteString("success")
 
 }
@@ -160,6 +161,7 @@ A:
 		c.Ctx.WriteString(err.Error())
 		return
 	}
+	tool.Queues[strconv.Itoa(cid)] = "cabinet_" + strconv.Itoa(cid)
 	c.Ctx.WriteString("success")
 
 }
@@ -170,6 +172,7 @@ A:
 // @router /wxnotify [post]
 func (c *PayNotifyController) WxNotify() {
 	notify := payment.WXPayResultNotifyArgs{}
+	beego.Warn("======== ", c.Ctx.Request.Form, c.Ctx.Request.URL)
 	err := xml.Unmarshal(c.Ctx.Input.RequestBody, &notify)
 	if err != nil {
 		beego.Error("[WxPay]: PayBack err in Unmarshal:", err)
@@ -213,6 +216,7 @@ func (c *PayNotifyController) WxNotify() {
 		c.Ctx.WriteString(err.Error())
 		return
 	}
+	tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + strconv.Itoa(cd.CabinetId)
 	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
 
 }
@@ -290,7 +294,8 @@ A:
 		c.ServeXML()
 		return
 	}
-	c.Data["xml"] = "success"
+	tool.Queues[strconv.Itoa(cid)] = "cabinet_" + strconv.Itoa(cid)
+	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
 	c.ServeXML()
 
 }

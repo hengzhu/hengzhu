@@ -14,17 +14,17 @@ import (
 )
 
 type CabinetOrderRecord struct {
-	Id              int    `orm:"column(id);auto"`
-	OrderNo         string `orm:"column(order_no)" description:"内部生成的订单号"`
-	CustomerId      string `orm:"column(customer_id);size(255);null" description:"顾客id 微信 openid 支付宝？"`
-	PayType         int8   `orm:"column(pay_type)" description:"1 微信 2支付宝 3？"`
-	ThirdOrderNo    string `orm:"column(third_order_no);size(255);null" description:"第三方支付id"`
-	CabinetDetailId int    `orm:"column(cabinet_detail_id)"`
-	Fee             int    `orm:"column(fee)" description:"钱数 单位分"`
-	CreateDate      int    `orm:"column(create_date)"`
-	PayDate         int    `orm:"column(pay_date);null"`
-	IsPay           int8   `orm:"column(is_pay)" description:"是否支付 0 未支付 1已经支付"`
-	ActionType      int8   `orm:"column(action_type)" description:"1.存付款 ,2.取付款"`
+	Id              int     `orm:"column(id);auto"`
+	OrderNo         string  `orm:"column(order_no)" description:"内部生成的订单号"`
+	CustomerId      string  `orm:"column(customer_id);size(255);null" description:"顾客id 微信 openid 支付宝？"`
+	PayType         int8    `orm:"column(pay_type)" description:"1 微信 2支付宝 3？"`
+	ThirdOrderNo    string  `orm:"column(third_order_no);size(255);null" description:"第三方支付id"`
+	CabinetDetailId int     `orm:"column(cabinet_detail_id)"`
+	Fee             float32 `orm:"column(fee)" description:"钱数"`
+	CreateDate      int     `orm:"column(create_date)"`
+	PayDate         int     `orm:"column(pay_date);null"`
+	IsPay           int8    `orm:"column(is_pay)" description:"是否支付 0 未支付 1已经支付"`
+	ActionType      int8    `orm:"column(action_type)" description:"1.存付款 ,2.取付款"`
 }
 
 func (t *CabinetOrderRecord) TableName() string {
