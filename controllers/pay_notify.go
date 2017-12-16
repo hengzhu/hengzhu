@@ -169,20 +169,6 @@ A:
 // @Description 微信支付回调
 // @router /wxnotify [post]
 func (c *PayNotifyController) WxNotify() {
-	//transdata := c.GetString("transdata")
-	//sign := c.GetString("sign")
-	//
-	//ap, err := pay_init.CheckBbnPayNotify(transdata, sign)
-	//if err != nil {
-	//	c.Ctx.WriteString(err.Error())
-	//	return
-	//}
-	//
-	//switch ap.Type {
-	//case pay_init.Type_Recharge:
-	//}
-	//c.Ctx.WriteString(payment.BbnResponse_Success)
-
 	notify := payment.WXPayResultNotifyArgs{}
 	err := xml.Unmarshal(c.Ctx.Input.RequestBody, &notify)
 	if err != nil {
@@ -197,7 +183,6 @@ func (c *PayNotifyController) WxNotify() {
 		c.ServeXML()
 		return
 	}
-
 	//go func(){}()这里最好异步处理 需要同步给微信返回结果
 
 	detailId := models.GetCabDIdByOrderNo(notify.OutTradeNo)
@@ -205,12 +190,108 @@ func (c *PayNotifyController) WxNotify() {
 		//说明这个订单有问题
 		beego.Error("[WxPay]: get cabinet by out_order_no fail")
 	}
-	ok = models.WxPaySuccess(notify, detailId)
-	if !ok {
-		//处理失败
-		beego.Error("[WxPay]: WxPay fail")
+	//ok = models.WxPaySuccess(notify, detailId)
+	//if !ok {
+	//	//处理失败
+	//	beego.Error("[WxPay]: WxPay fail")
+	//}
+	cd, err := models.UpdateOrderSuccessByNo(notify.TransactionId, notify.OutTradeNo, notify.OpenId)
+	if err != nil {
+		c.Ctx.WriteString(err.Error())
+		return
+	}
+	rmm := bean.RabbitMqMessage{
+		CabinetId: cd.CabinetId,
+		Door:      cd.Door,
+		UserId:    notify.OpenId,
+		DoorState: OpenDoor,
+	}
+	bs, _ := json.Marshal(&rmm)
+	err = tool.Rabbit.Publish("cabinet_"+strconv.Itoa(cd.CabinetId), bs)
+	if err != nil {
+		beego.Error("[rabbitmq err:] ", err.Error())
+		c.Ctx.WriteString(err.Error())
+		return
 	}
 	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
+
+}
+
+// @Title 微信授权用户信息
+// @Description 微信授权用户信息
+// @router /wxoauthnotify [post]
+func (c *PayNotifyController) WxOauthNotify() {
+	var cid, door_no int
+	code := c.Input().Get("code")
+	cabinet_id, err := strconv.Atoi(c.Input().Get("state"))
+	wxastoken := payment.WXOAuth2AccessTokenRequest{
+		Code:      code,
+		GrantType: GrantType,
+	}
+	res, err := wxastoken.Get()
+	if err != nil {
+		beego.Error("[WxUnlock] GetOpenId err in wxastoken.Get()")
+	}
+	beego.Debug("[WxUnlock]: GetOpenId get:", res.OpenId)
+	//先存后付授权开门
+	if cabinet_id != 0 {
+		cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
+		if err == orm.ErrNoRows {
+			c.Ctx.Output.SetStatus(404)
+			c.Data["xml"] = errors.New("没有空闲的门可分配").Error()
+			c.ServeXML()
+			return
+		}
+		if err != nil {
+			c.Ctx.Output.SetStatus(500)
+			c.Data["xml"] = errors.New("服务器崩溃").Error()
+			c.ServeXML()
+			return
+		}
+		//先绑定openid,上传关门信息时才修改为被占用
+		err, door := models.BindOpenIdForCabinetDoor(res.OpenId, cd.Id)
+		if err != nil {
+			c.Ctx.Output.SetStatus(501)
+			c.Data["xml"] = errors.New("系统错误").Error()
+			c.ServeXML()
+			return
+		}
+		cid = cabinet_id
+		door_no = door
+		goto A
+	}
+	//根据扫码用户的open_id获取已经支付并正在使用的柜子和门
+	cid, door_no, err = models.GetCabinetAndDoorByUserId(res.OpenId)
+	if err == orm.ErrNoRows {
+		c.Ctx.Output.SetStatus(404)
+		c.Data["xml"] = errors.New("未使用已经支付的柜子").Error()
+		c.ServeXML()
+		return
+	}
+	if err != nil {
+		beego.Error(err)
+		c.Data["xml"] = err.Error()
+		c.ServeXML()
+		return
+	}
+A:
+	rmm := bean.RabbitMqMessage{
+		CabinetId: cid,
+		Door:      door_no,
+		UserId:    res.OpenId,
+		DoorState: OpenDoor,
+	}
+	bs, _ := json.Marshal(&rmm)
+	//下发开门信息
+	err = tool.Rabbit.Publish("cabinet_"+strconv.Itoa(cid), bs)
+	if err != nil {
+		beego.Error("[rabbitmq err:] ", err.Error())
+		c.Data["xml"] = err.Error()
+		c.ServeXML()
+		return
+	}
+	c.Data["xml"] = "success"
+	c.ServeXML()
 
 }
 

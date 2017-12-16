@@ -37,7 +37,7 @@ func (self *BaseController) Prepare() {
 	self.Data["curRoute"] = self.controllerName + "." + self.actionName
 	self.Data["curController"] = self.controllerName
 	self.Data["curAction"] = self.actionName
-	noAuth := "ajaxsave/ajaxdel/table/loginin/loginout/getnodes/start/alinotify/wxnotify/initwshub/oauthnotify/reorder"
+	noAuth := "ajaxsave/ajaxdel/table/loginin/loginout/getnodes/start/alinotify/wxnotify/initwshub/oauthnotify/reorder/wxoauthnotify"
 	isNoAuth := strings.Contains(noAuth, self.actionName)
 	if isNoAuth == false {
 		self.auth()
@@ -65,7 +65,7 @@ func (self *BaseController) auth() {
 			self.AdminAuth()
 
 			isHasAuth := strings.Contains(self.allowUrl, self.controllerName+"/"+self.actionName)
-			noAuth := "ajaxsave/ajaxdel/table/loginin/loginout/getnodes/start/show/ajaxapisave/alinotify/wxnotify/initwshub/oauthnotify/reorder"
+			noAuth := "ajaxsave/ajaxdel/table/loginin/loginout/getnodes/start/show/ajaxapisave/alinotify/wxnotify/initwshub/oauthnotify/reorder/wxoauthnotify"
 			isNoAuth := strings.Contains(noAuth, self.actionName)
 			if isHasAuth == false && isNoAuth == false {
 				self.Ctx.WriteString("没有权限")

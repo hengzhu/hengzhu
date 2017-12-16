@@ -65,9 +65,8 @@ func (c *OrderController) ReOrder() {
 	//先存后付
 	if action_type == 2 {
 		if pay_type == Wx_Pay {
-			c.Ctx.Output.SetStatus(201)
-			c.Data["json"] = beego.AppConfig.String("wx_oauth_url")
-			c.ServeJSON()
+			//获取code,重定向到微信授权回调
+			c.GetCode(cabinet_id)
 			return
 		}
 		c.Ctx.Output.SetStatus(201)
@@ -206,7 +205,7 @@ func (c *OrderController) NewOrder() {
 	//c.TplName = ""
 	v = models.CabinetOrderRecord{
 		CabinetDetailId: cabdetail.Id,
-		PayType:         1,
+		PayType:         Wx_Pay,
 		Fee:             50,
 		CreateDate:      int(time.Now().Unix()),
 		OrderNo:         order_no,
@@ -222,6 +221,17 @@ func (c *OrderController) NewOrder() {
 	}
 	c.Data["json"] = res.CodeURL
 	c.ServeJSON()
+}
+
+func (c *OrderController) GetCode(cabinet_id int) {
+	state := beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id)
+	wxauth2 := payment.WXOAuth2Authorize{
+		RedirectURI: "",    //这里只用指定这个其它的默认就行
+		State:       state, //这个用来标识自己的会话
+	}
+	redirectUrl := wxauth2.ToURL()
+	beego.Debug("[WxUnlock] redirect to:", redirectUrl)
+	c.Redirect(redirectUrl, 302)
 }
 
 func init() {
@@ -251,6 +261,7 @@ UJrUvJvWukvR5hy0KwIDAQAB
 	config := payment.WXKeyConfig{}
 	config.APP_ID = "wx2421b1c4370ec43b"
 	config.MCH_ID = "10000100"
+	config.MCH_KEY = ""
 	payment.InitWXKey(config)
 
 }

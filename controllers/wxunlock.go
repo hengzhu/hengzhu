@@ -24,7 +24,8 @@ func (c *WxUnlockController) GetCode() {
 func (c *WxUnlockController) GetOpenId() {
 	code := c.Input().Get("code")
 	wxastoken := payment.WXOAuth2AccessTokenRequest{
-		Code: code,
+		Code:      code,
+		GrantType: "authorization_code",
 	}
 	res, err := wxastoken.Get()
 	if err != nil {
