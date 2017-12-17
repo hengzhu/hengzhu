@@ -70,8 +70,9 @@ func (c *PayNotifyController) AliNotify() {
 	//}
 	//door_no := []byte{uint8(cd.Door)}
 	//err = connections[cabinet.CabinetId].WriteMessage(len([]byte{uint8(cd.Door)}), door_no)
+	cab, _ := models.GetCabinetById(cd.CabinetId)
 	rmm := bean.RabbitMqMessage{
-		CabinetId: cd.CabinetId,
+		CabinetId: cab.CabinetID,
 		Door:      cd.Door,
 		UserId:    noti.BuyerId,
 		DoorState: OpenDoor,
@@ -166,9 +167,9 @@ A:
 		Action:          OpenDoor,
 	}
 	models.AddLog(&m)
-
+	cab, _ := models.GetCabinetById(cid)
 	rmm := bean.RabbitMqMessage{
-		CabinetId: cid,
+		CabinetId: cab.CabinetID,
 		Door:      door_no,
 		UserId:    openid,
 		DoorState: OpenDoor,
@@ -231,9 +232,9 @@ func (c *PayNotifyController) WxNotify() {
 		Action:          OpenDoor,
 	}
 	models.AddLog(&m)
-
+	cab, _ := models.GetCabinetById(cd.CabinetId)
 	rmm := bean.RabbitMqMessage{
-		CabinetId: cd.CabinetId,
+		CabinetId: cab.CabinetID,
 		Door:      cd.Door,
 		UserId:    notify.OpenId,
 		DoorState: OpenDoor,
@@ -318,9 +319,9 @@ A:
 		Action:          OpenDoor,
 	}
 	models.AddLog(&m)
-
+	cab, _ := models.GetCabinetById(cid)
 	rmm := bean.RabbitMqMessage{
-		CabinetId: cid,
+		CabinetId: cab.CabinetID,
 		Door:      door_no,
 		UserId:    res.OpenId,
 		DoorState: OpenDoor,
