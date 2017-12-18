@@ -9,6 +9,7 @@ import (
 	"time"
 	"hengzhu/models"
 	"errors"
+	"reflect"
 )
 
 var Queues = make(map[string]string)
@@ -27,6 +28,34 @@ func handleInfo(msg amqp.Delivery) (error) {
 	err := json.Unmarshal(msg.Body, &result)
 	if err != nil {
 		return err
+	}
+	//是否初始化柜子
+	InitInfo := reflect.ValueOf(result.InitInfo)
+	if len(InitInfo.Bytes()) > 0 {
+		typ := models.GetDefaultType()
+		c := models.Cabinet{
+			CabinetID:  result.InitInfo.CabinetID,
+			Number:     result.InitInfo.Number,
+			Desc:       result.InitInfo.Desc,
+			CreateTime: time.Now(),
+			UpdateTime: time.Now(),
+			LastTime:   time.Now(),
+			TypeId:     typ.Id,
+		}
+		//Doors:      result.InitInfo.Doors,
+		//OnUse:      result.InitInfo.OnUse,
+		//Close:      result.InitInfo.Close,
+		models.AddCabinet(&c)
+		for i := 0; i < result.InitInfo.Doors; i++ {
+			cd := &models.CabinetDetail{
+				Door:      i + 1,
+				OpenState: 1,
+				Using:     1,
+				UseState:  1,
+			}
+			models.AddCabinetDetail(cd)
+		}
+		return nil
 	}
 	err = models.HandleCabinetFromHardWare(&result)
 	if err != nil {

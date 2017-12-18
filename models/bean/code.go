@@ -31,14 +31,19 @@ func CodeString(code int) string {
 }
 
 type RabbitMqMessage struct {
-	CabinetId string `json:"cabinet_id"`
-	Door      int    `json:"door"`
-	Heartbeat int    `json:"heartbeat"`
-	UserId    string `json:"user_id"`
-	DoorState string `json:"door_state"`
+	CabinetId string      `json:"cabinet_id"`
+	Door      int         `json:"door"`
+	Heartbeat int         `json:"heartbeat"`
+	UserId    string      `json:"user_id"`
+	DoorState string      `json:"door_state"`
+	InitInfo  CabinetInfo `json:"init_info"`
 }
 
-//type RabbitMqReqMessage struct {
-//	CabinetId int `json:"cabinet_id"`
-//	Door      int `json:"door"`
-//}
+type CabinetInfo struct {
+	CabinetID string `json:"cabinet_id" description:"柜子id"`
+	Number    string `json:"number" description:"编号"`
+	Desc      string `json:"desc" description:"备注"`
+	//CreateTime time.Time `orm:"column(create_time);type(timestamp);null;auto_now_add" description:"创建时间"`
+	//UpdateTime time.Time `orm:"column(update_time);type(timestamp);null;auto_now_add" description:"更新时间"`
+	Doors int `json:"doors" description:"门数"`
+}
