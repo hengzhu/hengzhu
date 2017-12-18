@@ -8,15 +8,15 @@ import (
 	"strconv"
 )
 
-func GetIdleDoorByCabinetId(cid int64) CabinetDetail { //通过柜子id得到一个空闲的门
+func GetIdleDoorByCabinetId(cid int64) *CabinetDetail { //通过柜子id得到一个空闲的门
 	o := orm.NewOrm()
 	cabd := CabinetDetail{}
 	err := o.Raw("select * from cabinet_detail where cabinet_id= ? and `using` = 1 limit 1;", cid).QueryRow(&cabd)
 	if err != nil {
 		beego.Error("[CabinetOrder]: GetIdleDoorByCabinetId err in select:", err)
-		return cabd
+		return &cabd
 	}
-	return cabd
+	return &cabd
 }
 
 func CreateNewWxOrder(order payment.WXUnifiedorderRequest, cid int) bool {

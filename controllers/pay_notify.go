@@ -96,7 +96,11 @@ func (c *PayNotifyController) OauthNotify() {
 	var cid, door_no int
 	var cdid int
 	auth_code := c.Ctx.Input.Query("auth_code")
-	cabinet_id, _ := strconv.Atoi(c.Ctx.Input.Query("state"))
+
+	state := c.Ctx.Input.Query("state")
+	index := len(state)
+	fortime := state[index-7:]
+	cabinet_id, _ := strconv.Atoi(state[:index-7])
 
 	o_pri := []byte(oauth_pri)
 	o_pub := []byte(oauth_pub)
@@ -117,6 +121,24 @@ func (c *PayNotifyController) OauthNotify() {
 		return
 	}
 	openid := reults.AlipaySystemOauthTokenResponse.UserId
+	//如果为计时付费的取物
+	if fortime == ForTime {
+		cid, _, cdid, _ := models.GetCabinetAndDoorByUserId(openid)
+		cab, _ := models.GetCabinetById(cid)
+		t, _ := models.GetTypeById(cab.TypeId)
+		//计算费用
+		cd, _ := models.GetCabinetDetailById(cdid)
+		dis_time := cd.StoreTime - int(time.Now().Unix())
+		ratio := dis_time / t.Unit
+		fee := float64(ratio+1) * t.Price
+		total_fee := strconv.FormatFloat(fee, 'f', 2, 64)
+
+		c.Ctx.Request.Form["total_fee"] = []string{total_fee}
+		c.Ctx.Request.Form["open_id"] = []string{openid}
+		//重定向到支付宝付款
+		c.redirect("http://39.108.53.220/order/reorder?pay_type=2&cabinet_id=" + strconv.Itoa(cid))
+		return
+	}
 	//先存后付授权开门
 	if cabinet_id != 0 {
 		cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
@@ -258,7 +280,11 @@ func (c *PayNotifyController) WxOauthNotify() {
 	var cid, door_no int
 	var cdid int
 	code := c.Input().Get("code")
-	cabinet_id, err := strconv.Atoi(c.Input().Get("state"))
+	state := c.Ctx.Input.Query("state")
+	index := len(state)
+	fortime := state[index-7:]
+	cabinet_id, _ := strconv.Atoi(state[:index-7])
+
 	wxastoken := payment.WXOAuth2AccessTokenRequest{
 		Code:      code,
 		GrantType: GrantType,
@@ -268,6 +294,24 @@ func (c *PayNotifyController) WxOauthNotify() {
 		beego.Error("[WxUnlock] GetOpenId err in wxastoken.Get()")
 	}
 	beego.Debug("[WxUnlock]: GetOpenId get:", res.OpenId)
+	//如果为计时付费的取物
+	if fortime == ForTime {
+		cid, _, cdid, _ = models.GetCabinetAndDoorByUserId(res.OpenId)
+		cab, _ := models.GetCabinetById(cid)
+		t, _ := models.GetTypeById(cab.TypeId)
+		//计算费用
+		cd, _ := models.GetCabinetDetailById(cdid)
+		dis_time := cd.StoreTime - int(time.Now().Unix())
+		ratio := dis_time / t.Unit
+		fee := float64(ratio+1) * t.Price
+		total_fee := strconv.FormatFloat(fee, 'f', 2, 64)
+
+		c.Ctx.Request.Form["total_fee"] = []string{total_fee}
+		c.Ctx.Request.Form["open_id"] = []string{res.OpenId}
+		//重定向到支付宝付款
+		c.redirect("http://39.108.53.220/order/reorder?pay_type=2&cabinet_id=" + strconv.Itoa(cid))
+		return
+	}
 	//先存后付授权开门
 	if cabinet_id != 0 {
 		cd, err := models.GetFreeDoorByCabinetId(cabinet_id)

@@ -213,3 +213,12 @@ func GetCabinetAndDoorByUserId(user_id string) (cid int, door_no int, cdid int, 
 	door_no = cd.Door
 	return
 }
+
+func GetCabinetByMac(cabinet_mac string) (v *Cabinet, err error) {
+	o := orm.NewOrm()
+	v = &Cabinet{CabinetID: cabinet_mac}
+	if err = o.Read(v, "cabinet_ID"); err == nil {
+		return v, nil
+	}
+	return nil, err
+}

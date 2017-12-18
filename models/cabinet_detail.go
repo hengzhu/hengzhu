@@ -339,3 +339,12 @@ func HandleCabinetFromHardWare(msg *bean.RabbitMqMessage) (err error) {
 	AddLog(&m)
 	return
 }
+
+func GetCabinetDetailByOpenId(open_id string) (v *CabinetDetail, err error) {
+	o := orm.NewOrm()
+	v = &CabinetDetail{UserID: open_id}
+	if err := o.Read(v, "userID"); err == nil {
+		return v,nil
+	}
+	return nil, err
+}

@@ -12,9 +12,8 @@ alipay_partner = 2088821824088465
 APPID = 2017120500383892
 alipay_notify_url = http://39.108.53.220/paynotify/alinotify
 ali_subject = 智能储物柜
-ali_fee = 0.05
 
-wx_fee = 5
+
 WxMCH_ID = 1493967752
 WxKey = 46a2fde817c02ec0a0a33bfb293702f0
 WxAPPID = wxf2ba6d418bd9c512
