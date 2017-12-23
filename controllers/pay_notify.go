@@ -84,9 +84,8 @@ func (c *PayNotifyController) AliNotify() {
 		c.Ctx.WriteString(err.Error())
 		return
 	}
-	tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
+	//tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
 	c.Ctx.WriteString("success")
-
 }
 
 // @Title 支付宝授权用户信息
@@ -204,7 +203,7 @@ A:
 		c.Ctx.WriteString(err.Error())
 		return
 	}
-	tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
+	//tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
 	c.Ctx.WriteString("success")
 
 }
@@ -268,7 +267,7 @@ func (c *PayNotifyController) WxNotify() {
 		c.Ctx.WriteString(err.Error())
 		return
 	}
-	tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
+	//tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
 	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
 
 }
@@ -379,7 +378,7 @@ A:
 		c.ServeXML()
 		return
 	}
-	tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
+	//tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
 	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
 	c.ServeXML()
 

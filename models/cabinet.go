@@ -222,3 +222,14 @@ func GetCabinetByMac(cabinet_mac string) (v *Cabinet, err error) {
 	}
 	return nil, err
 }
+
+// 检查是否需要初始化柜子
+func CheckIfAdd(cabinet_mac string) (bool) {
+	o := orm.NewOrm()
+	v := &Cabinet{CabinetID: cabinet_mac}
+	if err := o.Read(v, "cabinet_ID"); err == nil && v.Id > 0 {
+		return false
+	}
+
+	return true
+}
