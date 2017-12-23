@@ -88,13 +88,9 @@ func GetMessageFromHardWare(queues map[string]string) {
 
 // 初始化柜子相关信息
 func GetNewCabinet(name string) {
-	for {
-		err := Rabbit.Receive(name, handleNewInfo)
-		if err != nil {
-			beego.Error(err)
-		}
-
-		time.Sleep(time.Second * 2)
+	err := Rabbit.Receive(name, handleNewInfo)
+	if err != nil {
+		beego.Error(err)
 	}
 }
 
@@ -108,6 +104,11 @@ func handleNewInfo(msg amqp.Delivery) (error) {
 	if err != nil {
 		return err
 	}
+
+	if result.CabinetID == "" || result.Doors == 0 {
+		return errors.New("参数错误")
+	}
+
 	// 判断是否已有这个柜子，是否初始化柜子
 	// 如果已有，则跳过
 	flag := models.CheckIfAdd(result.CabinetID)
@@ -131,6 +132,7 @@ func handleNewInfo(msg amqp.Delivery) (error) {
 	id, _ := models.AddCabinet(&c)
 	for i := 0; i < result.Doors; i++ {
 		cd := &models.CabinetDetail{
+			CabinetId: int(id),
 			Door:      i + 1,
 			OpenState: 1,
 			Using:     1,
