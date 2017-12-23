@@ -78,13 +78,13 @@ func (c *PayNotifyController) AliNotify() {
 		DoorState: OpenDoor,
 	}
 	bs, _ := json.Marshal(&rmm)
-	err = tool.Rabbit.Publish("cabinet_"+strconv.Itoa(cd.CabinetId), bs)
+	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
 	if err != nil {
 		beego.Error("[rabbitmq err:] ", err.Error())
 		c.Ctx.WriteString(err.Error())
 		return
 	}
-	tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + strconv.Itoa(cd.CabinetId)
+	tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
 	c.Ctx.WriteString("success")
 
 }
@@ -198,13 +198,13 @@ A:
 	}
 	bs, _ := json.Marshal(&rmm)
 	//下发开门信息
-	err = tool.Rabbit.Publish("cabinet_"+strconv.Itoa(cid), bs)
+	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
 	if err != nil {
 		beego.Error("[rabbitmq err:] ", err.Error())
 		c.Ctx.WriteString(err.Error())
 		return
 	}
-	tool.Queues[strconv.Itoa(cid)] = "cabinet_" + strconv.Itoa(cid)
+	tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
 	c.Ctx.WriteString("success")
 
 }
@@ -262,13 +262,13 @@ func (c *PayNotifyController) WxNotify() {
 		DoorState: OpenDoor,
 	}
 	bs, _ := json.Marshal(&rmm)
-	err = tool.Rabbit.Publish("cabinet_"+strconv.Itoa(cd.CabinetId), bs)
+	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
 	if err != nil {
 		beego.Error("[rabbitmq err:] ", err.Error())
 		c.Ctx.WriteString(err.Error())
 		return
 	}
-	tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + strconv.Itoa(cd.CabinetId)
+	tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
 	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
 
 }
@@ -372,14 +372,14 @@ A:
 	}
 	bs, _ := json.Marshal(&rmm)
 	//下发开门信息
-	err = tool.Rabbit.Publish("cabinet_"+strconv.Itoa(cid), bs)
+	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
 	if err != nil {
 		beego.Error("[rabbitmq err:] ", err.Error())
 		c.Data["xml"] = err.Error()
 		c.ServeXML()
 		return
 	}
-	tool.Queues[strconv.Itoa(cid)] = "cabinet_" + strconv.Itoa(cid)
+	tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
 	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
 	c.ServeXML()
 
