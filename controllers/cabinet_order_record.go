@@ -172,7 +172,7 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string) {
 	var err error
 	var cabdetail *models.CabinetDetail
 	fee = fee * 100.00
-	total_fee := strconv.FormatFloat(fee, 'f', 2, 64)
+	total_fee := strconv.FormatFloat(fee, 'f', 0, 64)
 	if open_id == "" {
 		//非取物时下单
 		cabdetail = models.GetIdleDoorByCabinetId(int64(cid)) //根据用户当前扫码的柜子获得一个空闲的门
@@ -220,7 +220,6 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string) {
 	}
 	res, err := wxOrderReq.Post()
 	if err != nil {
-		fmt.Print(wxOrderReq.TotalFee)
 		beego.Error("[WxPay]: NewOrder post err and order:", wxOrderReq, err.Error())
 		//返回一个失败的结果
 		c.Data["json"] = err.Error()
