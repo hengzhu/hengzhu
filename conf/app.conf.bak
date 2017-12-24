@@ -1,28 +1,33 @@
 appname = hengzhu
-httpport = 8018
+httpport = 8099
 runmode = prod
 TemplateLeft = "<%"
 TemplateRight = "%>"
 
-rabbitmq_url = amqp://guest:guest@127.0.0.1:5672
+durable = true
+
+#rabbitmq_url = amqp://guest:guest@127.0.0.1:5672
+rabbitmq_url = amqp://client:wOtYTFRN@127.0.0.1:5672
 
 alipay_seller_email = 974619271@qq.com
 ali_api = https://openapi.alipay.com/gateway.do
 alipay_partner = 2088821824088465
 APPID = 2017120500383892
-alipay_notify_url = http://39.108.53.220/paynotify/alinotify
+#alipay_notify_url = http://39.108.53.220/paynotify/alinotify
+alipay_notify_url = http://116.62.167.76/paynotify/alinotify
 ali_subject = 智能储物柜
 
 
 WxMCH_ID = 1493967752
 WxKey = 46a2fde817c02ec0a0a33bfb293702f0
 WxAPPID = wxf2ba6d418bd9c512
-wx_notify_url = http://39.108.53.220/paynotify/wxnotify
-wx_return_url = http://39.108.53.220/paynotify/wxoauthnotify
+#wx_notify_url = http://39.108.53.220/paynotify/wxnotify
+wx_notify_url = http://116.62.167.76/paynotify/wxnotify
+#wx_return_url = http://39.108.53.220/paynotify/wxoauthnotify
+wx_return_url = http://116.62.167.76/paynotify/wxoauthnotify
 
-#cabinet_num = 100
-ali_oauth_url = https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2017120500383892&scope=auth_userinfo&redirect_uri=http://39.108.53.220/paynotify/oauthnotify&state=
-wx_oauth_url = https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxf2ba6d418bd9c512&redirect_uri=http://39.108.53.220/paynotify/wxoauthnotify&response_type=code&scope=snsapi_base#wechat_redirect&state=
+ali_oauth_url = https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=2017120500383892&scope=auth_userinfo&redirect_uri=http://116.62.167.76/paynotify/oauthnotify&state=
+wx_oauth_url = https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxf2ba6d418bd9c512&redirect_uri=http://116.62.167.76/paynotify/wxoauthnotify&response_type=code&scope=snsapi_base#wechat_redirect&state=
 
 
 [prod]

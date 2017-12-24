@@ -27,7 +27,7 @@ func (p *Rabbit) Publish(queue string, body []byte) (error) {
 	}
 	q, err := ch.QueueDeclare(
 		queue, // name
-		true, // durable
+		true,  // durable
 		false, // delete when unused
 		false, // exclusive
 		false, // no-wait
@@ -72,10 +72,10 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 			}
 			q, err := ch.QueueDeclare(
 				queue, // name
-				true, // durable
-				false, // delete when unused
-				false, // exclusive
-				false, // no-wait
+				true,  // durable
+				false,  // delete when unused
+				true,  // exclusive
+				true,  // no-wait
 				nil,   // arguments
 			)
 			if err != nil {
@@ -83,7 +83,7 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 				time.Sleep(5 * time.Second)
 				continue
 			}
-			msg, err := ch.Consume(q.Name, "", true, false, false, false, nil)
+			msg, err := ch.Consume(q.Name, "", true, true, true, true, nil)
 			if err != nil {
 				log.Printf("[rabbit] receive error: %v, try again after 5s", err)
 				time.Sleep(5 * time.Second)
