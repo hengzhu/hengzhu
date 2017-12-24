@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
+	"github.com/Zeniubius/golang_utils/structUtil"
 )
 
 type Cabinet struct {
@@ -91,6 +92,19 @@ func GetCabinetById(id int) (v *Cabinet, err error) {
 		return v, nil
 	}
 	return nil, err
+}
+
+// 根据门的id，获取需要开柜子的信息
+func GetOpenMsg(doorId int) (CabinetID string, Door int64) {
+	o := orm.NewOrm()
+	result := []orm.Params{}
+	sql := "SELECT a.cabinet_ID,b.door FROM cabinet a LEFT JOIN cabinet_detail b ON a.id = b.cabinet_id WHERE b.id=?"
+
+	o.Raw(sql, doorId).Values(&result)
+	CabinetID, _ = structUtil.Interface2String(result[0]["cabinet_ID"], false)
+	Door, _ = structUtil.Interface2Int(result[0]["door"], false)
+
+	return
 }
 
 // GetAllCabinet retrieves all Cabinet matches certain condition. Returns empty list if

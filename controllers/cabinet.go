@@ -9,6 +9,9 @@ import (
 	"hengzhu/tool"
 	"fmt"
 	"time"
+	"hengzhu/models/bean"
+	"github.com/astaxie/beego"
+	"hengzhu/models/admin"
 )
 
 // CabinetController operations for Cabinet
@@ -50,6 +53,40 @@ func (c *CabinetController) Detail() {
 	c.Data["pageTitle"] = "状态详情"
 	c.display()
 	//c.TplName = "/state/detail.html"
+}
+
+//
+func (c *CabinetController) Open() {
+	id, _ := c.GetInt("id")
+	if id == 0 {
+		c.ajaxMsg(errors.New("参数错误"), MSG_ERR)
+	}
+	cabinetID, doorId := models.GetOpenMsg(id)
+
+	rmm := bean.RabbitMqMessage{
+		CabinetId: cabinetID,
+		Door:      int(doorId),
+		UserId:    strconv.Itoa(c.userId),
+		DoorState: OpenDoor,
+	}
+	bs, _ := json.Marshal(&rmm)
+	err := tool.Rabbit.Publish("cabinet_"+cabinetID, bs)
+	if err != nil {
+		beego.Error("[rabbitmq err:] ", err.Error())
+		c.Ctx.WriteString(err.Error())
+		return
+	}
+
+	user, _ := admin.GetAdminById(c.userId)
+	log := models.Log{
+		CabinetDetailId: id,
+		Action:          OpenDoor,
+		User:            user.RealName,
+		Time:            time.Now(),
+	}
+	models.AddLog(&log)
+
+	c.ajaxMsg("成功", MSG_OK)
 }
 
 // 清除柜子的存物状态

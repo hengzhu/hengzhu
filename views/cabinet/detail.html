@@ -174,7 +174,20 @@
           table.on('tool(demo)', function(obj){
             var data = obj.data;
             if(obj.event === 'open'){
-              layer.msg('CabinetID：'+ <%  .cabinet.Id %> + 'doorId:' + data.Id + ' 的查看操作');
+              layer.confirm('确定开门么？', function(index){
+                var postdata = {id:data.Id};
+                $.post('<% urlfor "CabinetController.Open" %>', postdata, function (out) {
+                    if (out.status == 0) {
+                        layer.msg("操作成功",{icon: 1},function () {
+                            window.location.reload()
+                        })
+                    } else {
+                        layer.msg(out.message)
+                    }
+                }, "json");
+                return false;
+                layer.close(index);
+              });
             } else if(obj.event === 'clear'){
               layer.confirm('确定清除么？', function(index){
                 var postdata = {id:data.Id};

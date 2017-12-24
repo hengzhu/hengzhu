@@ -302,7 +302,7 @@ func HandleCabinetFromHardWare(msg *bean.RabbitMqMessage) (err error) {
 	o := orm.NewOrm()
 	cd := CabinetDetail{}
 	//先查是否有绑定关系的
-	err = o.Raw("select id,using from cabinet_detail where cabinet_id = ? and door = ? and userID = ? and use_state = 1 limit 1;", msg.CabinetId, msg.Door, msg.UserId).QueryRow(&cd)
+	err = o.Raw("select id,`using` from cabinet_detail where cabinet_id = ? and door = ? and userID = ? and use_state = 1 limit 1;", msg.CabinetId, msg.Door, msg.UserId).QueryRow(&cd)
 	if err != nil {
 		return
 	}
