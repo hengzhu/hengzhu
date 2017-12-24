@@ -233,3 +233,18 @@ func CheckIfAdd(cabinet_mac string) (bool) {
 
 	return true
 }
+
+func GetCabinetQueues() ([]string) {
+	o := orm.NewOrm()
+	result := []Cabinet{}
+	queue := []string{}
+
+	sql := "SELECT cabinet_ID FROM cabinet"
+	o.Raw(sql).QueryRows(&result)
+
+	for _, res := range result {
+		queue = append(queue, res.CabinetID)
+	}
+
+	return queue
+}

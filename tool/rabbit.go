@@ -9,11 +9,10 @@ import (
 	"time"
 	"hengzhu/models"
 	"errors"
-	"strconv"
 )
 
-var Queues = make(map[string]string)
-var RabbitStarted = make(map[string]bool)
+//var Queues = make(map[string]string)
+//var RabbitStarted = make(map[string]bool)
 var NewCabinet = "new"
 var Rabbit *mq.Rabbit
 
@@ -66,24 +65,26 @@ func handleInfo(msg amqp.Delivery) (error) {
 	return nil
 }
 
-func GetMessageFromHardWare(queues map[string]string) {
-	for {
-		for _, v := range queues {
-			if RabbitStarted[v] == true {
-				// 该协程已经启动，无需再次启动
-				continue
+func GetMessageFromHardWare() {
+	// 由于各种原因服务器重启后，之前的队列只需要重新启动一次就可以
+	queues := models.GetCabinetQueues()
+	//for {
+	for _, v := range queues {
+		//if RabbitStarted[v] == true {
+		//	// 该协程已经启动，无需再次启动
+		//	continue
+		//}
+		go func(s string) {
+			err := Rabbit.Receive(s, handleInfo)
+			if err != nil {
+				beego.Error(err)
 			}
-			go func(s string) {
-				err := Rabbit.Receive(s, handleInfo)
-				if err != nil {
-					beego.Error(err)
-				}
-				RabbitStarted[s] = true
-			}(v)
-		}
-
-		time.Sleep(time.Second * 2)
+			//RabbitStarted[s] = true
+		}("cabinet_" + v)
 	}
+
+	//	time.Sleep(time.Second * 2)
+	//}
 }
 
 // 初始化柜子相关信息
@@ -142,13 +143,13 @@ func handleNewInfo(msg amqp.Delivery) (error) {
 	}
 
 	value := "cabinet_" + result.CabinetID
-	Queues[strconv.FormatInt(id, 10) ] = value
+	//Queues[strconv.FormatInt(id, 10) ] = value
 	go func(s string) {
 		err := Rabbit.Receive(s, handleInfo)
 		if err != nil {
 			beego.Error(err)
 		}
-		RabbitStarted[s] = true
+		//RabbitStarted[s] = true
 	}(value)
 
 	return nil
