@@ -57,23 +57,27 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 	conn.Close()
 
 	go func() {
-		for {
-			conn, err := amqp.Dial(p.url)
+		//for {
+			//if conn == nil {
+			//if conn.ConnectionState().HandshakeComplete == false {
+			// 此处外层应该要有个循环,但是在下面这句起连接之前应该判断连接是否已经起了,还没找到方法判断
+			conn, err = amqp.Dial(p.url)
 			if err != nil {
 				log.Printf("[rabbit] receive error: %v, try again after 5s", err)
 				time.Sleep(5 * time.Second)
-				continue
+				//continue
 			}
+			//}
 			ch, err := conn.Channel()
 			if err != nil {
 				log.Printf("[rabbit] receive error: %v, try again after 5s", err)
 				time.Sleep(5 * time.Second)
-				continue
+				//continue
 			}
 			q, err := ch.QueueDeclare(
 				queue, // name
 				true,  // durable
-				false,  // delete when unused
+				false, // delete when unused
 				true,  // exclusive
 				true,  // no-wait
 				nil,   // arguments
@@ -81,13 +85,13 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 			if err != nil {
 				log.Printf("[rabbit] receive error: %v, try again after 5s", err)
 				time.Sleep(5 * time.Second)
-				continue
+				//continue
 			}
 			msg, err := ch.Consume(q.Name, "", true, true, true, true, nil)
 			if err != nil {
 				log.Printf("[rabbit] receive error: %v, try again after 5s", err)
 				time.Sleep(5 * time.Second)
-				continue
+				//continue
 			}
 			for i := range msg {
 				err := h(i)
@@ -96,8 +100,8 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 				}
 			}
 
-			time.Sleep(5 * time.Second)
-		}
+		//	time.Sleep(5 * time.Second)
+		//}
 	}()
 
 	return nil
