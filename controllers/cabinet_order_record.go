@@ -10,6 +10,7 @@ import (
 	"errors"
 	"strconv"
 	"hengzhu/tool/payment"
+	"fmt"
 )
 
 // 柜子订单支付
@@ -110,6 +111,7 @@ func (c *OrderController) ReOrder() {
 B:
 	if pay_type == Wx_Pay {
 		c.NewOrder(cabinet_id, price, open_id)
+		c.ServeJSON()
 		return
 	}
 
@@ -154,6 +156,7 @@ B:
 	}
 	//省略添加失败再重新请求
 	c.Data["json"] = result.AliPayPreCreateResponse.QRCode
+	fmt.Printf("--------")
 	c.ServeJSON()
 	return
 }
@@ -217,6 +220,7 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string) {
 	}
 	res, err := wxOrderReq.Post()
 	if err != nil {
+		fmt.Print(wxOrderReq.TotalFee)
 		beego.Error("[WxPay]: NewOrder post err and order:", wxOrderReq, err.Error())
 		//返回一个失败的结果
 		c.Data["json"] = err.Error()

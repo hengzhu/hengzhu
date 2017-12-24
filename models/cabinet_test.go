@@ -12,6 +12,11 @@ func TestA(t *testing.T) {
 	fmt.Printf("flag:%v\n", flag)
 }
 
+func TestB(t *testing.T) {
+	typ := GetDefaultType()
+	fmt.Printf("typ:%v\n", typ)
+}
+
 func init() {
 	link := fmt.Sprintf("%s:%s@(%s:%s)/%s", "root", "123456", "localhost", "3306", "hengzhu")
 	orm.RegisterDataBase("default", "mysql", link)

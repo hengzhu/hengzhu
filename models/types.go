@@ -192,7 +192,7 @@ func DeleteType(id int) (err error) {
 func GetDefaultType() (t *Types) {
 	o := orm.NewOrm()
 	typ := Types{}
-	o.Raw("select id from type where default = 1 limit 1 ;").QueryRow(&typ)
+	o.Raw("select id from type where `default` = 1 limit 1 ;").QueryRow(&typ)
 	t = &typ
 	return
 }

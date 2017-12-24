@@ -1,7 +1,6 @@
 package tool
 
 import (
-	"github.com/bysir-zl/bygo/mq"
 	"github.com/astaxie/beego"
 	"github.com/streadway/amqp"
 	"hengzhu/models/bean"
@@ -14,11 +13,11 @@ import (
 //var Queues = make(map[string]string)
 //var RabbitStarted = make(map[string]bool)
 var NewCabinet = "new"
-var Rabbit *mq.Rabbit
+var Rabbit *models.Rabbit
 
 func init() {
 	url := beego.AppConfig.String("rabbitmq_url")
-	Rabbit = mq.NewRabbit(url)
+	Rabbit = models.NewRabbit(url)
 }
 
 func handleInfo(msg amqp.Delivery) (error) {
