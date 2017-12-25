@@ -9,6 +9,8 @@ import (
 	"time"
 	"strconv"
 	"hengzhu/models/bean"
+	"hengzhu/controllers"
+	"github.com/astaxie/beego"
 )
 
 type CabinetDetail struct {
@@ -303,14 +305,25 @@ func BindOpenIdForCabinetDoor(openid string, cdid int) (err error, door_no int) 
 func HandleCabinetFromHardWare(msg *bean.RabbitMqMessage) (err error) {
 	o := orm.NewOrm()
 	cd := CabinetDetail{}
+	if msg.DoorState == controllers.OpenDoor {
+		err = o.Raw("select open_state from cabinet_detail where userID = ? limit 1;", msg.UserId).QueryRow(&cd)
+		//在下发请求时已经设为开门
+		if cd.OpenState != 2 {
+			err = errors.New("没有这个柜子")
+			beego.Error(err.Error())
+			return
+		}
+		return
+	}
 	//先查是否有绑定关系的
 	err = o.Raw("select id,`using` from cabinet_detail where cabinet_id = ? and door = ? and userID = ? and use_state = 1 limit 1;", msg.CabinetId, msg.Door, msg.UserId).QueryRow(&cd)
 	if err != nil {
 		return
 	}
+	//第一次关门
 	//柜子门还空闲
 	if cd.Using == 1 {
-		_, err = o.Raw("update cabinet_detail set open_state = 2 and using = 2 and store_time = ? where userID = ? limit 1;", int(time.Now().Unix()), msg.UserId).Exec()
+		_, err = o.Raw("update cabinet_detail set open_state = 1 and using = 2 and store_time = ? where userID = ? limit 1;", int(time.Now().Unix()), msg.UserId).Exec()
 		//添加日志记录
 		m := Log{
 			CabinetDetailId: cd.Id,
