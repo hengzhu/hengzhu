@@ -14,6 +14,7 @@ import (
 //var RabbitStarted = make(map[string]bool)
 var NewCabinet = "new"
 var Rabbit *models.Rabbit
+var CabinetDoors = make(map[string]int)
 
 func init() {
 	url := beego.AppConfig.String("rabbitmq_url")
@@ -29,34 +30,30 @@ func handleInfo(msg amqp.Delivery) (error) {
 	if err != nil {
 		return err
 	}
-	////是否初始化柜子
-	//InitInfo := reflect.ValueOf(result.InitInfo)
-	//if len(InitInfo.Bytes()) > 0 {
-	//	typ := models.GetDefaultType()
-	//	c := models.Cabinet{
-	//		CabinetID:  result.InitInfo.CabinetID,
-	//		Number:     result.InitInfo.Number,
-	//		Desc:       result.InitInfo.Desc,
-	//		CreateTime: time.Now(),
-	//		UpdateTime: time.Now(),
-	//		LastTime:   time.Now(),
-	//		TypeId:     typ.Id,
-	//	}
-	//	//Doors:      result.InitInfo.Doors,
-	//	//OnUse:      result.InitInfo.OnUse,
-	//	//Close:      result.InitInfo.Close,
-	//	models.AddCabinet(&c)
-	//	for i := 0; i < result.InitInfo.Doors; i++ {
+
+	// 判断是否需要拓展柜子
+	//oldDoors := CabinetDoors[result.CabinetId]
+	//if oldDoors == 0 {
+	//	cabinet, _ := models.GetCabinetByMac(result.CabinetId)
+	//	oldDoors = models.GetTotalDoors(cabinet.Id)
+	//	CabinetDoors[result.CabinetId] = oldDoors
+	//}
+	//if result.Door > oldDoors {
+	//	cabinet, _ := models.GetCabinetByMac(result.CabinetId)
+	//	for i := CabinetDoors[result.CabinetId] + 1; i <= result.Door; i++ {
 	//		cd := &models.CabinetDetail{
-	//			Door:      i + 1,
+	//			CabinetId: int(cabinet.Id),
+	//			Door:      i,
 	//			OpenState: 1,
 	//			Using:     1,
 	//			UseState:  1,
 	//		}
 	//		models.AddCabinetDetail(cd)
 	//	}
-	//	return nil
+	//
+	//	CabinetDoors[result.CabinetId] = result.Door
 	//}
+
 	err = models.HandleCabinetFromHardWare(&result)
 	if err != nil {
 		return err
@@ -141,6 +138,7 @@ func handleNewInfo(msg amqp.Delivery) (error) {
 		models.AddCabinetDetail(cd)
 	}
 
+	CabinetDoors[result.CabinetID] = result.Doors
 	value := "cabinet_" + result.CabinetID
 	//Queues[strconv.FormatInt(id, 10) ] = value
 	go func(s string) {

@@ -63,6 +63,7 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 			if !flag {
 				conn, err = amqp.Dial(p.url)
 				if err != nil {
+					flag = false
 					log.Printf("[rabbit] receive error: %v, try again after 5s", err)
 					time.Sleep(5 * time.Second)
 					continue
