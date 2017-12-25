@@ -290,7 +290,9 @@ func BindOpenIdForCabinetDoor(openid string, cdid int) (err error, door_no int) 
 	v := CabinetDetail{Id: cdid}
 	if err = o.Read(&v); err == nil {
 		v.UserID = openid
-		if _, err = o.Update(&v, "userID"); err == nil {
+		//默认已经开门
+		v.OpenState = 2
+		if _, err = o.Update(&v, "userID", "open_state"); err == nil {
 			fmt.Println("用户" + openid + "使用的门id为：" + strconv.Itoa(cdid))
 		}
 	}
@@ -344,7 +346,7 @@ func GetCabinetDetailByOpenId(open_id string) (v *CabinetDetail, err error) {
 	o := orm.NewOrm()
 	v = &CabinetDetail{UserID: open_id}
 	if err := o.Read(v, "userID"); err == nil {
-		return v,nil
+		return v, nil
 	}
 	return nil, err
 }
