@@ -9,7 +9,6 @@ import (
 	"time"
 	"strconv"
 	"hengzhu/models/bean"
-	"hengzhu/controllers"
 	"github.com/astaxie/beego"
 )
 
@@ -305,7 +304,7 @@ func BindOpenIdForCabinetDoor(openid string, cdid int) (err error, door_no int) 
 func HandleCabinetFromHardWare(msg *bean.RabbitMqMessage) (err error) {
 	o := orm.NewOrm()
 	cd := CabinetDetail{}
-	if msg.DoorState == controllers.OpenDoor {
+	if msg.DoorState == "open" {
 		err = o.Raw("select open_state from cabinet_detail where userID = ? limit 1;", msg.UserId).QueryRow(&cd)
 		//在下发请求时已经设为开门
 		if cd.OpenState != 2 {
