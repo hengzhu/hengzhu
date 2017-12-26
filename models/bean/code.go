@@ -31,23 +31,17 @@ func CodeString(code int) string {
 }
 
 type RabbitMqMessage struct {
-	CabinetId string `json:"cabinet_id"`
-	Door      int    `json:"door"`
-	Heartbeat int    `json:"heartbeat"`
-	UserId    string `json:"user_id"`
-	DoorState string `json:"door_state"`
+	CabinetId  string       `json:"cabinet_id,omitempty"`
+	Door       int          `json:"door,omitempty"`
+	Timestamp  int          `json:"timestamp ,omitempty"`
+	UserId     string       `json:"user_id,omitempty"`
+	DoorState  string       `json:"door_state,omitempty"`
+	Desc       string       `json:"desc,omitempty"`
+	DoorStatus []DoorStatus `json:"door_status,omitempty"`
 }
 
-type CabinetInfo struct {
-	CabinetID string      `json:"cabinet_id" description:"柜子id"`
-	Number    string      `json:"number" description:"编号"`
-	Desc      string      `json:"desc" description:"备注"`
-	Doors     int         `json:"doors" description:"门数"`
-	DoorStat  []DoorState `json:"door_stat" descrpition:"门状态"`
-}
-
-type DoorState struct {
-	Door          int  `json:"door"`
-	Locked        bool `json:"locked"`
-	WireConnected bool `json:"wire_connected"`
+type DoorStatus struct {
+	Door          int  `json:"door,omitempty"`
+	Locked        bool `json:"locked,omitempty"`
+	WireConnected bool `json:"wire_connected,omitempty"`
 }

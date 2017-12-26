@@ -31,29 +31,6 @@ func handleInfo(msg amqp.Delivery) (error) {
 		return err
 	}
 
-	// 判断是否需要拓展柜子
-	//oldDoors := CabinetDoors[result.CabinetId]
-	//if oldDoors == 0 {
-	//	cabinet, _ := models.GetCabinetByMac(result.CabinetId)
-	//	oldDoors = models.GetTotalDoors(cabinet.Id)
-	//	CabinetDoors[result.CabinetId] = oldDoors
-	//}
-	//if result.Door > oldDoors {
-	//	cabinet, _ := models.GetCabinetByMac(result.CabinetId)
-	//	for i := CabinetDoors[result.CabinetId] + 1; i <= result.Door; i++ {
-	//		cd := &models.CabinetDetail{
-	//			CabinetId: int(cabinet.Id),
-	//			Door:      i,
-	//			OpenState: 1,
-	//			Using:     1,
-	//			UseState:  1,
-	//		}
-	//		models.AddCabinetDetail(cd)
-	//	}
-	//
-	//	CabinetDoors[result.CabinetId] = result.Door
-	//}
-
 	err = models.HandleCabinetFromHardWare(&result)
 	if err != nil {
 		return err
@@ -61,39 +38,38 @@ func handleInfo(msg amqp.Delivery) (error) {
 	return nil
 }
 
-func GetMessageFromHardWare() {
-	// 由于各种原因服务器重启后，之前的队列只需要重新启动一次就可以
-	queues := models.GetCabinetQueues()
-	//for {
-	for _, v := range queues {
-		//if RabbitStarted[v] == true {
-		//	// 该协程已经启动，无需再次启动
-		//	continue
-		//}
-		go func(s string) {
-			err := Rabbit.Receive(s, handleInfo)
-			if err != nil {
-				beego.Error(err)
-			}
-			//RabbitStarted[s] = true
-		}("cabinet_" + v)
-	}
+//func GetMessageFromHardWare() {
+//	// 由于各种原因服务器重启后，之前的队列只需要重新启动一次就可以
+//	queues := models.GetCabinetQueues()
+//	//for {
+//	for _, v := range queues {
+//		//if RabbitStarted[v] == true {
+//		//	// 该协程已经启动，无需再次启动
+//		//	continue
+//		//}
+//		go func(s string) {
+//			err := Rabbit.Receive(s, handleInfo)
+//			if err != nil {
+//				beego.Error(err)
+//			}
+//			//RabbitStarted[s] = true
+//		}("cabinet_" + v)
+//	}
+//
+//	//	time.Sleep(time.Second * 2)
+//	//}
+//}
 
-	//	time.Sleep(time.Second * 2)
-	//}
-}
-
-// 初始化柜子相关信息
-func GetNewCabinet(name string) {
-	err := Rabbit.Receive(name, handleNewInfo)
+func GetMsg(name string) {
+	err := Rabbit.Receive(name, handleMsgInfo)
 	if err != nil {
 		beego.Error(err)
 	}
 }
 
-// 处理初始化柜子信息
-func handleNewInfo(msg amqp.Delivery) (error) {
-	result := bean.CabinetInfo{}
+// 处理柜子信息
+func handleMsgInfo(msg amqp.Delivery) (error) {
+	result := bean.RabbitMqMessage{}
 	if len(msg.Body) == 0 {
 		return errors.New("没有数据")
 	}
@@ -102,52 +78,114 @@ func handleNewInfo(msg amqp.Delivery) (error) {
 		return err
 	}
 
-	if result.CabinetID == "" || result.Doors == 0 {
+	if result.CabinetId == "" {
 		return errors.New("参数错误")
 	}
 
-	// 判断是否已有这个柜子，是否初始化柜子
-	// 如果已有，则跳过
-	flag := models.CheckIfAdd(result.CabinetID)
-	if flag == false {
-		return errors.New("already have this cabinet")
-	}
-
-	typ := models.GetDefaultType()
-	c := models.Cabinet{
-		CabinetID:  result.CabinetID,
-		Number:     result.Number,
-		Desc:       result.Desc,
-		CreateTime: time.Now(),
-		UpdateTime: time.Now(),
-		LastTime:   time.Now(),
-		TypeId:     typ.Id,
-	}
-	//Doors:      result.InitInfo.Doors,
-	//OnUse:      result.InitInfo.OnUse,
-	//Close:      result.InitInfo.Close,
-	id, _ := models.AddCabinet(&c)
-	for i := 0; i < result.Doors; i++ {
-		cd := &models.CabinetDetail{
-			CabinetId: int(id),
-			Door:      i + 1,
-			OpenState: 1,
-			Using:     1,
-			UseState:  1,
-		}
-		models.AddCabinetDetail(cd)
-	}
-
-	CabinetDoors[result.CabinetID] = result.Doors
-	value := "cabinet_" + result.CabinetID
-	//Queues[strconv.FormatInt(id, 10) ] = value
-	go func(s string) {
-		err := Rabbit.Receive(s, handleInfo)
+	if len(result.DoorStatus) != 0 {
+		err = createOrAddCabinet(&result)
 		if err != nil {
-			beego.Error(err)
+			return err
 		}
-		//RabbitStarted[s] = true
-	}(value)
+	} else {
+		err = handleHeartbeat(&result)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// 初始化或者扩展柜子
+func createOrAddCabinet(result *bean.RabbitMqMessage) (err error) {
+	flag := models.CheckIfAdd(result.CabinetId)
+	if flag == true {
+		// 初始化柜子
+		typ := models.GetDefaultType()
+		c := models.Cabinet{
+			CabinetID:  result.CabinetId,
+			Desc:       result.Desc,
+			CreateTime: time.Now(),
+			UpdateTime: time.Now(),
+			LastTime:   time.Now(),
+			TypeId:     typ.Id,
+		}
+
+		id, err := models.AddCabinet(&c)
+		if err != nil {
+			return err
+		}
+
+		// 初始化时默认所有的柜子都可用、空闲且关闭状态
+		for i, _ := range result.DoorStatus {
+			cd := &models.CabinetDetail{
+				CabinetId: int(id),
+				Door:      i + 1,
+				OpenState: 1,
+				Using:     1,
+				UseState:  1,
+			}
+			_, err = models.AddCabinetDetail(cd)
+			if err != nil {
+				return err
+			}
+		}
+
+		// 放在缓存中，方便下次快速判断
+		CabinetDoors[result.CabinetId] = len(result.DoorStatus)
+	} else {
+		// 不需要初始化，检测是否需要扩展
+		oldDoors := CabinetDoors[result.CabinetId]
+		cabinet, _ := models.GetCabinetByMac(result.CabinetId)
+
+		cabinet.LastTime = time.Now()
+		err = models.UpdateCabinetById(cabinet)
+		if err != nil {
+			return err
+		}
+
+		if oldDoors == 0 {
+			oldDoors = models.GetTotalDoors(cabinet.Id)
+			CabinetDoors[result.CabinetId] = oldDoors
+		}
+
+		if len(result.DoorStatus) > oldDoors {
+			for i := oldDoors + 1; i <= len(result.DoorStatus); i++ {
+				cd := &models.CabinetDetail{
+					CabinetId: int(cabinet.Id),
+					Door:      i,
+					OpenState: 1,
+					Using:     1,
+					UseState:  1,
+				}
+				_, err = models.AddCabinetDetail(cd)
+				if err != nil {
+					return err
+				}
+			}
+
+			// 更新缓存
+			CabinetDoors[result.CabinetId] = result.Door
+		}
+	}
+	return nil
+}
+
+// 处理心跳信息
+func handleHeartbeat(result *bean.RabbitMqMessage) (err error) {
+	cabinet, _ := models.GetCabinetByMac(result.CabinetId)
+
+	cabinet.LastTime = time.Now()
+	err = models.UpdateCabinetById(cabinet)
+	if err != nil {
+		return err
+	}
+
+	err = models.HandleCabinetFromHardWare(result)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

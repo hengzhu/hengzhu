@@ -16,8 +16,8 @@ func main() {
 	//	beego.BConfig.WebConfig.DirectoryIndex = true
 	//	beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	//}
-	go tool.GetMessageFromHardWare()
-	go tool.GetNewCabinet(tool.NewCabinet)
+	//go tool.GetMessageFromHardWare()
+	go tool.GetMsg(tool.NewCabinet)
 	task.Run()
 	beego.Run()
 }

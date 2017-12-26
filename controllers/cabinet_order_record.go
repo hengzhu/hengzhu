@@ -25,6 +25,8 @@ var (
 	ALIPAY_PUBLIC_KEY   *rsa.PublicKey  = nil
 )
 
+var CabinetTimeStamp = make(map[string]int)
+
 const (
 	Wx_Pay    = 1 //微信
 	Al_Pay    = 2 //支付宝
@@ -42,6 +44,7 @@ func (c *OrderController) URLMapping() {
 // @Description 预下单
 // @Param	pay_type		query 	int	true		"1.微信 ,2.支付宝"
 // @Param	cabinet_id		query 	int	true		"上报的柜子id"
+// @Param	timestamp		query 	int	true		"时间戳"
 // @Success 201 {int}
 // @Failure 403 body is empty
 // @router /ReOrder [post]
@@ -53,6 +56,16 @@ func (c *OrderController) ReOrder() {
 	var price float64
 	cabinet_mac := c.GetString("cabinet_id")
 	pay_type, _ := c.GetInt8("pay_type")
+
+	timestamp, _ := c.GetInt("timestamp", 0)
+	if timestamp == 0 {
+		c.Ctx.Output.SetStatus(400)
+		c.Data["json"] = "支付参数错误"
+		c.ServeJSON()
+		return
+	}
+	CabinetTimeStamp[cabinet_mac] = timestamp
+
 	t_fee := c.Ctx.Request.FormValue("total_fee")
 	open_id := c.Ctx.Request.FormValue("open_id")
 	if pay_type != Al_Pay && pay_type != Wx_Pay {
@@ -253,6 +266,7 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string) {
 // @Description 取物
 // @Param	pay_type		query 	int	true		"取物扫码方式：1.微信 ,2.支付宝"
 // @Param	cabinet_id		query 	int	true		"上报的柜子id"
+// @Param	timestamp		query 	int	true		"时间戳"
 // @Success 201 {int}
 // @Failure 403 body is empty
 // @router /TakeOut [get]
@@ -266,6 +280,16 @@ func (c *OrderController) TakeOut() {
 		c.ServeJSON()
 		return
 	}
+
+	timestamp, _ := c.GetInt("timestamp", 0)
+	if timestamp == 0 {
+		c.Ctx.Output.SetStatus(400)
+		c.Data["json"] = "支付参数错误"
+		c.ServeJSON()
+		return
+	}
+	CabinetTimeStamp[cabinet_mac] = timestamp
+
 	cab, _ := models.GetCabinetByMac(cabinet_mac)
 	cabinet_id := cab.Id
 	t, _ := models.GetTypeById(cab.TypeId)

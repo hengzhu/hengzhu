@@ -76,6 +76,7 @@ func (c *PayNotifyController) AliNotify() {
 		Door:      cd.Door,
 		UserId:    noti.BuyerId,
 		DoorState: OpenDoor,
+		Timestamp: CabinetTimeStamp[cab.CabinetID],
 	}
 	bs, _ := json.Marshal(&rmm)
 	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
@@ -194,6 +195,7 @@ A:
 		Door:      door_no,
 		UserId:    openid,
 		DoorState: OpenDoor,
+		Timestamp: CabinetTimeStamp[cab.CabinetID],
 	}
 	bs, _ := json.Marshal(&rmm)
 	//下发开门信息
@@ -259,6 +261,7 @@ func (c *PayNotifyController) WxNotify() {
 		Door:      cd.Door,
 		UserId:    notify.OpenId,
 		DoorState: OpenDoor,
+		Timestamp: CabinetTimeStamp[cab.CabinetID],
 	}
 	bs, _ := json.Marshal(&rmm)
 	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
@@ -368,6 +371,7 @@ A:
 		Door:      door_no,
 		UserId:    res.OpenId,
 		DoorState: OpenDoor,
+		Timestamp: CabinetTimeStamp[cab.CabinetID],
 	}
 	bs, _ := json.Marshal(&rmm)
 	//下发开门信息
