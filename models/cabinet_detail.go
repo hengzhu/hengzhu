@@ -48,6 +48,12 @@ func GetDetailsByCabinetId(cabinetId int) (details []CabinetDetail, err error) {
 	return
 }
 
+func GetDetail(cabinetId int, door int) (detail CabinetDetail, err error) {
+	o := orm.NewOrm()
+	err = o.QueryTable(new(CabinetDetail)).Filter("CabinetId", cabinetId).Filter("door", door).One(&detail)
+	return
+}
+
 //
 func AddAllInfo(details []CabinetDetail) {
 	if len(details) == 0 {
