@@ -81,7 +81,7 @@ func (p *Rabbit) Receive(queue string, h Handler) (error) {
 				queue, // name
 				true,  // durable
 				false, // delete when unused
-				true,  // exclusive
+				false,  // exclusive
 				true,  // no-wait
 				nil,   // arguments
 			)
