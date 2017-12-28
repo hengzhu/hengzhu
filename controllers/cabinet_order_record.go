@@ -10,7 +10,6 @@ import (
 	"errors"
 	"strconv"
 	"hengzhu/tool/payment"
-	"fmt"
 )
 
 // 柜子订单支付
@@ -99,13 +98,11 @@ func (c *OrderController) ReOrder() {
 			//获取code,重定向到微信授权回调
 			//c.GetCode(cabinet_id)
 			c.Ctx.Output.SetStatus(201)
-			c.Data["json"] = beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id)
-			c.ServeJSON()
+			c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id))
 			return
 		}
 		c.Ctx.Output.SetStatus(201)
-		c.Data["json"] = beego.AppConfig.String("ali_oauth_url") + strconv.Itoa(cabinet_id)
-		c.ServeJSON()
+		c.Ctx.WriteString(beego.AppConfig.String("ali_oauth_url") + strconv.Itoa(cabinet_id))
 		return
 	}
 	cd, err2 = models.GetFreeDoorByCabinetId(cabinet_id)
@@ -169,7 +166,6 @@ B:
 	}
 	//省略添加失败再重新请求
 	c.Data["json"] = result.AliPayPreCreateResponse.QRCode
-	fmt.Printf("--------")
 	c.ServeJSON()
 	return
 }
@@ -265,11 +261,11 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string) {
 // @Title Get
 // @Description 取物
 // @Param	pay_type		query 	int	true		"取物扫码方式：1.微信 ,2.支付宝"
-// @Param	cabinet_id		query 	int	true		"上报的柜子id"
+// @Param	cabinet_id		query 	string	true		"上报的柜子id"
 // @Param	timestamp		query 	int	true		"时间戳"
 // @Success 201 {int}
 // @Failure 403 body is empty
-// @router /TakeOut [get]
+// @router /takeout [get]
 func (c *OrderController) TakeOut() {
 	var str string
 	cabinet_mac := c.GetString("cabinet_id")
@@ -301,13 +297,11 @@ func (c *OrderController) TakeOut() {
 		//获取code,重定向到微信授权回调
 		//c.GetCode(cabinet_id)
 		c.Ctx.Output.SetStatus(201)
-		c.Data["json"] = beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + str
-		c.ServeJSON()
+		c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + str)
 		return
 	}
 	c.Ctx.Output.SetStatus(201)
-	c.Data["json"] = beego.AppConfig.String("ali_oauth_url") + strconv.Itoa(cabinet_id) + str
-	c.ServeJSON()
+	c.Ctx.WriteString(beego.AppConfig.String("ali_oauth_url") + strconv.Itoa(cabinet_id) + str)
 	return
 }
 

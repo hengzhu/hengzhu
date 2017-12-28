@@ -31,9 +31,9 @@ func CodeString(code int) string {
 }
 
 type RabbitMqMessage struct {
-	CabinetId  string       `json:"cabinet_id,omitempty"`
+	CabinetId  string       `json:"cabinet_ID,omitempty"`
 	Door       int          `json:"door,omitempty"`
-	Timestamp  int          `json:"timestamp ,omitempty"`
+	Timestamp  int          `json:"timestamp,omitempty"`
 	UserId     string       `json:"user_id,omitempty"`
 	DoorState  string       `json:"door_state,omitempty"`
 	Desc       string       `json:"desc,omitempty"`

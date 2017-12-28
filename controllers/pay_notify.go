@@ -95,12 +95,15 @@ func (c *PayNotifyController) AliNotify() {
 func (c *PayNotifyController) OauthNotify() {
 	var cid, door_no int
 	var cdid int
+	var fortime string
+	var cabinet_id int
 	auth_code := c.Ctx.Input.Query("auth_code")
-
 	state := c.Ctx.Input.Query("state")
 	index := len(state)
-	fortime := state[index-7:]
-	cabinet_id, _ := strconv.Atoi(state[:index-7])
+	if index > 7 {
+		fortime = state[index-7:]
+		cabinet_id, _ = strconv.Atoi(state[:index-7])
+	}
 
 	o_pri := []byte(oauth_pri)
 	o_pub := []byte(oauth_pub)
@@ -216,7 +219,6 @@ A:
 // @router /wxnotify [post]
 func (c *PayNotifyController) WxNotify() {
 	notify := payment.WXPayResultNotifyArgs{}
-	beego.Warn("======== ", c.Ctx.Request.Form, c.Ctx.Request.URL)
 	err := xml.Unmarshal(c.Ctx.Input.RequestBody, &notify)
 	if err != nil {
 		beego.Error("[WxPay]: PayBack err in Unmarshal:", err)

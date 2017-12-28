@@ -25,6 +25,7 @@ func init() {
 	beego.Router("/paynotify/oauthnotify", &controllers.PayNotifyController{}, "*:OauthNotify")
 	beego.Router("/paynotify/wxoauthnotify", &controllers.PayNotifyController{}, "*:WxOauthNotify")
 	beego.Router("/wshub/initwshub", &controllers.WsHubController{}, "*:InitWsHub")
+	beego.Router("/order/takeout", &controllers.OrderController{}, "*:TakeOut")
 	//beego.Router("/setting/get", &controllers.SettingController{}, "*:Get")
 
 	beego.AutoRouter(&controllers.CabinetController{})
