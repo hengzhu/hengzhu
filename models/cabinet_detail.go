@@ -301,6 +301,7 @@ func BindOpenIdForCabinetDoor(openid string, cdid int) (err error, door_no int) 
 		v.OpenState = 2
 		if _, err = o.Update(&v, "userID", "open_state"); err == nil {
 			fmt.Println("用户" + openid + "使用的门id为：" + strconv.Itoa(cdid))
+			door_no = v.Door
 		}
 	}
 	return
@@ -348,7 +349,7 @@ func HandleCabinetFromHardWare(msg *bean.RabbitMqMessage) (err error) {
 		err = errors.New("系统异常")
 		return
 	}
-	_, err = o.Raw("update cabinet_detail set open_state = 2 and userID = ? and using = ? and store_time = ? where id = ? ;", "", 1, 0, cd.Id).Exec()
+	_, err = o.Raw("update cabinet_detail set open_state = 1 and userID = ? and using = ? and store_time = ? where id = ? ;", "", 1, 0, cd.Id).Exec()
 	//添加日志记录
 	m := Log{
 		CabinetDetailId: cd.Id,
