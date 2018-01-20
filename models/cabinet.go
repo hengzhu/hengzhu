@@ -215,12 +215,20 @@ func DeleteCabinet(id int) (err error) {
 	return
 }
 
-func GetCabinetAndDoorByUserId(user_id string) (cid int, door_no int, cdid int, err error) {
+//标志flag(先存后付查询)
+func GetCabinetAndDoorByUserId(user_id string, flag ... int) (cid int, door_no int, cdid int, err error) {
 	o := orm.NewOrm()
 	cd := CabinetDetail{}
-	err = o.Raw("select cabinet_id,door from cabinet_detail where id = (select cabinet_detail_id from cabinet_order_record where customer_id = ? and is_pay = 1 limit 1);", user_id).QueryRow(&cd)
-	if err != nil {
-		return
+	if len(flag) > 0 {
+		err = o.Raw("select id,cabinet_id,door from cabinet_detail where userID = ? limit 1;", user_id).QueryRow(&cd)
+		if err != nil {
+			return
+		}
+	} else {
+		err = o.Raw("select id,cabinet_id,door from cabinet_detail where id = (select cabinet_detail_id from cabinet_order_record where customer_id = ? and is_pay = 1 limit 1);", user_id).QueryRow(&cd)
+		if err != nil {
+			return
+		}
 	}
 	cdid = cd.Id
 	cid = cd.CabinetId

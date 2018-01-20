@@ -13,6 +13,7 @@ import (
 	"errors"
 	"encoding/xml"
 	"time"
+	"strings"
 )
 
 const (
@@ -99,12 +100,13 @@ func (c *PayNotifyController) OauthNotify() {
 	var cabinet_id int
 	auth_code := c.Ctx.Input.Query("auth_code")
 	state := c.Ctx.Input.Query("state")
-	index := len(state)
-	if index > 7 {
-		fortime = state[index-7:]
-		cabinet_id, _ = strconv.Atoi(state[:index-7])
+	if len(state) >= 1 {
+		results := strings.Split(state, "_")
+		cabinet_id, _ = strconv.Atoi(results[0])
+		if len(results) > 1 {
+			fortime = results[1]
+		}
 	}
-
 	o_pri := []byte(oauth_pri)
 	o_pub := []byte(oauth_pub)
 	client := alipay.New(beego.AppConfig.String("APPID"), beego.AppConfig.String("alipay_partner"), o_pub, o_pri, true)
@@ -124,22 +126,39 @@ func (c *PayNotifyController) OauthNotify() {
 		return
 	}
 	openid := reults.AlipaySystemOauthTokenResponse.UserId
-	//如果为计时付费的取物
-	if fortime == ForTime {
-		cid, _, cdid, _ := models.GetCabinetAndDoorByUserId(openid)
+	//如果为先存后付的取物
+	if len(fortime) > 0 {
+		cid, _, cdid, err = models.GetCabinetAndDoorByUserId(openid, 1)
+		if err == orm.ErrNoRows {
+			c.Ctx.WriteString("没有找到你的存物记录")
+			return
+		}
+		if err != nil {
+			beego.Error(err)
+			c.Ctx.WriteString("服务器异常")
+			return
+		}
 		cab, _ := models.GetCabinetById(cid)
 		t, _ := models.GetTypeById(cab.TypeId)
 		//计算费用
 		cd, _ := models.GetCabinetDetailById(cdid)
-		dis_time := cd.StoreTime - int(time.Now().Unix())
-		ratio := dis_time / t.Unit
-		fee := float64(ratio+1) * t.Price
-		total_fee := strconv.FormatFloat(fee, 'f', 2, 64)
-
-		c.Ctx.Request.Form["total_fee"] = []string{total_fee}
-		c.Ctx.Request.Form["open_id"] = []string{openid}
+		total_fee := ""
+		//先存后付非计时
+		if fortime == NoForTime {
+			total_fee = strconv.FormatFloat(t.Price, 'f', 2, 64)
+		} else {
+			//计时
+			dis_time := int(time.Now().Unix()) - cd.StoreTime
+			ratio := dis_time / t.Unit
+			fee := float64(ratio+1) * t.Price
+			total_fee = strconv.FormatFloat(fee, 'f', 2, 64)
+		}
 		//重定向到支付宝付款
-		c.redirect("http://39.108.53.220/order/reorder?pay_type=2&cabinet_id=" + strconv.Itoa(cid))
+		timeStamp := CabinetTimeStamp[cab.CabinetID]
+		if timeStamp == 0 {
+			timeStamp = int(time.Now().Unix())
+		}
+		c.redirect("http://cabinet.schengzhu.com/order/reorder?pay_type=2&cabinet_id=" + cab.CabinetID + "&timestamp=" + strconv.Itoa(timeStamp) + "&total_fee=" + total_fee + "&open_id=" + openid)
 		return
 	}
 	//先存后付授权开门
@@ -274,7 +293,8 @@ func (c *PayNotifyController) WxNotify() {
 	}
 	//tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
 	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
-
+	c.ServeXML()
+	return
 }
 
 // @Title 微信授权用户信息
@@ -283,12 +303,17 @@ func (c *PayNotifyController) WxNotify() {
 func (c *PayNotifyController) WxOauthNotify() {
 	var cid, door_no int
 	var cdid int
+	var fortime string
+	var cabinet_id int
 	code := c.Input().Get("code")
 	state := c.Ctx.Input.Query("state")
-	index := len(state)
-	fortime := state[index-7:]
-	cabinet_id, _ := strconv.Atoi(state[:index-7])
-
+	if len(state) >= 1 {
+		results := strings.Split(state, "_")
+		cabinet_id, _ = strconv.Atoi(results[0])
+		if len(results) > 1 {
+			fortime = results[1]
+		}
+	}
 	wxastoken := payment.WXOAuth2AccessTokenRequest{
 		Code:      code,
 		GrantType: GrantType,
@@ -298,22 +323,39 @@ func (c *PayNotifyController) WxOauthNotify() {
 		beego.Error("[WxUnlock] GetOpenId err in wxastoken.Get()")
 	}
 	beego.Debug("[WxUnlock]: GetOpenId get:", res.OpenId)
-	//如果为计时付费的取物
-	if fortime == ForTime {
-		cid, _, cdid, _ = models.GetCabinetAndDoorByUserId(res.OpenId)
+	////如果为先存后付的取物
+	if len(fortime) > 0 {
+		cid, _, cdid, err = models.GetCabinetAndDoorByUserId(res.OpenId, 1)
+		if err == orm.ErrNoRows {
+			c.Ctx.WriteString("没有找到你的存物记录")
+			return
+		}
+		if err != nil {
+			beego.Error(err)
+			c.Ctx.WriteString("服务器异常")
+			return
+		}
 		cab, _ := models.GetCabinetById(cid)
 		t, _ := models.GetTypeById(cab.TypeId)
 		//计算费用
 		cd, _ := models.GetCabinetDetailById(cdid)
-		dis_time := cd.StoreTime - int(time.Now().Unix())
-		ratio := dis_time / t.Unit
-		fee := float64(ratio+1) * t.Price
-		total_fee := strconv.FormatFloat(fee, 'f', 2, 64)
-
-		c.Ctx.Request.Form["total_fee"] = []string{total_fee}
-		c.Ctx.Request.Form["open_id"] = []string{res.OpenId}
-		//重定向到支付宝付款
-		c.redirect("http://39.108.53.220/order/reorder?pay_type=2&cabinet_id=" + strconv.Itoa(cid))
+		total_fee := ""
+		//先存后付非计时
+		if fortime == NoForTime {
+			total_fee = strconv.FormatFloat(t.Price, 'f', 2, 64)
+		} else {
+			//计时
+			dis_time := int(time.Now().Unix()) - cd.StoreTime
+			ratio := dis_time / t.Unit
+			fee := float64(ratio+1) * t.Price
+			total_fee = strconv.FormatFloat(fee, 'f', 2, 64)
+		}
+		//重定向到微信付款
+		timeStamp := CabinetTimeStamp[cab.CabinetID]
+		if timeStamp == 0 {
+			timeStamp = int(time.Now().Unix())
+		}
+		c.redirect("http://cabinet.schengzhu.com/order/reorder?pay_type=1&cabinet_id=" + cab.CabinetID + "&timestamp=" + strconv.Itoa(timeStamp) + "&total_fee=" + total_fee + "&open_id=" + res.OpenId)
 		return
 	}
 	//先存后付授权开门

@@ -32,6 +32,7 @@ const (
 	First_In  = 1 //存付款
 	First_Out = 2 //取付款
 	ForTime   = "fortime"
+	NoForTime = "nofortime"
 )
 
 // URLMapping ...
@@ -44,10 +45,13 @@ func (c *OrderController) URLMapping() {
 // @Param	pay_type		query 	int	true		"1.微信 ,2.支付宝"
 // @Param	cabinet_id		query 	int	true		"上报的柜子id"
 // @Param	timestamp		query 	int	true		"时间戳"
+// @Param	total_fee		query 	string	true		"先存后付跳转参数:支付金额"
+// @Param	openid		query 	string	true		"先存后付跳转参数:用户标识"
 // @Success 201 {int}
 // @Failure 403 body is empty
 // @router /ReOrder [post]
 func (c *OrderController) ReOrder() {
+	var flag bool
 	var v models.CabinetOrderRecord
 	var action_type int
 	var cd *models.CabinetDetail
@@ -65,8 +69,8 @@ func (c *OrderController) ReOrder() {
 	}
 	CabinetTimeStamp[cabinet_mac] = timestamp
 
-	t_fee := c.Ctx.Request.FormValue("total_fee")
-	open_id := c.Ctx.Request.FormValue("open_id")
+	t_fee := c.GetString("total_fee")
+	open_id := c.GetString("open_id")
 	if pay_type != Al_Pay && pay_type != Wx_Pay {
 		c.Ctx.Output.SetStatus(400)
 		c.Data["json"] = "支付参数错误"
@@ -83,6 +87,7 @@ func (c *OrderController) ReOrder() {
 	if t.ChargeMode == 2 {
 		action_type = 2
 	}
+	//先存后付类型取物时带过来的参数
 	if t_fee != "" && open_id != "" {
 		price, _ = strconv.ParseFloat(t_fee, 64)
 		cd, err = models.GetCabinetDetailByOpenId(open_id)
@@ -90,6 +95,7 @@ func (c *OrderController) ReOrder() {
 			beego.Error(err.Error())
 			return
 		}
+		flag = true
 		goto B
 	}
 	//先存后付
@@ -120,7 +126,7 @@ func (c *OrderController) ReOrder() {
 	}
 B:
 	if pay_type == Wx_Pay {
-		c.NewOrder(cabinet_id, price, open_id)
+		c.NewOrder(cabinet_id, price, open_id, flag)
 		c.ServeJSON()
 		return
 	}
@@ -165,12 +171,18 @@ B:
 		return
 	}
 	//省略添加失败再重新请求
-	c.Data["json"] = result.AliPayPreCreateResponse.QRCode
-	c.ServeJSON()
+	if flag {
+		//重定向调起支付
+		c.redirect(result.AliPayPreCreateResponse.QRCode)
+	} else {
+		c.Data["json"] = result.AliPayPreCreateResponse.QRCode
+		c.ServeJSON()
+	}
+
 	return
 }
 
-func (c *OrderController) NewOrder(cid int, fee float64, open_id string) {
+func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bool) {
 	//cabinetId := c.Input().Get("cabinet_id")
 	//ip := c.Ctx.Input.IP() //不知道你们的机制是不是这样获得ip
 	//cid, err := strconv.ParseInt(cabinetId, 10, 64)
@@ -253,9 +265,14 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string) {
 	}
 	beego.Debug("[WxPay]: NewOrder success and code:", res.CodeURL)
 	//c.TplName = ""
-	c.Data["json"] = res.CodeURL
-	c.ServeJSON()
-
+	if flag {
+		//	重定向调起支付
+		c.redirect(res.CodeURL)
+	} else {
+		c.Data["json"] = res.CodeURL
+		c.ServeJSON()
+	}
+	return
 }
 
 // @Title Get
@@ -289,6 +306,10 @@ func (c *OrderController) TakeOut() {
 	cab, _ := models.GetCabinetByMac(cabinet_mac)
 	cabinet_id := cab.Id
 	t, _ := models.GetTypeById(cab.TypeId)
+	//如果为先存后付
+	if t.TollTime == 2 {
+		str = NoForTime
+	}
 	//如果为计时付费
 	if t.ChargeMode == 2 {
 		str = ForTime
@@ -297,11 +318,11 @@ func (c *OrderController) TakeOut() {
 		//获取code,重定向到微信授权回调
 		//c.GetCode(cabinet_id)
 		c.Ctx.Output.SetStatus(201)
-		c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + str)
+		c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + "_" + str)
 		return
 	}
 	c.Ctx.Output.SetStatus(201)
-	c.Ctx.WriteString(beego.AppConfig.String("ali_oauth_url") + strconv.Itoa(cabinet_id) + str)
+	c.Ctx.WriteString(beego.AppConfig.String("ali_oauth_url") + strconv.Itoa(cabinet_id) + "_" + str)
 	return
 }
 
