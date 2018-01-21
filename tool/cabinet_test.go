@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
+	"hengzhu/models"
 )
 
 func TestB(t *testing.T) {
 
-	fmt.Printf("door:%v---\n", CabinetDoors["asdfasdfadsfsf"])
+	cabinetDetail, _ := models.GetCabinetDetail(1, 5)
+	fmt.Printf("detail:%v\n", cabinetDetail)
 }
 
 func init() {

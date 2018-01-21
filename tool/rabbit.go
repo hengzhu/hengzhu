@@ -14,7 +14,6 @@ import (
 //var RabbitStarted = make(map[string]bool)
 var NewCabinet = "new"
 var Rabbit *models.Rabbit
-var CabinetDoors = make(map[string]int)
 
 func init() {
 	url := beego.AppConfig.String("rabbitmq_url")
@@ -82,23 +81,23 @@ func handleMsgInfo(msg amqp.Delivery) (error) {
 		return errors.New("参数错误")
 	}
 
-	if len(result.DoorStatus) != 0 {
-		err = createOrAddCabinet(&result)
-		if err != nil {
-			return err
-		}
-	} else {
-		err = handleHeartbeat(&result)
-		if err != nil {
-			return err
-		}
+	//if len(result.DoorStatus) != 0 {
+	err = createOrUpdateCabinet(&result)
+	if err != nil {
+		return err
 	}
+	//} else {
+	err = handleHeartbeat(&result)
+	if err != nil {
+		return err
+	}
+	//}
 
 	return nil
 }
 
-// 初始化或者扩展柜子
-func createOrAddCabinet(result *bean.RabbitMqMessage) (err error) {
+// 初始化或者扩展柜子,每次都要根据上传的状态修改数据库
+func createOrUpdateCabinet(result *bean.RabbitMqMessage) (err error) {
 	flag := models.CheckIfAdd(result.CabinetId)
 	if flag == true {
 		// 初始化柜子
@@ -117,26 +116,31 @@ func createOrAddCabinet(result *bean.RabbitMqMessage) (err error) {
 			return err
 		}
 
-		// 初始化时默认所有的柜子都可用、空闲且关闭状态
-		for i, _ := range result.DoorStatus {
+		// 初始化时默认所有的柜子都空闲,启用
+		for i, door := range result.DoorStatus {
+			OpenState := 1
+			if door.Locked == false {
+				OpenState = 2
+			}
+			WireConnected := 1
+			if door.WireConnected == false {
+				WireConnected = 2
+			}
 			cd := &models.CabinetDetail{
-				CabinetId: int(id),
-				Door:      i + 1,
-				OpenState: 1,
-				Using:     1,
-				UseState:  1,
+				CabinetId:     int(id),
+				Door:          i + 1,
+				OpenState:     OpenState,
+				Using:         1,
+				UseState:      1,
+				WireConnected: WireConnected,
 			}
 			_, err = models.AddCabinetDetail(cd)
 			if err != nil {
 				return err
 			}
 		}
-
-		// 放在缓存中，方便下次快速判断
-		CabinetDoors[result.CabinetId] = len(result.DoorStatus)
 	} else {
-		// 不需要初始化，检测是否需要扩展
-		oldDoors := CabinetDoors[result.CabinetId]
+		// 不需要初始化
 		cabinet, _ := models.GetCabinetByMac(result.CabinetId)
 
 		cabinet.LastTime = time.Now()
@@ -145,28 +149,50 @@ func createOrAddCabinet(result *bean.RabbitMqMessage) (err error) {
 			return err
 		}
 
-		if oldDoors == 0 {
-			oldDoors = models.GetTotalDoors(cabinet.Id)
-			CabinetDoors[result.CabinetId] = oldDoors
-		}
+		// 循环判断每个门是否需要更新，或者是否需要扩展
+		for _, door := range result.DoorStatus {
+			cabinetDetail, _ := models.GetCabinetDetail(cabinet.Id, door.Door)
 
-		if len(result.DoorStatus) > oldDoors {
-			for i := oldDoors + 1; i <= len(result.DoorStatus); i++ {
+			// 当前数据库没有这个门，需要扩展
+			if cabinetDetail == nil {
+				OpenState := 1
+				if door.Locked == false {
+					OpenState = 2
+				}
+				WireConnected := 1
+				if door.WireConnected == false {
+					WireConnected = 2
+				}
 				cd := &models.CabinetDetail{
-					CabinetId: int(cabinet.Id),
-					Door:      i,
-					OpenState: 1,
-					Using:     1,
-					UseState:  1,
+					CabinetId:     int(cabinet.Id),
+					Door:          door.Door,
+					OpenState:     OpenState,
+					Using:         1,
+					UseState:      1,
+					WireConnected: WireConnected,
 				}
 				_, err = models.AddCabinetDetail(cd)
 				if err != nil {
 					return err
 				}
-			}
+			} else {
+				// 当前数据库有此门，只需要判断是否需要更新状态
+				OpenState := 1
+				if door.Locked == false {
+					OpenState = 2
+				}
+				WireConnected := 1
+				if door.WireConnected == false {
+					WireConnected = 2
+				}
 
-			// 更新缓存
-			CabinetDoors[result.CabinetId] = result.Door
+				// 需要更新门状态,修改数据库
+				if cabinetDetail.OpenState != OpenState || cabinetDetail.WireConnected != WireConnected {
+					cabinetDetail.OpenState = OpenState
+					cabinetDetail.WireConnected = WireConnected
+					models.UpdateCabinetDetailById(cabinetDetail)
+				}
+			}
 		}
 	}
 	return nil
@@ -182,9 +208,11 @@ func handleHeartbeat(result *bean.RabbitMqMessage) (err error) {
 		return err
 	}
 
-	err = models.HandleCabinetFromHardWare(result)
-	if err != nil {
-		return err
+	if result.Door != 0 && result.UserId != "" && result.DoorState != "" {
+		err = models.HandleCabinetFromHardWare(result)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

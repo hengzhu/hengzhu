@@ -206,5 +206,5 @@ insert  into `type`(`id`,`name`,`default`,`charge_mode`,`toll_time`,`price`,`uni
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 
-
-
+-- 2018-01-21
+ALTER TABLE `hengzhu`.`cabinet_detail`     ADD COLUMN `wire_connected` INT(11) DEFAULT '1' NULL COMMENT '该门电线连接状态,1:正常连接，2:不正常' AFTER `use_state`;

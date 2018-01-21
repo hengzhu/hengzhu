@@ -13,14 +13,15 @@ import (
 )
 
 type CabinetDetail struct {
-	Id        int    `orm:"column(id);auto"`
-	CabinetId int    `orm:"column(cabinet_id);null" description:"柜子的id"`
-	Door      int    `orm:"column(door);null" description:"门号"`
-	OpenState int    `orm:"column(open_state);null" description:"开关状态，1:关，2:开"`
-	Using     int    `orm:"column(using);null" description:"占用状态，1:空闲，2:占用"`
-	UserID    string `orm:"column(userID);size(255);null" description:"存物ID"`
-	StoreTime int    `orm:"column(store_time);null" description:"存物时间"`
-	UseState  int    `orm:"column(use_state);null" description:"启用状态，1:启用，2:停用"`
+	Id            int    `orm:"column(id);auto"`
+	CabinetId     int    `orm:"column(cabinet_id);null" description:"柜子的id"`
+	Door          int    `orm:"column(door);null" description:"门号"`
+	OpenState     int    `orm:"column(open_state);null" description:"开关状态，1:关，2:开"`
+	Using         int    `orm:"column(using);null" description:"占用状态，1:空闲，2:占用"`
+	UserID        string `orm:"column(userID);size(255);null" description:"存物ID"`
+	StoreTime     int    `orm:"column(store_time);null" description:"存物时间"`
+	UseState      int    `orm:"column(use_state);null" description:"启用状态，1:启用，2:停用"`
+	WireConnected int    `orm:"column(wire_connected);null" description:"该门电线连接状态,1:正常连接，2:不正常"`
 
 	ID                string `orm:"-"`
 	Logs              []Log  `orm:"-"`
@@ -245,11 +246,12 @@ func DeleteCabinetDetail(id int) (err error) {
 	return
 }
 
-//获取空闲的柜子门
+//获取空闲可用的柜子门
 func GetFreeDoorByCabinetId(cabinet_id int) (v *CabinetDetail, err error) {
 	o := orm.NewOrm()
 	cd := CabinetDetail{}
-	err = o.QueryTable("cabinet_detail").Filter("open_state", 1).Filter("use_state", 1).Filter("using", 1).Filter("cabinet_id", cabinet_id).Limit(1).One(&cd)
+	err = o.QueryTable("cabinet_detail").Filter("open_state", 1).Filter("use_state", 1).
+		Filter("using", 1).Filter("cabinet_id", cabinet_id).Filter("wire_connected", 1).Limit(1).One(&cd)
 	if err != nil {
 		return
 	}
