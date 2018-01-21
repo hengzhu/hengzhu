@@ -17,6 +17,9 @@ func TestB(t *testing.T) {
 
 	fmt.Printf("time64:%v,type:%v\n", time.Now().Unix(), reflect.TypeOf(time.Now().Unix()))
 	fmt.Printf("time:%v,type:%v\n", int(time.Now().Unix()), reflect.TypeOf(int(time.Now().Unix())))
+
+	fmt.Printf("dis1:%v\n", time.Now().Unix()-1516526057)
+	fmt.Printf("dis2:%v,mod:%v\n", (time.Now().Unix()-1516526057)/60, (time.Now().Unix()-1516526057)%60)
 }
 
 func init() {

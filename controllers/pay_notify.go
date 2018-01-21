@@ -147,10 +147,19 @@ func (c *PayNotifyController) OauthNotify() {
 		if fortime == NoForTime {
 			total_fee = strconv.FormatFloat(t.Price, 'f', 2, 64)
 		} else {
-			//计时
-			dis_time := int(time.Now().Unix()) - cd.StoreTime
+			//计时,不足1分钟按1分钟处理
+			diff := int(time.Now().Unix()) - cd.StoreTime
+			dis_time := diff / 60
+			if (diff)%60 != 0 {
+				dis_time = dis_time + 1
+			}
+
+			// 不足一个计时单位，按一个计时单位处理
 			ratio := dis_time / t.Unit
-			fee := float64(ratio+1) * t.Price
+			if dis_time%t.Unit != 0 {
+				ratio = ratio + 1
+			}
+			fee := float64(ratio) * t.Price
 			total_fee = strconv.FormatFloat(fee, 'f', 2, 64)
 		}
 		//重定向到支付宝付款
@@ -344,10 +353,19 @@ func (c *PayNotifyController) WxOauthNotify() {
 		if fortime == NoForTime {
 			total_fee = strconv.FormatFloat(t.Price, 'f', 2, 64)
 		} else {
-			//计时
-			dis_time := int(time.Now().Unix()) - cd.StoreTime
+			//计时,不足1分钟按1分钟处理
+			diff := int(time.Now().Unix()) - cd.StoreTime
+			dis_time := diff / 60
+			if (diff)%60 != 0 {
+				dis_time = dis_time + 1
+			}
+
+			// 不足一个计时单位，按一个计时单位处理
 			ratio := dis_time / t.Unit
-			fee := float64(ratio+1) * t.Price
+			if dis_time%t.Unit != 0 {
+				ratio = ratio + 1
+			}
+			fee := float64(ratio) * t.Price
 			total_fee = strconv.FormatFloat(fee, 'f', 2, 64)
 		}
 		//重定向到微信付款
