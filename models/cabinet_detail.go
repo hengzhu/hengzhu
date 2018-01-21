@@ -301,7 +301,9 @@ func BindOpenIdForCabinetDoor(openid string, cdid int) (err error, door_no int) 
 		v.UserID = openid
 		//默认已经开门
 		v.OpenState = 2
-		if _, err = o.Update(&v, "userID", "open_state"); err == nil {
+		v.Using = 2
+		v.StoreTime = int(time.Now().Unix())
+		if _, err = o.Update(&v, "userID", "open_state", "using", "store_time"); err == nil {
 			fmt.Println("用户" + openid + "使用的门id为：" + strconv.Itoa(cdid))
 			door_no = v.Door
 		}

@@ -81,6 +81,7 @@ func handleMsgInfo(msg amqp.Delivery) (error) {
 		return errors.New("参数错误")
 	}
 
+	beego.Info("msg:", result)
 	//if len(result.DoorStatus) != 0 {
 	err = createOrUpdateCabinet(&result)
 	if err != nil {
