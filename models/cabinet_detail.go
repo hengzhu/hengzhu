@@ -373,3 +373,60 @@ func GetCabinetDetailByOpenId(open_id string) (v *CabinetDetail, err error) {
 	}
 	return nil, err
 }
+
+func UpdateCabinetDetail(m *CabinetDetail) (err error) {
+	o := orm.NewOrm()
+	v := CabinetDetail{Id: m.Id}
+	if err = o.Read(&v); err == nil {
+		var num int64
+		if num, err = o.Update(m); err == nil {
+			fmt.Println("Number of records updated in database:", num)
+		}
+	}
+	cd := CabinetDetail{}
+	//先查是否被占用
+	err = o.Raw("select userID,`using` from cabinet_detail where id = ? limit 1;", m.Id).QueryRow(&cd)
+	if err != nil {
+		return
+	}
+	if cd.UserID != "" && cd.Using == 2 && m.OpenState == 1 {
+		cor := CabinetOrderRecord{}
+		//如果同一用户又用了同一个门?
+		//是否已经支付过
+		err = o.Raw("select * from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and is_pay = 1 and past_flag is null limit 1;", cd.UserID, m.Id).QueryRow(&cor)
+		//当前使用但未支付
+		if err == orm.ErrNoRows {
+			//第一次关门
+			_, err = o.Raw("update cabinet_detail set `using` = 2, store_time = ? where userID = ? limit 1;", int(time.Now().Unix()), m.UserID).Exec()
+			//添加日志记录
+			m := Log{
+				CabinetDetailId: m.Id,
+				User:            cd.UserID,
+				Time:            time.Now(),
+				Action:          "存",
+			}
+			AddLog(&m)
+			return
+		}
+		if err != nil {
+			err = errors.New("系统异常")
+			return
+		}
+		//柜子置为空闲
+		_, err = o.Raw("update cabinet_order_record set past_flag = 1 where id = ? ;", cor.Id).Exec()
+		if err != nil {
+			beego.Error(err)
+			return
+		}
+		_, err = o.Raw("update cabinet_detail set userID = null,`using` = ?,store_time = ? where id = ? ;", 1, 0, m.Id).Exec()
+		//添加日志记录
+		m := Log{
+			CabinetDetailId: m.Id,
+			User:            cd.UserID,
+			Time:            time.Now(),
+			Action:          "取",
+		}
+		AddLog(&m)
+	}
+	return
+}

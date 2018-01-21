@@ -25,6 +25,7 @@ type CabinetOrderRecord struct {
 	PayDate         int     `orm:"column(pay_date);null"`
 	IsPay           int8    `orm:"column(is_pay)" description:"是否支付 0 未支付 1已经支付"`
 	ActionType      int8    `orm:"column(action_type)" description:"1.存付款 ,2.取付款"`
+	PastFlag        int8    `orm:"column(past_flag)" description:"1.过去的支付记录"`
 }
 
 func (t *CabinetOrderRecord) TableName() string {

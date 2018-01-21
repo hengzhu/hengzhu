@@ -191,7 +191,7 @@ func createOrUpdateCabinet(result *bean.RabbitMqMessage) (err error) {
 				if cabinetDetail.OpenState != OpenState || cabinetDetail.WireConnected != WireConnected {
 					cabinetDetail.OpenState = OpenState
 					cabinetDetail.WireConnected = WireConnected
-					models.UpdateCabinetDetailById(cabinetDetail)
+					models.UpdateCabinetDetail(cabinetDetail)
 				}
 			}
 		}
@@ -209,12 +209,12 @@ func handleHeartbeat(result *bean.RabbitMqMessage) (err error) {
 		return err
 	}
 
-	if result.Door != 0 && result.UserId != "" && result.DoorState != "" {
-		err = models.HandleCabinetFromHardWare(result)
-		if err != nil {
-			return err
-		}
-	}
+	//if result.Door != 0 && result.UserId != "" && result.DoorState != "" {
+	//	err = models.HandleCabinetFromHardWare(result)
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
 
 	return nil
 }
