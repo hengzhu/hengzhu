@@ -43,17 +43,23 @@ func (c *PayNotifyController) AliNotify() {
 	noti, err := client.GetTradeNotification(c.Ctx.Request)
 	if err != nil {
 		beego.Error(err)
-		c.Ctx.WriteString(err.Error())
+		c.Data["data"] = err.Error()
+		c.TplName = "resp/resp.html"
+		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	if noti.TradeStatus != "TRADE_SUCCESS" {
-		c.Ctx.WriteString("noti.TradeStatus")
+		c.Data["data"] = "noti.TradeStatus"
+		c.TplName = "resp/resp.html"
+		//c.Ctx.WriteString("noti.TradeStatus")
 		return
 	}
 
 	cd, err := models.UpdateOrderSuccessByNo(noti.TradeNo, noti.OutTradeNo, noti.BuyerId)
 	if err != nil {
-		c.Ctx.WriteString(err.Error())
+		c.Data["data"] = err.Error()
+		c.TplName = "resp/resp.html"
+		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	//添加日志记录
@@ -83,11 +89,15 @@ func (c *PayNotifyController) AliNotify() {
 	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
 	if err != nil {
 		beego.Error("[rabbitmq err:] ", err.Error())
-		c.Ctx.WriteString(err.Error())
+		c.Data["data"] = err.Error()
+		c.TplName = "resp/resp.html"
+		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	//tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
-	c.Ctx.WriteString("success")
+	c.Data["data"] = "success"
+	c.TplName = "resp/resp.html"
+	//c.Ctx.WriteString("success")
 }
 
 // @Title 支付宝授权用户信息
@@ -122,7 +132,9 @@ func (c *PayNotifyController) OauthNotify() {
 	reults, err := ao.Oauth(param)
 	if err != nil || reults == nil {
 		beego.Error(reults, err)
-		c.Ctx.WriteString(err.Error())
+		c.Data["data"] = err.Error()
+		c.TplName = "resp/resp.html"
+		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	openid := reults.AlipaySystemOauthTokenResponse.UserId
@@ -130,12 +142,16 @@ func (c *PayNotifyController) OauthNotify() {
 	if len(fortime) > 0 {
 		cid, _, cdid, err = models.GetCabinetAndDoorByUserId(openid, 1)
 		if err == orm.ErrNoRows {
-			c.Ctx.WriteString("没有找到你的存物记录")
+			c.Data["data"] = "没有找到你的存物记录"
+			c.TplName = "resp/resp.html"
+			//c.Ctx.WriteString("没有找到你的存物记录")
 			return
 		}
 		if err != nil {
 			beego.Error(err)
-			c.Ctx.WriteString("服务器异常")
+			c.Data["data"] = "服务器异常"
+			c.TplName = "resp/resp.html"
+			//c.Ctx.WriteString("服务器异常")
 			return
 		}
 		cab, _ := models.GetCabinetById(cid)
@@ -208,7 +224,9 @@ func (c *PayNotifyController) OauthNotify() {
 	}
 	if err != nil {
 		beego.Error(err)
-		c.Ctx.WriteString(err.Error())
+		c.Data["data"] = err.Error()
+		c.TplName = "resp/resp.html"
+		//c.Ctx.WriteString(err.Error())
 		return
 	}
 A:
@@ -233,12 +251,15 @@ A:
 	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
 	if err != nil {
 		beego.Error("[rabbitmq err:] ", err.Error())
-		c.Ctx.WriteString(err.Error())
+		c.Data["data"] = err.Error()
+		c.TplName = "resp/resp.html"
+		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	//tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
-	c.Ctx.WriteString("success")
-
+	c.Data["data"] = "success"
+	c.TplName = "resp/resp.html"
+	//c.Ctx.WriteString("success")
 }
 
 // eg: transdata=%7B%22transtype%22%3A0%2C%22cporderid%22%3A%22re_4ba3YbGUo1%22%2C%22transid%22%3A%220001191495174433775563781837%22%2C%22pcuserid%22%3A%22263%22%2C%22appid%22%3A%221032017051111958%22%2C%22goodsid%22%3A%22153%22%2C%22feetype%22%3A1%2C%22money%22%3A1%2C%22fact_money%22%3A1%2C%22currency%22%3A%22CHY%22%2C%22result%22%3A1%2C%22transtime%22%3A%2220170519141414%22%2C%22pc_priv_info%22%3A%22%22%2C%22paytype%22%3A%221%22%7D&sign=4047a3826502b339b7f2a55145b99291&signtype=MD5
@@ -274,7 +295,9 @@ func (c *PayNotifyController) WxNotify() {
 	//}
 	cd, err := models.UpdateOrderSuccessByNo(notify.TransactionId, notify.OutTradeNo, notify.OpenId)
 	if err != nil {
-		c.Ctx.WriteString(err.Error())
+		c.Data["data"] = err.Error()
+		c.TplName = "resp/resp.html"
+		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	//添加日志记录
@@ -297,7 +320,9 @@ func (c *PayNotifyController) WxNotify() {
 	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
 	if err != nil {
 		beego.Error("[rabbitmq err:] ", err.Error())
-		c.Ctx.WriteString(err.Error())
+		c.Data["data"] = err.Error()
+		c.TplName = "resp/resp.html"
+		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	//tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
@@ -336,12 +361,16 @@ func (c *PayNotifyController) WxOauthNotify() {
 	if len(fortime) > 0 {
 		cid, _, cdid, err = models.GetCabinetAndDoorByUserId(res.OpenId, 1)
 		if err == orm.ErrNoRows {
-			c.Ctx.WriteString("没有找到你的存物记录")
+			c.Data["data"] = "没有找到你的存物记录"
+			c.TplName = "resp/resp.html"
+			//c.Ctx.WriteString("没有找到你的存物记录")
 			return
 		}
 		if err != nil {
 			beego.Error(err)
-			c.Ctx.WriteString("服务器异常")
+			c.Data["data"] = "服务器异常"
+			c.TplName = "resp/resp.html"
+			//c.Ctx.WriteString("服务器异常")
 			return
 		}
 		cab, _ := models.GetCabinetById(cid)
