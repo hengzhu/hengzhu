@@ -95,10 +95,6 @@
             active[type] ? active[type].call(this, othis) : '';
         });
 
-        parent.layui.element.on('tab(kitTab)', function(data){
-            window.location.reload()
-        });
-
         //监听工具条
         table.on('tool(demo)', function(obj){
             var data = obj.data;
