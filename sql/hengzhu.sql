@@ -224,4 +224,6 @@ CREATE TABLE `recharge` (
 ) ENGINE=InnoDB AUTO_INCREMENT=190 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='充值表';
 
 
+alter table cabinet_order_record add COLUMN past_flag tinyint(2);
+
 
