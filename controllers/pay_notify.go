@@ -346,8 +346,8 @@ func (c *PayNotifyController) WxNotify() {
 
 // @Title 微信授权用户信息
 // @Description 微信授权用户信息
-// @router /wxoauthnotify [post]
-func (c *PayNotifyController) WxOauthNotify() {
+// @router /wx [post]
+func (c *PayNotifyController) Wx() {
 	var cid, door_no int
 	var cdid int
 	var fortime string
@@ -367,12 +367,12 @@ func (c *PayNotifyController) WxOauthNotify() {
 	}
 	res, err := wxastoken.Get()
 	if err != nil {
-		beego.Error("[WxUnlock] GetOpenId err in wxastoken.Get()")
+		beego.Error("[WxUnlock] GetOpenId err: ", err)
 	}
-	beego.Debug("[WxUnlock]: GetOpenId get:", res.OpenId)
-	////如果为先存后付的取物
+	//如果为先存后付的取物
 	if len(fortime) > 0 {
 		cid, _, cdid, err = models.GetCabinetAndDoorByUserId(res.OpenId, 1)
+		beego.Error(err)
 		if err == orm.ErrNoRows {
 			c.Data["data"] = "没有找到你的存物记录"
 			c.TplName = "resp/resp.html"

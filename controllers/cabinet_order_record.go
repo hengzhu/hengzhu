@@ -105,7 +105,7 @@ func (c *OrderController) ReOrder() {
 			//获取code,重定向到微信授权回调
 			//c.GetCode(cabinet_id)
 			c.Ctx.Output.SetStatus(201)
-			c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id))
+			c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + "#wechat_redirect")
 			return
 		}
 		c.Ctx.Output.SetStatus(201)
@@ -323,7 +323,7 @@ func (c *OrderController) TakeOut() {
 		//获取code,重定向到微信授权回调
 		//c.GetCode(cabinet_id)
 		c.Ctx.Output.SetStatus(201)
-		c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + "_" + str)
+		c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + "_" + str + "#wechat_redirect")
 		return
 	}
 	c.Ctx.Output.SetStatus(201)
@@ -359,6 +359,7 @@ UJrUvJvWukvR5hy0KwIDAQAB
 	config.APP_ID = beego.AppConfig.String("WxAPPID")
 	config.MCH_ID = beego.AppConfig.String("WxMCH_ID")
 	config.MCH_KEY = beego.AppConfig.String("WxKey")
+	config.APP_SECRET = beego.AppConfig.String("APPSECRET")
 	payment.InitWXKey(config)
 
 }
