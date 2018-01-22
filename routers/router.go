@@ -37,6 +37,7 @@ func init() {
 	beego.AutoRouter(&controllers.AdminController{})
 	beego.AutoRouter(&controllers.UserController{})
 	beego.AutoRouter(&controllers.PayNotifyController{})
+	beego.AutoRouter(&controllers.OrderController{})
 
 	//beego.Router("/account", &controllers.AccountController{}, "*:Index")
 	//beego.Router("/account/changepwd", &controllers.AccountController{}, "*:ChangePwd")

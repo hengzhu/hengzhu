@@ -10,6 +10,7 @@ import (
 	"errors"
 	"strconv"
 	"hengzhu/tool/payment"
+	"fmt"
 )
 
 // 柜子订单支付
@@ -114,8 +115,12 @@ func (c *OrderController) ReOrder() {
 	cd, err2 = models.GetFreeDoorByCabinetId(cabinet_id)
 	if err2 == orm.ErrNoRows {
 		c.Ctx.Output.SetStatus(404)
-		c.Data["json"] = errors.New("没有空闲的门可分配").Error()
-		c.ServeJSON()
+		//c.Data["json"] = errors.New("没有空闲的门可分配").Error()
+		//c.ServeJSON()
+		c.Data["data"] = "没有空闲的门可分配"
+		c.TplName = "resp/resp.html"
+		c.Render()
+		fmt.Printf("----------%v\n", err2)
 		return
 	}
 	if err2 != nil {

@@ -45,12 +45,14 @@ func (c *PayNotifyController) AliNotify() {
 		beego.Error(err)
 		c.Data["data"] = err.Error()
 		c.TplName = "resp/resp.html"
+		c.Render()
 		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	if noti.TradeStatus != "TRADE_SUCCESS" {
 		c.Data["data"] = "noti.TradeStatus"
 		c.TplName = "resp/resp.html"
+		c.Render()
 		//c.Ctx.WriteString("noti.TradeStatus")
 		return
 	}
@@ -59,6 +61,7 @@ func (c *PayNotifyController) AliNotify() {
 	if err != nil {
 		c.Data["data"] = err.Error()
 		c.TplName = "resp/resp.html"
+		c.Render()
 		//c.Ctx.WriteString(err.Error())
 		return
 	}
@@ -91,12 +94,14 @@ func (c *PayNotifyController) AliNotify() {
 		beego.Error("[rabbitmq err:] ", err.Error())
 		c.Data["data"] = err.Error()
 		c.TplName = "resp/resp.html"
+		c.Render()
 		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	//tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
 	c.Data["data"] = "success"
 	c.TplName = "resp/resp.html"
+	c.Render()
 	//c.Ctx.WriteString("success")
 }
 
@@ -134,6 +139,7 @@ func (c *PayNotifyController) OauthNotify() {
 		beego.Error(reults, err)
 		c.Data["data"] = err.Error()
 		c.TplName = "resp/resp.html"
+		c.Render()
 		//c.Ctx.WriteString(err.Error())
 		return
 	}
@@ -144,6 +150,7 @@ func (c *PayNotifyController) OauthNotify() {
 		if err == orm.ErrNoRows {
 			c.Data["data"] = "没有找到你的存物记录"
 			c.TplName = "resp/resp.html"
+			c.Render()
 			//c.Ctx.WriteString("没有找到你的存物记录")
 			return
 		}
@@ -151,6 +158,7 @@ func (c *PayNotifyController) OauthNotify() {
 			beego.Error(err)
 			c.Data["data"] = "服务器异常"
 			c.TplName = "resp/resp.html"
+			c.Render()
 			//c.Ctx.WriteString("服务器异常")
 			return
 		}
@@ -226,6 +234,7 @@ func (c *PayNotifyController) OauthNotify() {
 		beego.Error(err)
 		c.Data["data"] = err.Error()
 		c.TplName = "resp/resp.html"
+		c.Render()
 		//c.Ctx.WriteString(err.Error())
 		return
 	}
@@ -253,12 +262,14 @@ A:
 		beego.Error("[rabbitmq err:] ", err.Error())
 		c.Data["data"] = err.Error()
 		c.TplName = "resp/resp.html"
+		c.Render()
 		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	//tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
 	c.Data["data"] = "success"
 	c.TplName = "resp/resp.html"
+	c.Render()
 	//c.Ctx.WriteString("success")
 }
 
@@ -297,6 +308,7 @@ func (c *PayNotifyController) WxNotify() {
 	if err != nil {
 		c.Data["data"] = err.Error()
 		c.TplName = "resp/resp.html"
+		c.Render()
 		//c.Ctx.WriteString(err.Error())
 		return
 	}
@@ -322,6 +334,7 @@ func (c *PayNotifyController) WxNotify() {
 		beego.Error("[rabbitmq err:] ", err.Error())
 		c.Data["data"] = err.Error()
 		c.TplName = "resp/resp.html"
+		c.Render()
 		//c.Ctx.WriteString(err.Error())
 		return
 	}
@@ -363,6 +376,7 @@ func (c *PayNotifyController) WxOauthNotify() {
 		if err == orm.ErrNoRows {
 			c.Data["data"] = "没有找到你的存物记录"
 			c.TplName = "resp/resp.html"
+			c.Render()
 			//c.Ctx.WriteString("没有找到你的存物记录")
 			return
 		}
@@ -370,6 +384,7 @@ func (c *PayNotifyController) WxOauthNotify() {
 			beego.Error(err)
 			c.Data["data"] = "服务器异常"
 			c.TplName = "resp/resp.html"
+			c.Render()
 			//c.Ctx.WriteString("服务器异常")
 			return
 		}
