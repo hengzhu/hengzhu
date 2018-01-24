@@ -207,14 +207,22 @@ func (c *PayNotifyController) OauthNotify() {
 		cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
 		if err == orm.ErrNoRows {
 			c.Ctx.Output.SetStatus(404)
-			c.Data["json"] = errors.New("没有空闲的门可分配").Error()
-			c.ServeJSON()
+			//c.Data["json"] = errors.New("没有空闲的门可分配").Error()
+			//c.ServeJSON()
+			c.Data["cndata"] = "没有空闲的门可分配"
+			c.Data["endata"] = "No Free Doors Can Be Allocated"
+			c.TplName = "resp/resp.html"
+			c.Render()
 			return
 		}
 		if err != nil {
 			c.Ctx.Output.SetStatus(500)
-			c.Data["json"] = errors.New("服务器崩溃").Error()
-			c.ServeJSON()
+			//c.Data["json"] = errors.New("服务器崩溃").Error()
+			//c.ServeJSON()
+			c.Data["cndata"] = "服务器崩溃"
+			c.Data["endata"] = "Server Exception"
+			c.TplName = "resp/resp.html"
+			c.Render()
 			return
 		}
 		//先绑定openid,上传关门信息时才修改为被占用
@@ -293,14 +301,22 @@ func (c *PayNotifyController) WxNotify() {
 	err := xml.Unmarshal(c.Ctx.Input.RequestBody, &notify)
 	if err != nil {
 		beego.Error("[WxPay]: PayBack err in Unmarshal:", err)
-		c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "FAIL", ReturnMsg: "参数格式校验错误"}
-		c.ServeXML()
+		//c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "FAIL", ReturnMsg: "参数格式校验错误"}
+		//c.ServeXML()
+		c.Data["cndata"] = "参数格式校验错误"
+		c.Data["endata"] = "[WxPay]: PayBack err in Unmarshal"
+		c.TplName = "resp/resp.html"
+		c.Render()
 		return
 	}
 	ok := notify.SignValid()
 	if !ok {
-		c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "FAIL", ReturnMsg: "签名失败"}
-		c.ServeXML()
+		//c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "FAIL", ReturnMsg: "签名失败"}
+		//c.ServeXML()
+		c.Data["cndata"] = "签名失败"
+		c.Data["endata"] = "Failure Of Signature"
+		c.TplName = "resp/resp.html"
+		c.Render()
 		return
 	}
 	//go func(){}()这里最好异步处理 需要同步给微信返回结果
@@ -352,8 +368,12 @@ func (c *PayNotifyController) WxNotify() {
 		return
 	}
 	//tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
-	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
-	c.ServeXML()
+	//c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
+	//c.ServeXML()
+	c.Data["cndata"] = "支付成功"
+	c.Data["endata"] = "Success"
+	c.TplName = "resp/resp.html"
+	c.Render()
 	return
 }
 
@@ -440,22 +460,34 @@ func (c *PayNotifyController) Wx() {
 		cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
 		if err == orm.ErrNoRows {
 			c.Ctx.Output.SetStatus(404)
-			c.Data["xml"] = errors.New("没有空闲的门可分配").Error()
-			c.ServeXML()
+			//c.Data["xml"] = errors.New("没有空闲的门可分配").Error()
+			//c.ServeXML()
+			c.Data["cndata"] = "没有空闲的门可分配"
+			c.Data["endata"] = "No Free Doors Can Be Allocated"
+			c.TplName = "resp/resp.html"
+			c.Render()
 			return
 		}
 		if err != nil {
 			c.Ctx.Output.SetStatus(500)
-			c.Data["xml"] = errors.New("服务器崩溃").Error()
-			c.ServeXML()
+			//c.Data["xml"] = errors.New("服务器崩溃").Error()
+			//c.ServeXML()
+			c.Data["cndata"] = "服务器崩溃"
+			c.Data["endata"] = "Server Exception"
+			c.TplName = "resp/resp.html"
+			c.Render()
 			return
 		}
 		//先绑定openid,上传关门信息时才修改为被占用
 		err, door := models.BindOpenIdForCabinetDoor(res.OpenId, cd.Id)
 		if err != nil {
 			c.Ctx.Output.SetStatus(501)
-			c.Data["xml"] = errors.New("系统错误").Error()
-			c.ServeXML()
+			//c.Data["xml"] = errors.New("系统错误").Error()
+			//c.ServeXML()
+			c.Data["cndata"] = "服务器崩溃"
+			c.Data["endata"] = "Server Exception"
+			c.TplName = "resp/resp.html"
+			c.Render()
 			return
 		}
 		cdid = cd.Id
@@ -467,14 +499,22 @@ func (c *PayNotifyController) Wx() {
 	cid, door_no, cdid, err = models.GetCabinetAndDoorByUserId(res.OpenId)
 	if err == orm.ErrNoRows {
 		c.Ctx.Output.SetStatus(404)
-		c.Data["xml"] = errors.New("未使用已经支付的柜子").Error()
-		c.ServeXML()
+		//c.Data["xml"] = errors.New("未使用已经支付的柜子").Error()
+		//c.ServeXML()
+		c.Data["cndata"] = "没有找到你的存物记录"
+		c.Data["endata"] = "No Record Find For You"
+		c.TplName = "resp/resp.html"
+		c.Render()
 		return
 	}
 	if err != nil {
 		beego.Error(err)
-		c.Data["xml"] = err.Error()
-		c.ServeXML()
+		//c.Data["xml"] = err.Error()
+		//c.ServeXML()
+		c.Data["cndata"] = "服务器崩溃"
+		c.Data["endata"] = "Server Exception"
+		c.TplName = "resp/resp.html"
+		c.Render()
 		return
 	}
 A:
@@ -499,14 +539,22 @@ A:
 	err = tool.Rabbit.Publish("cabinet_"+cab.CabinetID, bs)
 	if err != nil {
 		beego.Error("[rabbitmq err:] ", err.Error())
-		c.Data["xml"] = err.Error()
-		c.ServeXML()
+		//c.Data["xml"] = err.Error()
+		//c.ServeXML()
+		c.Data["cndata"] = "开门失败，请联系管理员"
+		c.Data["endata"] = err.Error()
+		c.TplName = "resp/resp.html"
+		c.Render()
 		return
 	}
 	//tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
-	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
-	c.ServeXML()
-
+	//c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
+	//c.ServeXML()
+	c.Data["cndata"] = "开门失败，请联系管理员"
+	c.Data["cndata"] = "开门成功，请取回你的物品"
+	c.Data["endata"] = "success"
+	c.TplName = "resp/resp.html"
+	c.Render()
 }
 
 func init() {
