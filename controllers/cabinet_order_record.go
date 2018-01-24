@@ -117,7 +117,8 @@ func (c *OrderController) ReOrder() {
 		c.Ctx.Output.SetStatus(404)
 		//c.Data["json"] = errors.New("没有空闲的门可分配").Error()
 		//c.ServeJSON()
-		c.Data["data"] = "没有空闲的门可分配"
+		c.Data["cndata"] = "没有空闲的门可分配"
+		c.Data["endata"] = "No Free Doors Can Be Allocated"
 		c.TplName = "resp/resp.html"
 		c.Render()
 		fmt.Printf("----------%v\n", err2)
