@@ -225,7 +225,7 @@ func GetCabinetAndDoorByUserId(user_id string, flag ... int) (cid int, door_no i
 			return
 		}
 	} else {
-		err = o.Raw("select id,cabinet_id,door from cabinet_detail where id = (select cabinet_detail_id from cabinet_order_record where customer_id = ? and is_pay = 1 limit 1);", user_id).QueryRow(&cd)
+		err = o.Raw("select id,cabinet_id,door from cabinet_detail where id = (select cabinet_detail_id from cabinet_order_record where customer_id = ? and is_pay = 1 and (past_flag is null or past_flag = 0) limit 1);", user_id).QueryRow(&cd)
 		if err != nil {
 			return
 		}

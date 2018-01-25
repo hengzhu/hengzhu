@@ -11,6 +11,10 @@ import (
 	"strconv"
 	"hengzhu/tool/payment"
 	"fmt"
+	"crypto/md5"
+	"encoding/hex"
+	"strings"
+	"net/url"
 )
 
 // 柜子订单支付
@@ -52,7 +56,7 @@ func (c *OrderController) URLMapping() {
 // @Failure 403 body is empty
 // @router /ReOrder [post]
 func (c *OrderController) ReOrder() {
-	var flag bool
+	var flag bool //后下单标志
 	var v models.CabinetOrderRecord
 	var action_type int
 	var cd *models.CabinetDetail
@@ -189,15 +193,12 @@ B:
 }
 
 func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bool) {
-	//cabinetId := c.Input().Get("cabinet_id")
-	//ip := c.Ctx.Input.IP() //不知道你们的机制是不是这样获得ip
-	//cid, err := strconv.ParseInt(cabinetId, 10, 64)
-	//if err != nil {
-	//	beego.Error("[WxPay] NewOrder err in cabinet to int:", err)
-	//	c.Data["json"] = err.Error()
-	//}
+	var trade_type = payment.TRADE_TYPE_NATIVE
 	var err error
 	var cabdetail *models.CabinetDetail
+	if flag {
+		trade_type = payment.TRADE_TYPE_JSAPI
+	}
 	fee = fee * 100.00
 	total_fee := strconv.FormatFloat(fee, 'f', 0, 64)
 	if open_id == "" {
@@ -227,16 +228,16 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bo
 		OutTradeNo: order_no,                           //*必填 商户系统内部订单号 这个重要
 		FeeType: "",                                    //*选填 币种
 		TotalFee: total_fee,                            //*必填 商品标价
-		SpBillCreateIp: "39.108.53.220",
+		SpBillCreateIp: "116.62.167.76",
 		//不知道你们这里是不是填这个//*必填 终端ip地址
 		TimeStart: "",                                      // 选填 交易起始时间
 		TimeExpire: "",                                     // 选填 交易结束时间
 		GoodsTag: "",                                       // 选填 订单优惠标记
 		NotifyURL: beego.AppConfig.String("wx_notify_url"), //*必填 支付结果通知地址 非常重要
-		TradeType: "NATIVE",                                //*必填 交易类型 这里应为native 扫码支付
+		TradeType: trade_type,                              //*必填 交易类型 这里应为native 扫码支付
 		ProductId: strconv.Itoa(cabdetail.CabinetId),       //*必填 商品id原本为选填,但是在扫码支付下必须填写
 		LimitPay: "",                                       // 选填 限定支付方式
-		OpenId: "",                                         // 选填 在扫码支付的情况下不用填写
+		OpenId: open_id,                                    // 选填 在扫码支付的情况下不用填写
 	}
 	ok := models.CreateNewWxOrder(wxOrderReq, cabdetail.Id) //创建一个本地订单
 	if !ok {
@@ -269,11 +270,18 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bo
 		c.Data["json"] = " NewOrder post response order fail"
 		return
 	}
-	beego.Debug("[WxPay]: NewOrder success and code:", res.CodeURL)
-	//c.TplName = ""
+	beego.Debug("[WxPay]: NewOrder success and code:", res.PrePayId)
 	if flag {
-		//	重定向调起支付
-		c.redirect(res.CodeURL)
+		//	微信重定向调起支付
+		queryStr := fmt.Sprintf("appId=%s&nonceStr=%s&package=%s&signType=%s&timeStamp=%s&key=%s", beego.AppConfig.String("WxAPPID"), nonstr, "prepay_id="+res.PrePayId, "MD5", strconv.Itoa(int(time.Now().Unix())), beego.AppConfig.String("WxKey"))
+		hash := md5.New()
+		hash.Write([]byte(queryStr))
+		cipherStr := hash.Sum(nil)
+
+		queryStr = fmt.Sprintf("appId=%s&nonceStr=%s&package=%s&signType=%s&timeStamp=%s&key=%s", beego.AppConfig.String("WxAPPID"), nonstr, url.QueryEscape("prepay_id="+res.PrePayId), "MD5", strconv.Itoa(int(time.Now().Unix())), beego.AppConfig.String("WxKey"))
+		queryStr = queryStr + "&paySign=" + strings.ToUpper(hex.EncodeToString(cipherStr))
+
+		c.redirect(beego.AppConfig.String("domain") + "/middle/payingPage.html?" + queryStr)
 	} else {
 		c.Data["json"] = res.CodeURL
 		c.ServeJSON()

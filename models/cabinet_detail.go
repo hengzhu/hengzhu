@@ -8,8 +8,8 @@ import (
 	"github.com/astaxie/beego/orm"
 	"time"
 	"strconv"
-	"hengzhu/models/bean"
 	"github.com/astaxie/beego"
+	"hengzhu/utils"
 )
 
 type CabinetDetail struct {
@@ -231,6 +231,16 @@ func UpdateCabinetDetailById(m *CabinetDetail) (err error) {
 	return
 }
 
+// UpdateCabinetDetail with NULL
+func UpdateCabinetDetailWithNUll(m *CabinetDetail) (err error) {
+	o := orm.NewOrm()
+	v := CabinetDetail{Id: m.Id}
+	if err = o.Read(&v); err == nil {
+		_, err = o.Raw("update cabinet_detail set `using` = ?, userID = null, store_time = ? where id = ? ;", m.Using, m.StoreTime, v.Id).Exec()
+	}
+	return
+}
+
 // DeleteCabinetDetail deletes CabinetDetail by Id and returns error if
 // the record to be deleted doesn't exist
 func DeleteCabinetDetail(id int) (err error) {
@@ -299,69 +309,12 @@ func BindOpenIdForCabinetDoor(openid string, cdid int) (err error, door_no int) 
 	v := CabinetDetail{Id: cdid}
 	if err = o.Read(&v); err == nil {
 		v.UserID = openid
-		//默认已经开门
-		v.OpenState = 2
 		v.Using = 2
-		v.StoreTime = int(time.Now().Unix())
-		if _, err = o.Update(&v, "userID", "open_state", "using", "store_time"); err == nil {
+		if _, err = o.Update(&v, "userID", "using"); err == nil {
 			fmt.Println("用户" + openid + "使用的门id为：" + strconv.Itoa(cdid))
 			door_no = v.Door
 		}
 	}
-	return
-}
-
-//处理柜子上报的信息
-func HandleCabinetFromHardWare(msg *bean.RabbitMqMessage) (err error) {
-	o := orm.NewOrm()
-	cd := CabinetDetail{}
-	if msg.DoorState == "open" {
-		err = o.Raw("select open_state from cabinet_detail where userID = ? limit 1;", msg.UserId).QueryRow(&cd)
-		//在下发请求时已经设为开门
-		if cd.OpenState != 2 {
-			err = errors.New("没有这个柜子")
-			beego.Error(err.Error())
-			return
-		}
-		return
-	}
-	//先查是否有绑定关系的
-	err = o.Raw("select id,`using` from cabinet_detail where cabinet_id = ? and door = ? and userID = ? and use_state = 1 limit 1;", msg.CabinetId, msg.Door, msg.UserId).QueryRow(&cd)
-	if err != nil {
-		return
-	}
-	//第一次关门
-	//柜子门还空闲
-	if cd.Using == 1 {
-		_, err = o.Raw("update cabinet_detail set open_state = 1 and using = 2 and store_time = ? where userID = ? limit 1;", int(time.Now().Unix()), msg.UserId).Exec()
-		//添加日志记录
-		m := Log{
-			CabinetDetailId: cd.Id,
-			User:            msg.UserId,
-			Time:            time.Now(),
-			Action:          "存",
-		}
-		AddLog(&m)
-		return
-	}
-	//第二次(取物时关门)
-	//判断是否回收柜子门
-	cor := CabinetOrderRecord{}
-	//如果同一用户又用了同一个门?
-	err = o.Raw("select * from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and is_pay = 1 limit 1;", msg.UserId, cd.Id).QueryRow(&cor)
-	if err == orm.ErrNoRows {
-		err = errors.New("系统异常")
-		return
-	}
-	_, err = o.Raw("update cabinet_detail set open_state = 1 and userID = ? and using = ? and store_time = ? where id = ? ;", "", 1, 0, cd.Id).Exec()
-	//添加日志记录
-	m := Log{
-		CabinetDetailId: cd.Id,
-		User:            msg.UserId,
-		Time:            time.Now(),
-		Action:          "取",
-	}
-	AddLog(&m)
 	return
 }
 
@@ -374,6 +327,85 @@ func GetCabinetDetailByOpenId(open_id string) (v *CabinetDetail, err error) {
 	return nil, err
 }
 
+//func UpdateCabinetDetail(m *CabinetDetail) (err error) {
+//	o := orm.NewOrm()
+//	v := CabinetDetail{Id: m.Id}
+//	if err = o.Read(&v); err == nil {
+//		var num int64
+//		if num, err = o.Update(m); err == nil {
+//			fmt.Println("Number of records updated in database:", num)
+//		}
+//	}
+//	result1, _ := utils.Redis.GET(utils.PAY + strconv.Itoa(m.Id))
+//	result2, _ := utils.Redis.GET(utils.NOPAY + strconv.Itoa(m.Id))
+//
+//	cd := CabinetDetail{}
+//	//先查是否被占用
+//	err = o.Raw("select userID,`using`,store_time from cabinet_detail where id = ? limit 1;", m.Id).QueryRow(&cd)
+//	if err != nil {
+//		return
+//	}
+//	if cd.UserID != "" && cd.Using == 2 && m.OpenState == 1 {
+//		cor := CabinetOrderRecord{}
+//		//如果同一用户又用了同一个门?
+//		//是否已经支付过
+//		err = o.Raw("select * from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and is_pay = 1 and (past_flag is null or past_flag = 0) limit 1;", cd.UserID, m.Id).QueryRow(&cor)
+//		//当前使用但未支付
+//		if err == nil && cd.StoreTime == 0 {
+//			//第一次关门
+//			_, err = o.Raw("update cabinet_detail set `using` = 2, store_time = ?, userID = ? where id = ? limit 1;", int(time.Now().Unix()), m.UserID, cid).Exec()
+//			//添加日志记录
+//			m := Log{
+//				CabinetDetailId: m.Id,
+//				User:            cd.UserID,
+//				Time:            time.Now(),
+//				Action:          "存",
+//			}
+//			AddLog(&m)
+//			//删除缓存
+//			err = utils.Redis.DEL(key)
+//			if err != nil {
+//				beego.Error(err)
+//			}
+//			return
+//		} else if err == nil && cd.StoreTime != 0 {
+//			//柜子置为空闲
+//			_, err = o.Raw("update cabinet_order_record set past_flag = 1 where id = ? ;", cor.Id).Exec()
+//			if err != nil {
+//				beego.Error(err)
+//				return
+//			}
+//			_, err = o.Raw("update cabinet_detail set userID = null,`using` = ?,store_time = ? where id = ? ;", 1, 0, m.Id).Exec()
+//			//添加日志记录
+//			m := Log{
+//				CabinetDetailId: m.Id,
+//				User:            cd.UserID,
+//				Time:            time.Now(),
+//				Action:          "取",
+//			}
+//			AddLog(&m)
+//		}
+//		if err == orm.ErrNoRows {
+//			//先存后付第一次关门
+//			_, err = o.Raw("update cabinet_detail set `using` = 2, store_time = ? where userID = ? limit 1;", int(time.Now().Unix()), m.UserID).Exec()
+//			//添加日志记录
+//			m := Log{
+//				CabinetDetailId: m.Id,
+//				User:            cd.UserID,
+//				Time:            time.Now(),
+//				Action:          "存",
+//			}
+//			AddLog(&m)
+//			return
+//		}
+//		if err != nil && err != orm.ErrNoRows {
+//			err = errors.New("系统异常")
+//			return
+//		}
+//	}
+//	return
+//}
+
 func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 	o := orm.NewOrm()
 	v := CabinetDetail{Id: m.Id}
@@ -383,50 +415,83 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 			fmt.Println("Number of records updated in database:", num)
 		}
 	}
-	cd := CabinetDetail{}
-	//先查是否被占用
-	err = o.Raw("select userID,`using` from cabinet_detail where id = ? limit 1;", m.Id).QueryRow(&cd)
-	if err != nil {
+	//管理员操作
+	managerResult, _ := utils.Redis.GET(utils.MANAGER + strconv.Itoa(m.Id))
+	if managerResult != "" {
+		if m.OpenState == 1 {
+			err2 := utils.Redis.DEL(utils.MANAGER + strconv.Itoa(m.Id))
+			if err2 != nil {
+				beego.Error(err2)
+				err = err2
+			}
+		}
 		return
 	}
-	if cd.UserID != "" && cd.Using == 2 && m.OpenState == 1 {
-		cor := CabinetOrderRecord{}
-		//如果同一用户又用了同一个门?
-		//是否已经支付过
-		err = o.Raw("select * from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and is_pay = 1 and past_flag is null limit 1;", cd.UserID, m.Id).QueryRow(&cor)
-		//当前使用但未支付
-		if err == orm.ErrNoRows {
+	if m.OpenState == 1 {
+		var key string
+		var result string
+		var result1, _ = utils.Redis.GET(utils.PAY + strconv.Itoa(m.Id))
+		if result1 != "" {
+			result = result1
+			key = utils.PAY + strconv.Itoa(m.Id)
+		}
+		var result2, _ = utils.Redis.GET(utils.NOPAY + strconv.Itoa(m.Id))
+		if result2 != "" {
+			result = result2
+			key = utils.NOPAY + strconv.Itoa(m.Id)
+		}
+		if result != "" {
+			userId := result
 			//第一次关门
-			_, err = o.Raw("update cabinet_detail set `using` = 2, store_time = ? where userID = ? limit 1;", int(time.Now().Unix()), m.UserID).Exec()
+			_, err = o.Raw("update cabinet_detail set `using` = 2, store_time = ?, userID = ? where id = ? limit 1;", int(time.Now().Unix()), userId, m.Id).Exec()
 			//添加日志记录
 			m := Log{
 				CabinetDetailId: m.Id,
-				User:            cd.UserID,
+				User:            userId,
 				Time:            time.Now(),
 				Action:          "存",
 			}
 			AddLog(&m)
+			//删除缓存
+			err = utils.Redis.DEL(key)
+			beego.Warn("删除缓存:", key)
+			if err != nil {
+				beego.Error(err)
+			}
 			return
+		} else {
+			cd := CabinetDetail{}
+			err = o.Raw("select id,userID,`using`,store_time from cabinet_detail where id = ? limit 1;", m.Id).QueryRow(&cd)
+			if err != nil {
+				beego.Error(err)
+				return
+			}
+			//非管理员操作
+			//第二次关门
+			if cd.UserID != "" && cd.Using == 2 {
+				_, err = o.Raw("update cabinet_order_record set past_flag = 1 where customer_id = ? and cabinet_detail_id = ? and (past_flag is null or past_flag = 0) ;", cd.UserID, cd.Id).Exec()
+				if err != nil {
+					beego.Error(err)
+					return
+				}
+				_, err = o.Raw("update cabinet_detail set userID = null,`using` = ?,store_time = ? where id = ? ;", 1, 0, cd.Id).Exec()
+				if err == orm.ErrNoRows {
+					return
+				}
+				if err != nil {
+					beego.Error(err)
+					return
+				}
+				//添加日志记录
+				m := Log{
+					CabinetDetailId: m.Id,
+					User:            cd.UserID,
+					Time:            time.Now(),
+					Action:          "取",
+				}
+				AddLog(&m)
+			}
 		}
-		if err != nil {
-			err = errors.New("系统异常")
-			return
-		}
-		//柜子置为空闲
-		_, err = o.Raw("update cabinet_order_record set past_flag = 1 where id = ? ;", cor.Id).Exec()
-		if err != nil {
-			beego.Error(err)
-			return
-		}
-		_, err = o.Raw("update cabinet_detail set userID = null,`using` = ?,store_time = ? where id = ? ;", 1, 0, m.Id).Exec()
-		//添加日志记录
-		m := Log{
-			CabinetDetailId: m.Id,
-			User:            cd.UserID,
-			Time:            time.Now(),
-			Action:          "取",
-		}
-		AddLog(&m)
 	}
 	return
 }

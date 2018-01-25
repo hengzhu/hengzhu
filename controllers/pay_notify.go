@@ -14,6 +14,7 @@ import (
 	"encoding/xml"
 	"time"
 	"strings"
+	"hengzhu/utils"
 )
 
 const (
@@ -61,11 +62,14 @@ func (c *PayNotifyController) AliNotify() {
 
 	cd, err := models.UpdateOrderSuccessByNo(noti.TradeNo, noti.OutTradeNo, noti.BuyerId)
 	if err != nil {
+		if err.Error() == "[重复存物]: "+noti.BuyerId {
+			c.Ctx.WriteString("success")
+			return
+		}
 		c.Data["cndata"] = "支付失败"
 		c.Data["endata"] = err.Error()
 		c.TplName = "resp/resp.html"
 		c.Render()
-		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	//添加日志记录
@@ -76,13 +80,18 @@ func (c *PayNotifyController) AliNotify() {
 		Action:          OpenDoor,
 	}
 	models.AddLog(&m)
-	//cor, err := models.GetOrderRecordByOerderNo(noti.OutTradeNo)
-	//if err != nil {
-	//	c.Ctx.WriteString(err.Error())
-	//	return
-	//}
-	//door_no := []byte{uint8(cd.Door)}
-	//err = connections[cabinet.CabinetId].WriteMessage(len([]byte{uint8(cd.Door)}), door_no)
+	//缓存支付绑定记录(先付)
+	if cd.StoreTime == 0 {
+		err = utils.Redis.SET(utils.PAY+strconv.Itoa(cd.Id), noti.BuyerId, 0)
+		beego.Warn("设置缓存:", utils.PAY+strconv.Itoa(cd.Id))
+		if err != nil {
+			beego.Warn("[缓存错误]: ", err.Error())
+			c.Data["data"] = "服务器错误"
+			c.TplName = "resp/resp.html"
+			c.Render()
+			return
+		}
+	}
 	cab, _ := models.GetCabinetById(cd.CabinetId)
 	rmm := bean.RabbitMqMessage{
 		CabinetId: cab.CabinetID,
@@ -103,11 +112,11 @@ func (c *PayNotifyController) AliNotify() {
 		return
 	}
 	//tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
-	c.Data["cndata"] = "支付成功"
-	c.Data["endata"] = "success"
-	c.TplName = "resp/resp.html"
-	c.Render()
-	//c.Ctx.WriteString("success")
+	//c.Data["cndata"] = "支付成功"
+	//c.Data["endata"] = "success"
+	//c.TplName = "resp/resp.html"
+	//c.Render()
+	c.Ctx.WriteString("success")
 }
 
 // @Title 支付宝授权用户信息
@@ -118,8 +127,12 @@ func (c *PayNotifyController) OauthNotify() {
 	var cdid int
 	var fortime string
 	var cabinet_id int
+	var syb = false //取标志
 	auth_code := c.Ctx.Input.Query("auth_code")
 	state := c.Ctx.Input.Query("state")
+	if strings.Contains(state, "_") {
+		syb = true
+	}
 	if len(state) >= 1 {
 		results := strings.Split(state, "_")
 		cabinet_id, _ = strconv.Atoi(results[0])
@@ -204,39 +217,66 @@ func (c *PayNotifyController) OauthNotify() {
 	}
 	//先存后付授权开门
 	if cabinet_id != 0 {
-		cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
-		if err == orm.ErrNoRows {
-			c.Ctx.Output.SetStatus(404)
-			//c.Data["json"] = errors.New("没有空闲的门可分配").Error()
-			//c.ServeJSON()
-			c.Data["cndata"] = "没有空闲的门可分配"
-			c.Data["endata"] = "No Free Doors Can Be Allocated"
+		v, err := models.GetCabinetDetailByOpenId(openid)
+		if !syb && err == nil && v != nil {
+			beego.Warn(openid + "[ 重复存物 ]")
+			c.Data["cndata"] = "重复存物"
+			c.Data["endata"] = "Repeat Store"
+			c.TplName = "resp/resp.html"
+			c.Render()
+			return
+		} else if syb && v == nil {
+			beego.Warn(openid + "[ 没有找到你的存物记录 ]")
+			c.Data["cndata"] = "没有找到你的存物记录"
+			c.Data["endata"] = "No Record Find For You"
 			c.TplName = "resp/resp.html"
 			c.Render()
 			return
 		}
-		if err != nil {
-			c.Ctx.Output.SetStatus(500)
-			//c.Data["json"] = errors.New("服务器崩溃").Error()
-			//c.ServeJSON()
-			c.Data["cndata"] = "服务器崩溃"
-			c.Data["endata"] = "Server Exception"
-			c.TplName = "resp/resp.html"
-			c.Render()
-			return
+		//已经使用柜子
+		//v, err := models.GetCabinetDetailByOpenId(openid)
+		if err == nil && v != nil {
+			beego.Warn(openid + "[ have using ]")
+		} else {
+			cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
+			if err == orm.ErrNoRows {
+				c.Ctx.Output.SetStatus(404)
+				c.Data["cndata"] = "没有空闲的门可分配"
+				c.Data["endata"] = "No Free Doors Can Be Allocated"
+				c.TplName = "resp/resp.html"
+				c.Render()
+				return
+			}
+			if err != nil {
+				c.Ctx.Output.SetStatus(500)
+				c.Data["cndata"] = "服务器崩溃"
+				c.Data["endata"] = "Server Exception"
+				c.TplName = "resp/resp.html"
+				c.Render()
+				return
+			}
+			//先绑定openid,上传关门信息时才修改为被占用
+			err, door := models.BindOpenIdForCabinetDoor(openid, cd.Id)
+			if err != nil {
+				c.Ctx.Output.SetStatus(501)
+				c.Data["json"] = errors.New("系统错误").Error()
+				c.ServeJSON()
+				return
+			}
+			//缓存用户绑定(后付)
+			err = utils.Redis.SET(utils.NOPAY+strconv.Itoa(cd.Id), openid, 0)
+			if err != nil {
+				beego.Warn("[缓存错误]: ", err.Error())
+				c.Data["data"] = "服务器错误"
+				c.TplName = "resp/resp.html"
+				c.Render()
+				return
+			}
+			cdid = cd.Id
+			cid = cabinet_id
+			door_no = door
+			goto A
 		}
-		//先绑定openid,上传关门信息时才修改为被占用
-		err, door := models.BindOpenIdForCabinetDoor(openid, cd.Id)
-		if err != nil {
-			c.Ctx.Output.SetStatus(501)
-			c.Data["json"] = errors.New("系统错误").Error()
-			c.ServeJSON()
-			return
-		}
-		cdid = cd.Id
-		cid = cabinet_id
-		door_no = door
-		goto A
 	}
 	//根据扫码用户的user_id获取已经支付并正在使用的柜子和门
 	cid, door_no, cdid, err = models.GetCabinetAndDoorByUserId(openid)
@@ -285,11 +325,11 @@ A:
 		return
 	}
 	//tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
-	c.Data["cndata"] = "开门成功，请取回你的物品"
-	c.Data["endata"] = "success"
-	c.TplName = "resp/resp.html"
-	c.Render()
-	//c.Ctx.WriteString("success")
+	//c.Data["cndata"] = "开门成功，请取回你的物品"
+	//c.Data["endata"] = "success"
+	//c.TplName = "resp/resp.html"
+	//c.Render()
+	c.Ctx.WriteString("success")
 }
 
 // eg: transdata=%7B%22transtype%22%3A0%2C%22cporderid%22%3A%22re_4ba3YbGUo1%22%2C%22transid%22%3A%220001191495174433775563781837%22%2C%22pcuserid%22%3A%22263%22%2C%22appid%22%3A%221032017051111958%22%2C%22goodsid%22%3A%22153%22%2C%22feetype%22%3A1%2C%22money%22%3A1%2C%22fact_money%22%3A1%2C%22currency%22%3A%22CHY%22%2C%22result%22%3A1%2C%22transtime%22%3A%2220170519141414%22%2C%22pc_priv_info%22%3A%22%22%2C%22paytype%22%3A%221%22%7D&sign=4047a3826502b339b7f2a55145b99291&signtype=MD5
@@ -326,18 +366,17 @@ func (c *PayNotifyController) WxNotify() {
 		//说明这个订单有问题
 		beego.Error("[WxPay]: get cabinet by out_order_no fail")
 	}
-	//ok = models.WxPaySuccess(notify, detailId)
-	//if !ok {
-	//	//处理失败
-	//	beego.Error("[WxPay]: WxPay fail")
-	//}
 	cd, err := models.UpdateOrderSuccessByNo(notify.TransactionId, notify.OutTradeNo, notify.OpenId)
 	if err != nil {
+		if err.Error() == "[重复存物]: "+notify.OpenId {
+			c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
+			c.ServeXML()
+			return
+		}
 		c.Data["cndata"] = "支付失败"
 		c.Data["endata"] = err.Error()
 		c.TplName = "resp/resp.html"
 		c.Render()
-		//c.Ctx.WriteString(err.Error())
 		return
 	}
 	//添加日志记录
@@ -348,6 +387,18 @@ func (c *PayNotifyController) WxNotify() {
 		Action:          OpenDoor,
 	}
 	models.AddLog(&m)
+	//缓存支付绑定记录(先付)
+	if cd.StoreTime == 0 {
+		err = utils.Redis.SET(utils.PAY+strconv.Itoa(cd.Id), notify.OpenId, 0)
+		beego.Warn("设置缓存:", utils.PAY+strconv.Itoa(cd.Id))
+		if err != nil {
+			beego.Warn("[缓存错误]: ", err.Error())
+			c.Data["data"] = "服务器错误"
+			c.TplName = "resp/resp.html"
+			c.Render()
+			return
+		}
+	}
 	cab, _ := models.GetCabinetById(cd.CabinetId)
 	rmm := bean.RabbitMqMessage{
 		CabinetId: cab.CabinetID,
@@ -367,13 +418,12 @@ func (c *PayNotifyController) WxNotify() {
 		//c.Ctx.WriteString(err.Error())
 		return
 	}
-	//tool.Queues[strconv.Itoa(cd.CabinetId)] = "cabinet_" + cab.CabinetID
-	//c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
-	//c.ServeXML()
-	c.Data["cndata"] = "支付成功"
-	c.Data["endata"] = "Success"
-	c.TplName = "resp/resp.html"
-	c.Render()
+	//c.Data["cndata"] = "支付成功"
+	//c.Data["endata"] = "Success"
+	//c.TplName = "resp/resp.html"
+	//c.Render()
+	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
+	c.ServeXML()
 	return
 }
 
@@ -385,8 +435,12 @@ func (c *PayNotifyController) Wx() {
 	var cdid int
 	var fortime string
 	var cabinet_id int
+	var syb = false //取标志
 	code := c.Input().Get("code")
 	state := c.Ctx.Input.Query("state")
+	if strings.Contains(state, "_") {
+		syb = true
+	}
 	if len(state) >= 1 {
 		results := strings.Split(state, "_")
 		cabinet_id, _ = strconv.Atoi(results[0])
@@ -399,13 +453,13 @@ func (c *PayNotifyController) Wx() {
 		GrantType: GrantType,
 	}
 	res, err := wxastoken.Get()
+	beego.Warn("[WxUnlock] get code: ", code)
 	if err != nil {
 		beego.Error("[WxUnlock] GetOpenId err: ", err)
 	}
 	//如果为先存后付的取物
 	if len(fortime) > 0 {
 		cid, _, cdid, err = models.GetCabinetAndDoorByUserId(res.OpenId, 1)
-		beego.Error(err)
 		if err == orm.ErrNoRows {
 			c.Data["cndata"] = "没有找到你的存物记录"
 			c.Data["endata"] = err.Error()
@@ -457,43 +511,75 @@ func (c *PayNotifyController) Wx() {
 	}
 	//先存后付授权开门
 	if cabinet_id != 0 {
-		cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
-		if err == orm.ErrNoRows {
-			c.Ctx.Output.SetStatus(404)
-			//c.Data["xml"] = errors.New("没有空闲的门可分配").Error()
-			//c.ServeXML()
-			c.Data["cndata"] = "没有空闲的门可分配"
-			c.Data["endata"] = "No Free Doors Can Be Allocated"
+		v, err := models.GetCabinetDetailByOpenId(res.OpenId)
+		if !syb && err == nil && v != nil {
+			beego.Warn(res.OpenId + "[ 重复存物 ]")
+			c.Data["cndata"] = "重复存物"
+			c.Data["endata"] = "Repeat Store"
 			c.TplName = "resp/resp.html"
 			c.Render()
 			return
-		}
-		if err != nil {
-			c.Ctx.Output.SetStatus(500)
-			//c.Data["xml"] = errors.New("服务器崩溃").Error()
-			//c.ServeXML()
-			c.Data["cndata"] = "服务器崩溃"
-			c.Data["endata"] = "Server Exception"
+		} else if syb && v == nil {
+			beego.Warn(res.OpenId + "[ 没有找到你的存物记录 ]")
+			c.Data["cndata"] = "没有找到你的存物记录"
+			c.Data["endata"] = "No Record Find For You"
 			c.TplName = "resp/resp.html"
 			c.Render()
 			return
+
 		}
-		//先绑定openid,上传关门信息时才修改为被占用
-		err, door := models.BindOpenIdForCabinetDoor(res.OpenId, cd.Id)
-		if err != nil {
-			c.Ctx.Output.SetStatus(501)
-			//c.Data["xml"] = errors.New("系统错误").Error()
-			//c.ServeXML()
-			c.Data["cndata"] = "服务器崩溃"
-			c.Data["endata"] = "Server Exception"
-			c.TplName = "resp/resp.html"
-			c.Render()
-			return
+		//已经使用柜子
+		//v, err := models.GetCabinetDetailByOpenId(res.OpenId)
+		if err == nil && v != nil {
+			beego.Warn(res.OpenId + "[ have using ]")
+		} else {
+			cd, err := models.GetFreeDoorByCabinetId(cabinet_id)
+			if err == orm.ErrNoRows {
+				//c.Data["xml"] = errors.New("没有空闲的门可分配").Error()
+				//c.ServeXML()
+				c.Data["cndata"] = "没有空闲的门可分配"
+				c.Data["endata"] = "No Free Doors Can Be Allocated"
+				c.TplName = "resp/resp.html"
+				c.Render()
+				return
+			}
+			if err != nil {
+				c.Ctx.Output.SetStatus(500)
+				//c.Data["xml"] = errors.New("服务器崩溃").Error()
+				//c.ServeXML()
+				c.Data["cndata"] = "服务器崩溃"
+				c.Data["endata"] = "Server Exception"
+				c.TplName = "resp/resp.html"
+				c.Render()
+				return
+			}
+			//先绑定openid,上传关门信息时才修改为被占用
+			err, door := models.BindOpenIdForCabinetDoor(res.OpenId, cd.Id)
+			if err != nil {
+				c.Ctx.Output.SetStatus(501)
+				//c.Data["xml"] = errors.New("系统错误").Error()
+				//c.ServeXML()
+				c.Data["cndata"] = "服务器崩溃"
+				c.Data["endata"] = "Server Exception"
+				c.TplName = "resp/resp.html"
+				c.Render()
+				return
+			}
+			//缓存用户绑定(后付)
+			err = utils.Redis.SET(utils.NOPAY+strconv.Itoa(cd.Id), res.OpenId, 0)
+			if err != nil {
+				beego.Warn("[缓存错误]: ", err.Error())
+				c.Data["data"] = "服务器错误"
+				c.TplName = "resp/resp.html"
+				c.Render()
+				return
+			}
+			cdid = cd.Id
+			cid = cabinet_id
+			door_no = door
+			goto A
 		}
-		cdid = cd.Id
-		cid = cabinet_id
-		door_no = door
-		goto A
+
 	}
 	//根据扫码用户的open_id获取已经支付并正在使用的柜子和门
 	cid, door_no, cdid, err = models.GetCabinetAndDoorByUserId(res.OpenId)
@@ -547,14 +633,13 @@ A:
 		c.Render()
 		return
 	}
-	//tool.Queues[strconv.Itoa(cid)] = "cabinet_" + cab.CabinetID
-	//c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
-	//c.ServeXML()
-	c.Data["cndata"] = "开门失败，请联系管理员"
-	c.Data["cndata"] = "开门成功，请取回你的物品"
-	c.Data["endata"] = "success"
-	c.TplName = "resp/resp.html"
-	c.Render()
+	//c.Data["cndata"] = "开门失败，请联系管理员"
+	//c.Data["cndata"] = "开门成功，请取回你的物品"
+	//c.Data["endata"] = "success"
+	//c.TplName = "resp/resp.html"
+	//c.Render()
+	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
+	c.ServeXML()
 }
 
 func init() {

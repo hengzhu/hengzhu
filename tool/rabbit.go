@@ -10,8 +10,6 @@ import (
 	"errors"
 )
 
-//var Queues = make(map[string]string)
-//var RabbitStarted = make(map[string]bool)
 var NewCabinet = "new"
 var Rabbit *models.Rabbit
 
@@ -19,45 +17,6 @@ func init() {
 	url := beego.AppConfig.String("rabbitmq_url")
 	Rabbit = models.NewRabbit(url)
 }
-
-func handleInfo(msg amqp.Delivery) (error) {
-	result := bean.RabbitMqMessage{}
-	if len(msg.Body) == 0 {
-		return errors.New("没有数据")
-	}
-	err := json.Unmarshal(msg.Body, &result)
-	if err != nil {
-		return err
-	}
-
-	err = models.HandleCabinetFromHardWare(&result)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-//func GetMessageFromHardWare() {
-//	// 由于各种原因服务器重启后，之前的队列只需要重新启动一次就可以
-//	queues := models.GetCabinetQueues()
-//	//for {
-//	for _, v := range queues {
-//		//if RabbitStarted[v] == true {
-//		//	// 该协程已经启动，无需再次启动
-//		//	continue
-//		//}
-//		go func(s string) {
-//			err := Rabbit.Receive(s, handleInfo)
-//			if err != nil {
-//				beego.Error(err)
-//			}
-//			//RabbitStarted[s] = true
-//		}("cabinet_" + v)
-//	}
-//
-//	//	time.Sleep(time.Second * 2)
-//	//}
-//}
 
 func GetMsg(name string) {
 	err := Rabbit.Receive(name, handleMsgInfo)
@@ -208,13 +167,5 @@ func handleHeartbeat(result *bean.RabbitMqMessage) (err error) {
 	if err != nil {
 		return err
 	}
-
-	//if result.Door != 0 && result.UserId != "" && result.DoorState != "" {
-	//	err = models.HandleCabinetFromHardWare(result)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
-
 	return nil
 }

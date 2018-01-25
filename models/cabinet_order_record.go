@@ -1,9 +1,7 @@
 package models
 
 import (
-	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/astaxie/beego/orm"
@@ -11,6 +9,7 @@ import (
 	"time"
 	"math/rand"
 	"github.com/astaxie/beego"
+	"errors"
 )
 
 type CabinetOrderRecord struct {
@@ -24,7 +23,7 @@ type CabinetOrderRecord struct {
 	CreateDate      int     `orm:"column(create_date)"`
 	PayDate         int     `orm:"column(pay_date);null"`
 	IsPay           int8    `orm:"column(is_pay)" description:"是否支付 0 未支付 1已经支付"`
-	ActionType      int8    `orm:"column(action_type)" description:"1.存付款 ,2.取付款"`
+	ActionType      int8    `orm:"column(action_type)" description:"1.重复支付存物"`
 	PastFlag        int8    `orm:"column(past_flag)" description:"1.过去的支付记录"`
 }
 
@@ -55,114 +54,6 @@ func GetCabinetOrderRecordById(id int) (v *CabinetOrderRecord, err error) {
 	return nil, err
 }
 
-// GetAllCabinetOrderRecord retrieves all CabinetOrderRecord matches certain condition. Returns empty list if
-// no records exist
-func GetAllCabinetOrderRecord(query map[string]string, fields []string, sortby []string, order []string,
-	offset int64, limit int64) (ml []interface{}, err error) {
-	o := orm.NewOrm()
-	qs := o.QueryTable(new(CabinetOrderRecord))
-	// query k=v
-	for k, v := range query {
-		// rewrite dot-notation to Object__Attribute
-		k = strings.Replace(k, ".", "__", -1)
-		if strings.Contains(k, "isnull") {
-			qs = qs.Filter(k, (v == "true" || v == "1"))
-		} else {
-			qs = qs.Filter(k, v)
-		}
-	}
-	// order by:
-	var sortFields []string
-	if len(sortby) != 0 {
-		if len(sortby) == len(order) {
-			// 1) for each sort field, there is an associated order
-			for i, v := range sortby {
-				orderby := ""
-				if order[i] == "desc" {
-					orderby = "-" + v
-				} else if order[i] == "asc" {
-					orderby = v
-				} else {
-					return nil, errors.New("Error: Invalid order. Must be either [asc|desc]")
-				}
-				sortFields = append(sortFields, orderby)
-			}
-			qs = qs.OrderBy(sortFields...)
-		} else if len(sortby) != len(order) && len(order) == 1 {
-			// 2) there is exactly one order, all the sorted fields will be sorted by this order
-			for _, v := range sortby {
-				orderby := ""
-				if order[0] == "desc" {
-					orderby = "-" + v
-				} else if order[0] == "asc" {
-					orderby = v
-				} else {
-					return nil, errors.New("Error: Invalid order. Must be either [asc|desc]")
-				}
-				sortFields = append(sortFields, orderby)
-			}
-		} else if len(sortby) != len(order) && len(order) != 1 {
-			return nil, errors.New("Error: 'sortby', 'order' sizes mismatch or 'order' size is not 1")
-		}
-	} else {
-		if len(order) != 0 {
-			return nil, errors.New("Error: unused 'order' fields")
-		}
-	}
-
-	var l []CabinetOrderRecord
-	qs = qs.OrderBy(sortFields...)
-	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
-		if len(fields) == 0 {
-			for _, v := range l {
-				ml = append(ml, v)
-			}
-		} else {
-			// trim unused fields
-			for _, v := range l {
-				m := make(map[string]interface{})
-				val := reflect.ValueOf(v)
-				for _, fname := range fields {
-					m[fname] = val.FieldByName(fname).Interface()
-				}
-				ml = append(ml, m)
-			}
-		}
-		return ml, nil
-	}
-	return nil, err
-}
-
-// UpdateCabinetOrderRecord updates CabinetOrderRecord by Id and returns error if
-// the record to be updated doesn't exist
-func UpdateCabinetOrderRecordById(m *CabinetOrderRecord) (err error) {
-	o := orm.NewOrm()
-	v := CabinetOrderRecord{Id: m.Id}
-	// ascertain id exists in the database
-	if err = o.Read(&v); err == nil {
-		var num int64
-		if num, err = o.Update(m); err == nil {
-			fmt.Println("Number of records updated in database:", num)
-		}
-	}
-	return
-}
-
-// DeleteCabinetOrderRecord deletes CabinetOrderRecord by Id and returns error if
-// the record to be deleted doesn't exist
-func DeleteCabinetOrderRecord(id int) (err error) {
-	o := orm.NewOrm()
-	v := CabinetOrderRecord{Id: id}
-	// ascertain id exists in the database
-	if err = o.Read(&v); err == nil {
-		var num int64
-		if num, err = o.Delete(&CabinetOrderRecord{Id: id}); err == nil {
-			fmt.Println("Number of records deleted in database:", num)
-		}
-	}
-	return
-}
-
 //生成订单号
 func CreateOrderNo() (no string, err error) {
 	no = RandString(10)
@@ -190,47 +81,65 @@ func RandString(length int) string {
 func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid string) (cd *CabinetDetail, err error) {
 	o := orm.NewOrm()
 	v := CabinetOrderRecord{OrderNo: order_no}
+	cdd := &CabinetDetail{}
+	cor := &CabinetOrderRecord{}
 	if err = o.Read(&v, "order_no"); err == nil {
-		var num int64
-		v.IsPay = 1
-		v.CustomerId = openid
-		v.PayDate = int(time.Now().Unix())
-		v.ThirdOrderNo = third_order_no
-		if num, err = o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err == nil {
-			fmt.Println("Number of records updated in database:", num)
+		//更新以前重新校验柜子是否可用
+		cor, err = GetCabinetOrderByDetailIdAndOpenId(v.CabinetDetailId)
+		if err == nil && cor.IsPay == 1 {
+			cdd, err = GetFreeDoorByCabinetId(cdd.CabinetId)
+			if err != nil {
+				beego.Warn("分配柜子失败")
+				return
+			}
+			v.CabinetDetailId = cdd.Id
+		} else if err != nil && err != orm.ErrNoRows {
+			beego.Warn("系统错误")
+			return
+		} else {
+			var num int64
+			v.IsPay = 1
+			v.CustomerId = openid
+			v.PayDate = int(time.Now().Unix())
+			v.ThirdOrderNo = third_order_no
+			if num, err = o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err == nil {
+				fmt.Println("Number of records updated in database:", num)
+			}
 		}
 	}
 	//先存后支付下单形式
 	//已经查到该用户在用
 	c := CabinetDetail{UserID: openid, Using: 2, UseState: 1}
 	if err = o.Read(&c, "userID", "using", "use_state"); err == nil {
-
-		if err != nil {
-			return
-		}
-		cd, err = GetCabinetDetailById(c.Id)
-		if err != nil {
+		cor := CabinetOrderRecord{}
+		if err = o.Raw("select id from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and (past_flag is null or past_flag = 0) limit 1 ;", openid, v.CabinetDetailId).QueryRow(&cor); err == nil {
+			err = errors.New("[重复存物]: " + openid)
 			beego.Error(err)
-			return
+			o.Raw("update cabinet_order_record set past_flag = 1 ,action_type = 1 where order_no = ? and third_order_no = ?;", order_no, third_order_no).Exec()
+			return nil, err
 		}
+		cd = &c
 		return
 	}
 	cd, err = GetCabinetDetailById(v.CabinetDetailId)
 	if err != nil {
 		beego.Error(err)
-		return
 	}
-	//更新该柜子的门为使用中
-	err, _ = BindOpenIdForCabinetDoor(openid, cd.Id)
 	return
+
+	//更新该柜子的门为使用中>>关门时才绑定
+
+	//cd = cdd
+	//err, _ = BindOpenIdForCabinetDoor(openid, cd.Id)
+	//if err != nil {
+	//	beego.Error(err)
+	//}
 }
 
-//通过订单号查询支付记录
-func GetOrderRecordByOerderNo(order_no string) (v *CabinetOrderRecord, err error) {
+func GetCabinetOrderByDetailIdAndOpenId(detailId int) (cor *CabinetOrderRecord, err error) {
 	o := orm.NewOrm()
-	v = &CabinetOrderRecord{OrderNo: order_no}
-	if err = o.Read(v, "order_no"); err == nil {
-		return v, nil
-	}
-	return nil, err
+	v := CabinetOrderRecord{}
+	err = o.Raw("select id, is_pay from cabinet_order_record where cabinet_detail_id = ? and (past_flag = 0 or past_flag is null) limit 1;", detailId).QueryRow(&v)
+	cor = &v
+	return
 }

@@ -5,12 +5,19 @@ import (
 	"github.com/astaxie/beego"
 )
 
-var Redis = bc.NewRedis("")
+const (
+	//prefix
+	PAY     = "pay_"
+	NOPAY   = "nopay_"
+	MANAGER = "manager_"
+)
+
+var Redis *bc.BRedis
 
 func init() {
 	redisHost := beego.AppConfig.String("redis_host")
 	if redisHost == "" {
-		redisHost = "10.8.230.17:6379"
+		redisHost = "116.62.167.76:6379"
 	}
 	Redis = bc.NewRedis(redisHost)
 }
