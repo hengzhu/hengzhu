@@ -78,9 +78,9 @@ func (c *CabinetController) Open() {
 	}
 
 	//detail, _ := models.GetDetail(id, int(doorId))
-	detail, _ := models.GetCabinetDetailById(id)
-	detail.OpenState = 2
-	models.UpdateCabinetDetailById(detail)
+	//detail, _ := models.GetCabinetDetailById(id)
+	//detail.OpenState = 2
+	//models.UpdateCabinetDetailById(detail)
 
 	user, _ := admin.GetAdminById(c.userId)
 	log := models.Log{
