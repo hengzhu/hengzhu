@@ -103,6 +103,14 @@ func createOrUpdateCabinet(result *bean.RabbitMqMessage) (err error) {
 		// 不需要初始化
 		cabinet, _ := models.GetCabinetByMac(result.CabinetId)
 
+		// 判断柜子门数，是否需要删除多余的柜子门
+		if len(result.DoorStatus) < models.GetTotalDoors(cabinet.Id) {
+			err := models.DeleteDoor(cabinet.Id, len(result.DoorStatus))
+			if err != nil {
+				beego.Error("wrong to delete door!")
+			}
+		}
+
 		cabinet.LastTime = time.Now()
 		err = models.UpdateCabinetById(cabinet)
 		if err != nil {

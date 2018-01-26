@@ -79,6 +79,13 @@ func GetTotalDoors(cabinetId int) (total int) {
 	return tot.Doors
 }
 
+// 根据柜子id，以及该柜子的门数，删除该柜子多余的门
+func DeleteDoor(cabinetId int, doorNum int) error {
+	sql := "DELETE FROM cabinet_detail WHERE cabinet_id=? AND door>?"
+	_, err := orm.NewOrm().Raw(sql, cabinetId, doorNum).Exec()
+	return err
+}
+
 // 根据柜子id，获取该柜子的总使用中的门数
 func GetTotalOnUse(cabinetId int) (onUse int) {
 	tot := Total{}
@@ -426,7 +433,7 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 	o := orm.NewOrm()
 	v := CabinetDetail{Id: m.Id}
 	if err = o.Read(&v); err == nil {
-		_, err = o.Raw("update cabinet_detail set open_state = ?, wire_connected = ? where id = ? ;", m.OpenState, m.WireConnected, m.Id).Exec()
+		_, err = o.Raw("update cabinet_detail set open_state = ?, wire_connected = ? where id = ?", m.OpenState, m.WireConnected, m.Id).Exec()
 		if err != nil {
 			beego.Error(err)
 			return
