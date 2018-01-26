@@ -12,6 +12,7 @@ import (
 	"hengzhu/models/bean"
 	"github.com/astaxie/beego"
 	"hengzhu/models/admin"
+	"hengzhu/utils"
 )
 
 // CabinetController operations for Cabinet
@@ -76,12 +77,11 @@ func (c *CabinetController) Open() {
 		c.Ctx.WriteString(err.Error())
 		return
 	}
-
-	//detail, _ := models.GetDetail(id, int(doorId))
-	//detail, _ := models.GetCabinetDetailById(id)
-	//detail.OpenState = 2
-	//models.UpdateCabinetDetailById(detail)
-
+	err2 := utils.Redis.SET(utils.MANAGER+strconv.Itoa(id), "1", 0)
+	if err2 != nil {
+		beego.Error(err2)
+		c.ajaxMsg(err2.Error(), MSG_ERR)
+	}
 	user, _ := admin.GetAdminById(c.userId)
 	log := models.Log{
 		CabinetDetailId: id,
@@ -89,6 +89,11 @@ func (c *CabinetController) Open() {
 		User:            user.RealName,
 		Time:            time.Now(),
 	}
+	
+	detail, _ := models.GetCabinetDetailById(id)
+	detail.OpenState = 2
+	models.UpdateCabinetDetailById(detail)
+
 	models.AddLog(&log)
 
 	c.ajaxMsg("成功", MSG_OK)

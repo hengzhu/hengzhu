@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"github.com/astaxie/beego"
 	"errors"
+	"hengzhu/utils"
 )
 
 type CabinetOrderRecord struct {
@@ -102,12 +103,30 @@ func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid strin
 			v.CustomerId = openid
 			v.PayDate = int(time.Now().Unix())
 			v.ThirdOrderNo = third_order_no
+
+			//区分后支付
+			if err = o.Raw("select id from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and (past_flag is null or past_flag = 0) limit 1 ;", openid, v.CabinetDetailId).QueryRow(&cor); err != nil {
+				cd, err = GetCabinetDetailById(v.CabinetDetailId)
+				if err != nil {
+					beego.Error(err)
+				}
+				//取的时候删除缓存
+				err = utils.Redis.DEL(utils.LOCKED + strconv.Itoa(v.CabinetDetailId))
+				beego.Warn("删除缓存: ", utils.LOCKED+strconv.Itoa(v.CabinetDetailId))
+				if err != nil {
+					beego.Error(err)
+				}
+				if num, err2 := o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err2 == nil {
+					fmt.Println("Number of records updated in database:", num)
+				}
+				return
+			}
 			if num, err = o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err == nil {
 				fmt.Println("Number of records updated in database:", num)
 			}
 		}
 	}
-	//先存后支付下单形式
+	//先存后支付时下单支付
 	//已经查到该用户在用
 	c := CabinetDetail{UserID: openid, Using: 2, UseState: 1}
 	if err = o.Read(&c, "userID", "using", "use_state"); err == nil {

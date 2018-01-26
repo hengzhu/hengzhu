@@ -10,7 +10,6 @@ import (
 	"hengzhu/models/admin"
 	"fmt"
 	"github.com/astaxie/beego"
-	"hengzhu/utils"
 )
 
 // CabinetDetailController operations for CabinetDetail
@@ -262,11 +261,6 @@ func (c *CabinetDetailController) ChangeOpen() {
 
 	if err := models.UpdateCabinetDetailById(cabinetDetail); err != nil {
 		c.ajaxMsg(err.Error(), MSG_ERR)
-	}
-	err2 := utils.Redis.SET(utils.MANAGER+strconv.Itoa(cabinetDetail.Id), "1", 0)
-	if err2 != nil {
-		beego.Error(err2)
-		c.ajaxMsg(err2.Error(), MSG_ERR)
 	}
 	err := connections[cid].WriteMessage(4, []byte("ok"))
 	if err != nil {

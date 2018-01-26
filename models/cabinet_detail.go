@@ -49,9 +49,11 @@ func GetDetailsByCabinetId(cabinetId int) (details []CabinetDetail, err error) {
 	return
 }
 
-func GetDetail(cabinetId int, door int) (detail CabinetDetail, err error) {
+func GetDetail(cabinetId int, door int) (detail *CabinetDetail, err error) {
 	o := orm.NewOrm()
-	err = o.QueryTable(new(CabinetDetail)).Filter("CabinetId", cabinetId).Filter("door", door).One(&detail)
+	cd := CabinetDetail{}
+	err = o.QueryTable(new(CabinetDetail)).Filter("CabinetId", cabinetId).Filter("door", door).One(&cd)
+	detail = &cd
 	return
 }
 
@@ -124,6 +126,20 @@ func AddLogInfo(detail *CabinetDetail, beginTime string, endTime string) {
 func AddCabinetDetail(m *CabinetDetail) (id int64, err error) {
 	o := orm.NewOrm()
 	id, err = o.Insert(m)
+	return
+}
+
+func AddCabinetWithNull(m *CabinetDetail) (id int64, err error) {
+	cd := CabinetDetail{}
+	o := orm.NewOrm()
+	_, err = o.Raw("INSERT INTO `cabinet_detail` (`cabinet_id`, `door`, `open_state`, `using`, `userID`, `store_time`, `use_state`, `wire_connected`) VALUES (?, ?, ?, ?, null, 0, ?, ?)", m.CabinetId, m.Door, m.OpenState, m.Using, m.UseState, m.WireConnected).Exec()
+	if err != nil {
+		return
+	}
+	err = o.Raw("select id from cabinet_detail where cabinet_id = ? and door = ? limit 1 ;", m.CabinetId, m.Door).QueryRow(&cd)
+	if err == nil {
+		id = int64(cd.Id)
+	}
 	return
 }
 
@@ -410,15 +426,20 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 	o := orm.NewOrm()
 	v := CabinetDetail{Id: m.Id}
 	if err = o.Read(&v); err == nil {
-		var num int64
-		if num, err = o.Update(m); err == nil {
-			fmt.Println("Number of records updated in database:", num)
+		_, err = o.Raw("update cabinet_detail set open_state = ?, wire_connected = ? where id = ? ;", m.OpenState, m.WireConnected, m.Id).Exec()
+		if err != nil {
+			beego.Error(err)
+			return
 		}
+		//if num, err = o.Update(m); err == nil {
+		//	fmt.Println("Number of records updated in database:", num)
+		//}
 	}
-	//管理员操作
+	//管理员后台操作
 	managerResult, _ := utils.Redis.GET(utils.MANAGER + strconv.Itoa(m.Id))
 	if managerResult != "" {
 		if m.OpenState == 1 {
+			beego.Warn("删除缓存:", utils.MANAGER+strconv.Itoa(m.Id))
 			err2 := utils.Redis.DEL(utils.MANAGER + strconv.Itoa(m.Id))
 			if err2 != nil {
 				beego.Error(err2)
@@ -445,29 +466,50 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 			//第一次关门
 			_, err = o.Raw("update cabinet_detail set `using` = 2, store_time = ?, userID = ? where id = ? limit 1;", int(time.Now().Unix()), userId, m.Id).Exec()
 			//添加日志记录
-			m := Log{
+			log := Log{
 				CabinetDetailId: m.Id,
 				User:            userId,
 				Time:            time.Now(),
 				Action:          "存",
 			}
-			AddLog(&m)
+			AddLog(&log)
 			//删除缓存
 			err = utils.Redis.DEL(key)
-			beego.Warn("删除缓存:", key)
+			beego.Warn("删除支付缓存:", key)
+			if err != nil {
+				beego.Error(err)
+				return
+			}
+			//设置区分管理员的锁定值
+			err = utils.Redis.SET(utils.LOCKED+strconv.Itoa(m.Id), 1, 0)
+			beego.Warn("设置锁定缓存:", utils.LOCKED+strconv.Itoa(m.Id))
 			if err != nil {
 				beego.Error(err)
 			}
 			return
 		} else {
+			//第二次关门
 			cd := CabinetDetail{}
 			err = o.Raw("select id,userID,`using`,store_time from cabinet_detail where id = ? limit 1;", m.Id).QueryRow(&cd)
 			if err != nil {
 				beego.Error(err)
 				return
 			}
+			locked, err2 := utils.Redis.GET(utils.LOCKED + strconv.Itoa(cd.Id))
+			if err2 != nil {
+				beego.Error(err2)
+			}
+			//机械开锁关门
+			if locked != "" {
+				//err2 = utils.Redis.DEL(utils.LOCKED + strconv.Itoa(cd.Id))
+				//beego.Warn("删除缓存: ", utils.LOCKED+strconv.Itoa(cd.Id))
+				//if err2 != nil {
+				//	beego.Error(err2)
+				//}
+				beego.Warn("管理员操作")
+				return
+			}
 			//非管理员操作
-			//第二次关门
 			if cd.UserID != "" && cd.Using == 2 {
 				_, err = o.Raw("update cabinet_order_record set past_flag = 1 where customer_id = ? and cabinet_detail_id = ? and (past_flag is null or past_flag = 0) ;", cd.UserID, cd.Id).Exec()
 				if err != nil {
@@ -475,21 +517,18 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 					return
 				}
 				_, err = o.Raw("update cabinet_detail set userID = null,`using` = ?,store_time = ? where id = ? ;", 1, 0, cd.Id).Exec()
-				if err == orm.ErrNoRows {
-					return
-				}
 				if err != nil {
 					beego.Error(err)
 					return
 				}
 				//添加日志记录
-				m := Log{
+				log := Log{
 					CabinetDetailId: m.Id,
 					User:            cd.UserID,
 					Time:            time.Now(),
 					Action:          "取",
 				}
-				AddLog(&m)
+				AddLog(&log)
 			}
 		}
 	}

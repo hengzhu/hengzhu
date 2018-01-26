@@ -83,7 +83,6 @@ func (c *PayNotifyController) AliNotify() {
 	//缓存支付绑定记录(先付)
 	if cd.StoreTime == 0 {
 		err = utils.Redis.SET(utils.PAY+strconv.Itoa(cd.Id), noti.BuyerId, 0)
-		beego.Warn("设置缓存:", utils.PAY+strconv.Itoa(cd.Id))
 		if err != nil {
 			beego.Warn("[缓存错误]: ", err.Error())
 			c.Data["data"] = "服务器错误"
@@ -265,6 +264,7 @@ func (c *PayNotifyController) OauthNotify() {
 			}
 			//缓存用户绑定(后付)
 			err = utils.Redis.SET(utils.NOPAY+strconv.Itoa(cd.Id), openid, 0)
+			beego.Warn("支付缓存: ", utils.NOPAY+strconv.Itoa(cd.Id))
 			if err != nil {
 				beego.Warn("[缓存错误]: ", err.Error())
 				c.Data["data"] = "服务器错误"
@@ -285,6 +285,12 @@ func (c *PayNotifyController) OauthNotify() {
 		c.Data["json"] = errors.New("未使用已经支付的柜子").Error()
 		c.ServeJSON()
 		return
+	}
+	//取的时候删除缓存
+	err = utils.Redis.DEL(utils.LOCKED + strconv.Itoa(cdid))
+	beego.Warn("删除缓存: ", utils.LOCKED+strconv.Itoa(cdid))
+	if err != nil {
+		beego.Error(err)
 	}
 	if err != nil {
 		beego.Error(err)
@@ -390,7 +396,6 @@ func (c *PayNotifyController) WxNotify() {
 	//缓存支付绑定记录(先付)
 	if cd.StoreTime == 0 {
 		err = utils.Redis.SET(utils.PAY+strconv.Itoa(cd.Id), notify.OpenId, 0)
-		beego.Warn("设置缓存:", utils.PAY+strconv.Itoa(cd.Id))
 		if err != nil {
 			beego.Warn("[缓存错误]: ", err.Error())
 			c.Data["data"] = "服务器错误"
@@ -567,6 +572,7 @@ func (c *PayNotifyController) Wx() {
 			}
 			//缓存用户绑定(后付)
 			err = utils.Redis.SET(utils.NOPAY+strconv.Itoa(cd.Id), res.OpenId, 0)
+			beego.Warn("支付缓存: ", utils.NOPAY+strconv.Itoa(cd.Id))
 			if err != nil {
 				beego.Warn("[缓存错误]: ", err.Error())
 				c.Data["data"] = "服务器错误"
@@ -592,6 +598,12 @@ func (c *PayNotifyController) Wx() {
 		c.TplName = "resp/resp.html"
 		c.Render()
 		return
+	}
+	//取的时候删除缓存
+	err = utils.Redis.DEL(utils.LOCKED + strconv.Itoa(cdid))
+	beego.Warn("删除缓存: ", utils.LOCKED+strconv.Itoa(cdid))
+	if err != nil {
+		beego.Error(err)
 	}
 	if err != nil {
 		beego.Error(err)

@@ -94,7 +94,7 @@ func createOrUpdateCabinet(result *bean.RabbitMqMessage) (err error) {
 				UseState:      1,
 				WireConnected: WireConnected,
 			}
-			_, err = models.AddCabinetDetail(cd)
+			_, err = models.AddCabinetWithNull(cd)
 			if err != nil {
 				return err
 			}
@@ -131,7 +131,7 @@ func createOrUpdateCabinet(result *bean.RabbitMqMessage) (err error) {
 					UseState:      1,
 					WireConnected: WireConnected,
 				}
-				_, err = models.AddCabinetDetail(cd)
+				_, err = models.AddCabinetWithNull(cd)
 				if err != nil {
 					return err
 				}

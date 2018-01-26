@@ -10,6 +10,7 @@ const (
 	PAY     = "pay_"
 	NOPAY   = "nopay_"
 	MANAGER = "manager_"
+	LOCKED    = "locked_"
 )
 
 var Redis *bc.BRedis
