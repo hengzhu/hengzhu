@@ -125,7 +125,6 @@ func (c *OrderController) ReOrder() {
 		c.Data["endata"] = "No Free Doors Can Be Allocated"
 		c.TplName = "resp/resp.html"
 		c.Render()
-		fmt.Printf("----------%v\n", err2)
 		return
 	}
 	if err2 != nil {
