@@ -467,7 +467,7 @@ func (c *PayNotifyController) Wx() {
 		cid, _, cdid, err = models.GetCabinetAndDoorByUserId(res.OpenId, 1)
 		if err == orm.ErrNoRows {
 			c.Data["cndata"] = "没有找到你的存物记录"
-			c.Data["endata"] = err.Error()
+			c.Data["endata"] = "No Record Find For You"
 			c.TplName = "resp/resp.html"
 			c.Render()
 			//c.Ctx.WriteString("没有找到你的存物记录")
