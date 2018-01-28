@@ -335,7 +335,8 @@ A:
 	//c.Data["endata"] = "success"
 	//c.TplName = "resp/resp.html"
 	//c.Render()
-	c.Ctx.WriteString("success")
+	c.redirect(beego.AppConfig.String("domain") + "/middle/aliOperation.html")
+	//c.Ctx.WriteString("success")
 }
 
 // eg: transdata=%7B%22transtype%22%3A0%2C%22cporderid%22%3A%22re_4ba3YbGUo1%22%2C%22transid%22%3A%220001191495174433775563781837%22%2C%22pcuserid%22%3A%22263%22%2C%22appid%22%3A%221032017051111958%22%2C%22goodsid%22%3A%22153%22%2C%22feetype%22%3A1%2C%22money%22%3A1%2C%22fact_money%22%3A1%2C%22currency%22%3A%22CHY%22%2C%22result%22%3A1%2C%22transtime%22%3A%2220170519141414%22%2C%22pc_priv_info%22%3A%22%22%2C%22paytype%22%3A%221%22%7D&sign=4047a3826502b339b7f2a55145b99291&signtype=MD5
@@ -650,8 +651,10 @@ A:
 	//c.Data["endata"] = "success"
 	//c.TplName = "resp/resp.html"
 	//c.Render()
-	c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
-	c.ServeXML()
+	//c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
+	//c.ServeXML()
+	c.redirect(beego.AppConfig.String("domain") + "/middle/wxOperation.html")
+
 }
 
 func init() {

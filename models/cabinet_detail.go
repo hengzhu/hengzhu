@@ -259,7 +259,27 @@ func UpdateCabinetDetailWithNUll(m *CabinetDetail) (err error) {
 	o := orm.NewOrm()
 	v := CabinetDetail{Id: m.Id}
 	if err = o.Read(&v); err == nil {
-		_, err = o.Raw("update cabinet_detail set `using` = ?, userID = null, store_time = ? where id = ? ;", m.Using, m.StoreTime, v.Id).Exec()
+		if _, err = o.Raw("update cabinet_detail set `using` = ?, userID = null, store_time = ? where id = ? ;", m.Using, m.StoreTime, v.Id).Exec(); err == nil {
+			//销毁订单
+			_, err = o.Raw("update cabinet_order_record set past_flag = 1 where cabinet_detail_id = ? and (past_flag is null or past_flag = 0) ;", v.Id).Exec()
+			if err != nil {
+				beego.Error(err)
+			}
+			return
+		} else if err != nil && err != orm.ErrNoRows {
+			beego.Error(err)
+			return
+		}
+	}
+	return
+}
+
+// 禁用
+func ChangeCabinetState(m *CabinetDetail) (err error) {
+	o := orm.NewOrm()
+	v := CabinetDetail{Id: m.Id}
+	if err = o.Read(&v); err == nil {
+		_, err = o.Raw("update cabinet_detail set use_state = ? where id = ? ;", m.UseState, v.Id).Exec()
 	}
 	return
 }

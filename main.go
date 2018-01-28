@@ -9,7 +9,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"hengzhu/task"
 	"hengzhu/tool"
-	"github.com/astaxie/beego/logs"
 )
 
 func main() {
@@ -18,9 +17,9 @@ func main() {
 	//	beego.BConfig.WebConfig.StaticDir["/swagger"] = "swagger"
 	//}
 	//go tool.GetMessageFromHardWare()
-	log := logs.NewLogger()
-	log.EnableFuncCallDepth(true)
-	log.SetLogger(logs.AdapterFile, `{"filename":"hengzhu.log"}`, `{"level":1}`)
+	//log := logs.NewLogger()
+	//log.EnableFuncCallDepth(true)
+	//log.SetLogger(logs.AdapterFile, `{"filename":"hengzhu.log"}`, `{"level":1}`)
 	go tool.GetMsg(tool.NewCabinet)
 	task.Run()
 	beego.Run()

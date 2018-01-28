@@ -126,7 +126,6 @@ func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid strin
 			}
 		}
 	}
-	//先存后支付时下单支付
 	//已经查到该用户在用
 	c := CabinetDetail{UserID: openid, Using: 2, UseState: 1}
 	if err = o.Read(&c, "userID", "using", "use_state"); err == nil {

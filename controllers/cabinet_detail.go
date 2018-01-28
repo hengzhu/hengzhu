@@ -46,7 +46,7 @@ func (c *CabinetDetailController) ChangeUse() {
 	}
 	cabinetDetail.UseState = useState
 
-	if err := models.UpdateCabinetDetailById(cabinetDetail); err != nil {
+	if err := models.ChangeCabinetState(cabinetDetail); err != nil {
 		c.ajaxMsg(err.Error(), MSG_ERR)
 	}
 	c.ajaxMsg("修改成功", MSG_OK)
