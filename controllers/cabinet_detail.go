@@ -10,6 +10,7 @@ import (
 	"hengzhu/models/admin"
 	"fmt"
 	"github.com/astaxie/beego"
+	"hengzhu/utils"
 )
 
 // CabinetDetailController operations for CabinetDetail
@@ -67,6 +68,11 @@ func (c *CabinetDetailController) Clear() {
 	if err := models.UpdateCabinetDetailWithNUll(cabinetDetail); err != nil {
 		c.ajaxMsg(err.Error(), MSG_ERR)
 	}
+	beego.Warn("删除缓存:", "*_"+strconv.Itoa(id))
+	utils.Redis.DEL(utils.MANAGER + strconv.Itoa(id))
+	utils.Redis.DEL(utils.NOPAY + strconv.Itoa(id))
+	utils.Redis.DEL(utils.PAY + strconv.Itoa(id))
+	utils.Redis.DEL(utils.LOCKED + strconv.Itoa(id))
 
 	user, _ := admin.GetAdminById(c.userId)
 

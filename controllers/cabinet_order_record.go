@@ -119,12 +119,12 @@ func (c *OrderController) ReOrder() {
 	cd, err2 = models.GetFreeDoorByCabinetId(cabinet_id)
 	if err2 == orm.ErrNoRows {
 		c.Ctx.Output.SetStatus(404)
-		//c.Data["json"] = errors.New("没有空闲的门可分配").Error()
-		//c.ServeJSON()
-		c.Data["cndata"] = "没有空闲的门可分配"
-		c.Data["endata"] = "No Free Doors Can Be Allocated"
-		c.TplName = "resp/resp.html"
-		c.Render()
+		c.Data["json"] = errors.New("没有空闲的门可分配").Error()
+		c.ServeJSON()
+		//c.Data["cndata"] = "没有空闲的门可分配"
+		//c.Data["endata"] = "No Free Doors Can Be Allocated"
+		//c.TplName = "resp/resp.html"
+		//c.Render()
 		return
 	}
 	if err2 != nil {
@@ -202,7 +202,20 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bo
 	total_fee := strconv.FormatFloat(fee, 'f', 0, 64)
 	if open_id == "" {
 		//非取物时下单
-		cabdetail = models.GetIdleDoorByCabinetId(int64(cid)) //根据用户当前扫码的柜子获得一个空闲的门
+		//cabdetail = models.GetIdleDoorByCabinetId(int64(cid)) //根据用户当前扫码的柜子获得一个空闲的门
+		cabdetail, err = models.GetFreeDoorByCabinetId(cid) //根据用户当前扫码的柜子获得一个空闲的门
+		if err == orm.ErrNoRows {
+			c.Ctx.Output.SetStatus(404)
+			c.Data["json"] = errors.New("没有空闲的门可分配").Error()
+			c.ServeJSON()
+			return
+		}
+		if err != nil {
+			c.Ctx.Output.SetStatus(500)
+			c.Data["json"] = errors.New("服务器崩溃").Error()
+			c.ServeJSON()
+			return
+		}
 	} else {
 		cabdetail, err = models.GetCabinetDetailByOpenId(open_id)
 		if err != nil {
