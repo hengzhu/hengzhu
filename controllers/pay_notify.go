@@ -335,7 +335,7 @@ A:
 	//c.Data["endata"] = "success"
 	//c.TplName = "resp/resp.html"
 	//c.Render()
-	c.redirect(beego.AppConfig.String("domain") + "/middle/aliOperation.html")
+	c.redirect(beego.AppConfig.String("domain") + "/middle/aliOperation.html?door_no=" + strconv.Itoa(door_no))
 	//c.Ctx.WriteString("success")
 }
 
@@ -653,7 +653,7 @@ A:
 	//c.Render()
 	//c.Data["xml"] = payment.WXPayResultResponse{ReturnCode: "SUCCESS", ReturnMsg: ""}
 	//c.ServeXML()
-	c.redirect(beego.AppConfig.String("domain") + "/middle/wxOperation.html")
+	c.redirect(beego.AppConfig.String("domain") + "/middle/wxOperation.html?door_no=" + strconv.Itoa(door_no))
 
 }
 
