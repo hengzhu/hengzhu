@@ -31,7 +31,11 @@ func (c *TypesController) AjaxSave() {
 	charge_mode, _ := c.GetInt("charge_mode", 1)
 	types.ChargeMode = charge_mode
 	toll_time, _ := c.GetInt("toll_time", 1)
-	types.TollTime = toll_time
+	if charge_mode == 3 {
+		types.TollTime = 0
+	} else {
+		types.TollTime = toll_time
+	}
 	price, _ := c.GetFloat("price", 0)
 	types.Price = price
 	unit, _ := c.GetInt("unit", 0)

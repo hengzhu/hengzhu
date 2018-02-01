@@ -41,23 +41,29 @@
     <script type="text/html" id="chargeTpl">
         {{# if(d.ChargeMode === 1){ }}
            计次
-        {{# } else {  }}
+        {{# } else if(d.ChargeMode === 2){  }}
            计时
-        {{# }  }}
+        {{# } else { }}
+           免费
+        {{# } }}
     </script>
     <script type="text/html" id="tollTpl">
         {{# if(d.TollTime === 1){ }}
             存物时
-        {{# } else {  }}
+        {{# } else if(d.TollTime === 2){  }}
             取物时
-        {{# }  }}
+        {{# } else { }}
+            ----
+        {{# } }}
     </script>
     <script type="text/html" id="priceTpl">
         {{# if(d.ChargeMode === 1){ }}
             ￥{{ d.Price }}/次
-        {{# } else {  }}
+        {{# } else if(d.ChargeMode === 2){  }}
             ￥{{ d.Price }}/{{ d.Unit }}分钟
-        {{# }  }}
+        {{# }  else { }}
+            ----
+        {{# } }}
     </script>
 
     <script type="text/html" id="barDemo">

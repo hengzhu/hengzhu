@@ -27,20 +27,21 @@
             <div class="layui-input-block">
                 <input type="radio" lay-filter="radio" name="charge_mode" value="1" title="计次" checked>
                 <input type="radio" lay-filter="radio" name="charge_mode" value="2" title="计时">
+                <input type="radio" lay-filter="radio" name="charge_mode" value="3" title="免费">
             </div>
         </div>
-        <div class="layui-form-item">
+        <div class="layui-form-item" id="time">
             <label class="layui-form-label">收费时间：</label>
             <div class="layui-input-block">
                 <input type="radio" name="toll_time" value="1" title="存物时" checked>
                 <input type="radio" name="toll_time" value="2" title="取物时">
             </div>
         </div>
-        <div class="layui-form-item">
+        <div class="layui-form-item" id="price">
             <label class="layui-form-label">价格：</label>
             <div class="layui-input-inline">
                 <input id="price" type="text" name="price" placeholder="￥" required lay-verify="required|data"
-                       autocomplete="off" class="layui-input">
+                       autocomplete="off" class="layui-input" value="0">
             </div>
         </div>
         <div class="layui-form-item" id="unit" style="display: none">
@@ -88,10 +89,18 @@
             active[type] ? active[type].call(this, othis) : '';
           });
           form.on('radio(radio)', function(data){
-            if(data.value==2){
-              document.getElementById("unit").style.display="block"
-            } else {
+            if(data.value==1){
               document.getElementById("unit").style.display="none"
+              document.getElementById("price").style.display="block"
+              document.getElementById("time").style.display="block"
+            } else if(data.value==2){
+              document.getElementById("unit").style.display="block"
+              document.getElementById("price").style.display="block"
+              document.getElementById("time").style.display="block"
+            } else if(data.value==3){
+              document.getElementById("unit").style.display="none"
+              document.getElementById("price").style.display="none"
+              document.getElementById("time").style.display="none"
             }
           });
           form.verify({
