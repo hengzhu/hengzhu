@@ -13,7 +13,7 @@ type Types struct {
 	Id         int     `orm:"column(id);auto"`
 	Name       string  `orm:"column(name);size(255);null" description:"类型名称"`
 	Default    int     `orm:"column(default);null" description:"是否默认，1:默认，2:否"`
-	ChargeMode int     `orm:"column(charge_mode);null" description:"计费方式，1:计次，2:计时"`
+	ChargeMode int     `orm:"column(charge_mode);null" description:"计费方式，1:计次，2:计时，3:免费"`
 	TollTime   int     `orm:"column(toll_time);null" description:"收费时间，1:存物时，2:取物时"`
 	Price      float64 `orm:"column(price);null" description:"价格，若方式为计次，则价格为每次存取物价格，若方式为计时，则价格为unit时间内价格"`
 	Unit       int     `orm:"column(unit);null" description:"计时单位（分钟），当计费方式为计时时有"`

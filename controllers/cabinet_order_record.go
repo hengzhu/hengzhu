@@ -57,7 +57,6 @@ func (c *OrderController) URLMapping() {
 // @router /ReOrder [post]
 func (c *OrderController) ReOrder() {
 	var flag bool //后下单标志
-	var v models.CabinetOrderRecord
 	var action_type int
 	var cd *models.CabinetDetail
 	var err, err2 error
@@ -86,7 +85,28 @@ func (c *OrderController) ReOrder() {
 	cabinet_id := cab.Id
 	//查找计费类型
 	t, _ := models.GetTypeById(cab.TypeId)
-	action_type = t.TollTime
+
+	//免费charge_mode为3
+	if t.ChargeMode == 3 {
+		if err != nil {
+			beego.Warn(err)
+			c.Data["json"] = "服务器异常"
+			c.ServeJSON()
+			return
+		}
+		if pay_type == Wx_Pay {
+			//获取code,重定向到微信授权回调
+			c.Ctx.Output.SetStatus(201)
+			c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + "#wechat_redirect")
+			return
+		}
+		c.Ctx.Output.SetStatus(201)
+		c.Ctx.WriteString(beego.AppConfig.String("ali_oauth_url") + strconv.Itoa(cabinet_id))
+		return
+	} else {
+		action_type = t.TollTime
+	}
+
 	price = t.Price
 	//如果为计时收费
 	if t.ChargeMode == 2 {
@@ -107,7 +127,6 @@ func (c *OrderController) ReOrder() {
 	if action_type == 2 {
 		if pay_type == Wx_Pay {
 			//获取code,重定向到微信授权回调
-			//c.GetCode(cabinet_id)
 			c.Ctx.Output.SetStatus(201)
 			c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + "#wechat_redirect")
 			return
@@ -121,10 +140,6 @@ func (c *OrderController) ReOrder() {
 		c.Ctx.Output.SetStatus(404)
 		c.Data["json"] = errors.New("没有空闲的门可分配").Error()
 		c.ServeJSON()
-		//c.Data["cndata"] = "没有空闲的门可分配"
-		//c.Data["endata"] = "No Free Doors Can Be Allocated"
-		//c.TplName = "resp/resp.html"
-		//c.Render()
 		return
 	}
 	if err2 != nil {
@@ -139,16 +154,17 @@ B:
 		c.ServeJSON()
 		return
 	}
-
+	//创建订单号
 	order_no, _ := models.CreateOrderNo()
 
 	//alipay预下单
 	b_pri := []byte(pri)
 	b_pub := []byte(pub)
 	var client = a.New(beego.AppConfig.String("APPID"), beego.AppConfig.String("alipay_partner"), b_pub, b_pri, true)
+	var p = a.AliPayTradePreCreate{}
 	//加密是rsa1
 	client.SignType = a.K_SIGN_TYPE_RSA
-	var p = a.AliPayTradePreCreate{}
+
 	p.OutTradeNo = order_no
 	p.NotifyURL = beego.AppConfig.String("alipay_notify_url")
 	p.Subject = beego.AppConfig.String("ali_subject")
@@ -162,20 +178,10 @@ B:
 		c.ServeJSON()
 		return
 	}
-
-	v = models.CabinetOrderRecord{
-		CabinetDetailId: cd.Id,
-		PayType:         pay_type,
-		Fee:             price,
-		CreateDate:      int(time.Now().Unix()),
-		OrderNo:         order_no,
-	}
-	if _, err = models.AddCabinetOrderRecord(&v); err == nil {
-		c.Ctx.Output.SetStatus(201)
-	} else {
-		c.Ctx.Output.SetStatus(501)
-		c.Data["json"] = "服务器异常"
+	err = addOrder(cd.Id, pay_type, price, order_no)
+	if err != nil {
 		beego.Warn(err)
+		c.Data["json"] = "服务器异常"
 		c.ServeJSON()
 		return
 	}
@@ -241,7 +247,7 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bo
 		FeeType: "",                                    //*选填 币种
 		TotalFee: total_fee,                            //*必填 商品标价
 		SpBillCreateIp: "116.62.167.76",
-		//不知道你们这里是不是填这个//*必填 终端ip地址
+		//*必填 终端ip地址
 		TimeStart: "",                                      // 选填 交易起始时间
 		TimeExpire: "",                                     // 选填 交易结束时间
 		GoodsTag: "",                                       // 选填 订单优惠标记
@@ -342,7 +348,6 @@ func (c *OrderController) TakeOut() {
 	}
 	if pay_type == Wx_Pay {
 		//获取code,重定向到微信授权回调
-		//c.GetCode(cabinet_id)
 		c.Ctx.Output.SetStatus(201)
 		c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + "_" + str + "#wechat_redirect")
 		return
@@ -352,6 +357,19 @@ func (c *OrderController) TakeOut() {
 	return
 }
 
+func addOrder(cdid int, pay_type int8, price float64, order_no string) (err error) {
+	v := models.CabinetOrderRecord{
+		CabinetDetailId: cdid,
+		PayType:         pay_type,
+		Fee:             price,
+		CreateDate:      int(time.Now().Unix()),
+		OrderNo:         order_no,
+	}
+	if _, err = models.AddCabinetOrderRecord(&v); err != nil {
+		return
+	}
+	return
+}
 func init() {
 	pri = `-----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQDrnmBAGqftFloprbmm3dqPjI3ryVZWqwNFm+UniokVp1U/gU2l

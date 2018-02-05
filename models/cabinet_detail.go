@@ -370,85 +370,6 @@ func GetCabinetDetailByOpenId(open_id string) (v *CabinetDetail, err error) {
 	return nil, err
 }
 
-//func UpdateCabinetDetail(m *CabinetDetail) (err error) {
-//	o := orm.NewOrm()
-//	v := CabinetDetail{Id: m.Id}
-//	if err = o.Read(&v); err == nil {
-//		var num int64
-//		if num, err = o.Update(m); err == nil {
-//			fmt.Println("Number of records updated in database:", num)
-//		}
-//	}
-//	result1, _ := utils.Redis.GET(utils.PAY + strconv.Itoa(m.Id))
-//	result2, _ := utils.Redis.GET(utils.NOPAY + strconv.Itoa(m.Id))
-//
-//	cd := CabinetDetail{}
-//	//先查是否被占用
-//	err = o.Raw("select userID,`using`,store_time from cabinet_detail where id = ? limit 1;", m.Id).QueryRow(&cd)
-//	if err != nil {
-//		return
-//	}
-//	if cd.UserID != "" && cd.Using == 2 && m.OpenState == 1 {
-//		cor := CabinetOrderRecord{}
-//		//如果同一用户又用了同一个门?
-//		//是否已经支付过
-//		err = o.Raw("select * from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and is_pay = 1 and (past_flag is null or past_flag = 0) limit 1;", cd.UserID, m.Id).QueryRow(&cor)
-//		//当前使用但未支付
-//		if err == nil && cd.StoreTime == 0 {
-//			//第一次关门
-//			_, err = o.Raw("update cabinet_detail set `using` = 2, store_time = ?, userID = ? where id = ? limit 1;", int(time.Now().Unix()), m.UserID, cid).Exec()
-//			//添加日志记录
-//			m := Log{
-//				CabinetDetailId: m.Id,
-//				User:            cd.UserID,
-//				Time:            time.Now(),
-//				Action:          "存",
-//			}
-//			AddLog(&m)
-//			//删除缓存
-//			err = utils.Redis.DEL(key)
-//			if err != nil {
-//				beego.Error(err)
-//			}
-//			return
-//		} else if err == nil && cd.StoreTime != 0 {
-//			//柜子置为空闲
-//			_, err = o.Raw("update cabinet_order_record set past_flag = 1 where id = ? ;", cor.Id).Exec()
-//			if err != nil {
-//				beego.Error(err)
-//				return
-//			}
-//			_, err = o.Raw("update cabinet_detail set userID = null,`using` = ?,store_time = ? where id = ? ;", 1, 0, m.Id).Exec()
-//			//添加日志记录
-//			m := Log{
-//				CabinetDetailId: m.Id,
-//				User:            cd.UserID,
-//				Time:            time.Now(),
-//				Action:          "取",
-//			}
-//			AddLog(&m)
-//		}
-//		if err == orm.ErrNoRows {
-//			//先存后付第一次关门
-//			_, err = o.Raw("update cabinet_detail set `using` = 2, store_time = ? where userID = ? limit 1;", int(time.Now().Unix()), m.UserID).Exec()
-//			//添加日志记录
-//			m := Log{
-//				CabinetDetailId: m.Id,
-//				User:            cd.UserID,
-//				Time:            time.Now(),
-//				Action:          "存",
-//			}
-//			AddLog(&m)
-//			return
-//		}
-//		if err != nil && err != orm.ErrNoRows {
-//			err = errors.New("系统异常")
-//			return
-//		}
-//	}
-//	return
-//}
-
 func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 	o := orm.NewOrm()
 	v := CabinetDetail{Id: m.Id}
@@ -458,9 +379,6 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 			beego.Error(err)
 			return
 		}
-		//if num, err = o.Update(m); err == nil {
-		//	fmt.Println("Number of records updated in database:", num)
-		//}
 	}
 	//管理员后台操作
 	managerResult, _ := utils.Redis.GET(utils.MANAGER + strconv.Itoa(m.Id))
@@ -478,14 +396,20 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 	if m.OpenState == 1 {
 		var key string
 		var result string
-		var result1, _ = utils.Redis.GET(utils.PAY + strconv.Itoa(m.Id))
+
+		var result1, _ = utils.Redis.GET(utils.FREE + strconv.Itoa(m.Id))
 		if result1 != "" {
 			result = result1
-			key = utils.PAY + strconv.Itoa(m.Id)
+			key = utils.FREE + strconv.Itoa(m.Id)
 		}
-		var result2, _ = utils.Redis.GET(utils.NOPAY + strconv.Itoa(m.Id))
+		var result2, _ = utils.Redis.GET(utils.PAY + strconv.Itoa(m.Id))
 		if result2 != "" {
 			result = result2
+			key = utils.PAY + strconv.Itoa(m.Id)
+		}
+		var result3, _ = utils.Redis.GET(utils.NOPAY + strconv.Itoa(m.Id))
+		if result3 != "" {
+			result = result3
 			key = utils.NOPAY + strconv.Itoa(m.Id)
 		}
 		if result != "" {
@@ -528,12 +452,7 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 			}
 			//机械开锁关门
 			if locked != "" {
-				//err2 = utils.Redis.DEL(utils.LOCKED + strconv.Itoa(cd.Id))
-				//beego.Warn("删除缓存: ", utils.LOCKED+strconv.Itoa(cd.Id))
-				//if err2 != nil {
-				//	beego.Error(err2)
-				//}
-				beego.Warn("管理员操作")
+				beego.Warn("管理员操作机械开门关门")
 				return
 			}
 			//非管理员操作
