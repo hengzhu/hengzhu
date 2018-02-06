@@ -236,6 +236,13 @@ func GetCabinetAndDoorByUserId(user_id string, flag ... int) (cid int, door_no i
 	return
 }
 
+// 如果删除某个类型，则将现有的该类型柜子修改为默认类型
+func UpdateCabinetType(id int) (error) {
+	def := GetDefaultType()
+	_, err := orm.NewOrm().Raw("update cabinet set type_id=? where type_id=? ", def.Id, id).Exec()
+	return err
+}
+
 func GetCabinetByMac(cabinet_mac string) (v *Cabinet, err error) {
 	o := orm.NewOrm()
 	v = &Cabinet{CabinetID: cabinet_mac}

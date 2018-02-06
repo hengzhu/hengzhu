@@ -86,6 +86,10 @@ func (c *TypesController) Delete() {
 		c.ajaxMsg(err.Error(), MSG_ERR)
 	}
 
+	if err = models.UpdateCabinetType(id); err != nil {
+		c.ajaxMsg(errors.New("删除失败"), MSG_ERR)
+	}
+
 	c.ajaxMsg("修改成功", MSG_OK)
 }
 
