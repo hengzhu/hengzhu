@@ -283,13 +283,13 @@
 }
 
 @media screen and (max-width:950px) {
-	.kit-layout-admin .layui-body,.kit-layout-admin .layui-footer,.kit-layout-admin .layui-layout-left {
-		left: 50px
-	}
+	/*.kit-layout-admin .layui-body,.kit-layout-admin .layui-footer,.kit-layout-admin .layui-layout-left {*/
+		/*left: 50px*/
+	/*}*/
 
-	.kit-layout-admin .kit-side {
-		width: 50px
-	}
+	/*.kit-layout-admin .kit-side {*/
+		/*width: 50px*/
+	/*}*/
 
 	.kit-layout-admin .kit-side .layui-side-scroll .layui-nav li.layui-nav-item,.kit-layout-admin .kit-side .layui-side-scroll .layui-nav li.layui-nav-item dl dd {
 		text-align: center
@@ -300,13 +300,13 @@
 		cursor: pointer;
 	}
 
-	.kit-layout-admin .kit-side .layui-side-scroll .layui-nav li.layui-nav-item a span,.kit-layout-admin .kit-side .layui-side-scroll .layui-nav li.layui-nav-item dl dd a span,.kit-layout-admin .layui-logo,.kit-side .layui-side-scroll .kit-side-fold {
+	.kit-layout-admin .layui-logo,.kit-side .layui-side-scroll .kit-side-fold {
 		display: none;
 		cursor: pointer;
 	}
 
 	.kit-layout-admin .kit-logo-mobile {
 		display: block;
-		width: 50px
+		/*width: 50px*/
 	}
 }

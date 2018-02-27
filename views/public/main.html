@@ -9,6 +9,13 @@
     <link rel="stylesheet" href="/static/layui/css/layui.css">
     <link rel="stylesheet" href="/static/css/app.css?t=154">
     <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css" media="all">
+    <style>
+        @media screen and (max-width: 950px) {
+            #kit-side-fold {
+                display: block;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -28,7 +35,7 @@
 
     <div class="layui-side layui-bg-black kit-side">
         <div class="layui-side-scroll">
-            <div class="kit-side-fold"><i class="fa fa-navicon" aria-hidden="true"></i></div>
+            <div id="kit-side-fold" class="kit-side-fold"><i class="fa fa-navicon" aria-hidden="true"></i></div>
             <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
             <ul class="layui-nav layui-nav-tree" lay-filter="kitNavbar" kit-navbar>
                 <% range $index, $elem := .SideMenu1 %>
