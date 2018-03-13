@@ -19,8 +19,8 @@ import (
 
 const (
 	GrantType = "authorization_code"
-	OpenDoor  = "open"
-	CloseDoor = "close"
+	OpenDoor  = "开门"
+	CloseDoor = "关门"
 )
 
 var oauth_pri, oauth_pub string

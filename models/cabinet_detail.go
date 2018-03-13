@@ -422,7 +422,7 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 				CabinetDetailId: m.Id,
 				User:            userId,
 				Time:            time.Now(),
-				Action:          "存",
+				Action:          "存物",
 			}
 			AddLog(&log)
 			//删除缓存
@@ -473,7 +473,7 @@ func UpdateCabinetDetail(m *CabinetDetail) (err error) {
 					CabinetDetailId: m.Id,
 					User:            cd.UserID,
 					Time:            time.Now(),
-					Action:          "取",
+					Action:          "取物",
 				}
 				AddLog(&log)
 			}
