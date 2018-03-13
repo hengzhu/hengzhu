@@ -34,8 +34,8 @@ var CabinetTimeStamp = make(map[string]int)
 const (
 	Wx_Pay    = 1 //微信
 	Al_Pay    = 2 //支付宝
-	First_In  = 1 //存付款
-	First_Out = 2 //取付款
+	FirstIn   = 1 //存付款
+	FirstOut  = 2 //取付款
 	ForTime   = "fortime"
 	NoForTime = "nofortime"
 )
@@ -63,7 +63,6 @@ func (c *OrderController) ReOrder() {
 	var price float64
 	cabinet_mac := c.GetString("cabinet_id")
 	pay_type, _ := c.GetInt8("pay_type")
-
 	timestamp, _ := c.GetInt("timestamp", 0)
 	if timestamp == 0 {
 		c.Ctx.Output.SetStatus(400)
@@ -82,10 +81,22 @@ func (c *OrderController) ReOrder() {
 		return
 	}
 	cab, _ := models.GetCabinetByMac(cabinet_mac)
+	t, _ := models.GetTypeById(cab.TypeId)
 	cabinet_id := cab.Id
 	//查找计费类型
-	t, _ := models.GetTypeById(cab.TypeId)
-
+	if t_fee == "" && open_id == "" {
+		//去oauth校验是否重复存(计次先付后存)
+		if t.ChargeMode == 1 && t.TollTime == 1 {
+			if pay_type == Wx_Pay {
+				c.Ctx.Output.SetStatus(201)
+				c.Ctx.WriteString(beego.AppConfig.String("wx_oauth_url") + strconv.Itoa(cabinet_id) + "_" + strconv.Itoa(FirstIn) + "#wechat_redirect")
+				return
+			}
+			c.Ctx.Output.SetStatus(201)
+			c.Ctx.WriteString(beego.AppConfig.String("ali_oauth_url") + strconv.Itoa(cabinet_id) + "_" + strconv.Itoa(FirstIn))
+			return
+		}
+	}
 	//免费charge_mode为3
 	if t.ChargeMode == 3 {
 		if err != nil {
@@ -115,12 +126,15 @@ func (c *OrderController) ReOrder() {
 	//先存后付类型取物时带过来的参数
 	if t_fee != "" && open_id != "" {
 		price, _ = strconv.ParseFloat(t_fee, 64)
-		cd, err = models.GetCabinetDetailByOpenId(open_id)
-		if err != nil {
+		cd, err = models.GetCabinetDetailByOpenId(open_id, cabinet_id)
+		if err != nil && err != orm.ErrNoRows {
 			beego.Error(err.Error())
 			return
 		}
 		flag = true
+		if err == orm.ErrNoRows || cd == nil {
+			goto A
+		}
 		goto B
 	}
 	//先存后付
@@ -135,6 +149,7 @@ func (c *OrderController) ReOrder() {
 		c.Ctx.WriteString(beego.AppConfig.String("ali_oauth_url") + strconv.Itoa(cabinet_id))
 		return
 	}
+A:
 	cd, err2 = models.GetFreeDoorByCabinetId(cabinet_id)
 	if err2 == orm.ErrNoRows {
 		c.Ctx.Output.SetStatus(404)
@@ -150,7 +165,7 @@ func (c *OrderController) ReOrder() {
 	}
 B:
 	if pay_type == Wx_Pay {
-		c.NewOrder(cabinet_id, price, open_id, flag)
+		c.NewOrder(cabinet_id, price, open_id, cd, flag)
 		c.ServeJSON()
 		return
 	}
@@ -189,15 +204,11 @@ B:
 	if flag {
 		//重定向调起支付
 		c.redirect(result.AliPayPreCreateResponse.QRCode)
-	} else {
-		c.Data["json"] = result.AliPayPreCreateResponse.QRCode
-		c.ServeJSON()
 	}
-
 	return
 }
 
-func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bool) {
+func (c *OrderController) NewOrder(cid int, fee float64, open_id string, cd *models.CabinetDetail, flag bool) {
 	var trade_type = payment.TRADE_TYPE_NATIVE
 	var err error
 	var cabdetail *models.CabinetDetail
@@ -208,7 +219,6 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bo
 	total_fee := strconv.FormatFloat(fee, 'f', 0, 64)
 	if open_id == "" {
 		//非取物时下单
-		//cabdetail = models.GetIdleDoorByCabinetId(int64(cid)) //根据用户当前扫码的柜子获得一个空闲的门
 		cabdetail, err = models.GetFreeDoorByCabinetId(cid) //根据用户当前扫码的柜子获得一个空闲的门
 		if err == orm.ErrNoRows {
 			c.Ctx.Output.SetStatus(404)
@@ -223,10 +233,13 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bo
 			return
 		}
 	} else {
-		cabdetail, err = models.GetCabinetDetailByOpenId(open_id)
+		cabdetail, err = models.GetCabinetDetailByOpenId(open_id, cid)
 		if err != nil {
 			beego.Error(err.Error())
 			return
+		}
+		if cabdetail == nil {
+			cabdetail = cd
 		}
 	}
 
@@ -300,9 +313,6 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bo
 		queryStr = queryStr + "&paySign=" + strings.ToUpper(hex.EncodeToString(cipherStr))
 
 		c.redirect(beego.AppConfig.String("domain") + "/middle/payingPage.html?" + queryStr)
-	} else {
-		c.Data["json"] = res.CodeURL
-		c.ServeJSON()
 	}
 	return
 }
@@ -316,7 +326,7 @@ func (c *OrderController) NewOrder(cid int, fee float64, open_id string, flag bo
 // @Failure 403 body is empty
 // @router /takeout [get]
 func (c *OrderController) TakeOut() {
-	var str string
+	var str = strconv.Itoa(FirstOut)
 	cabinet_mac := c.GetString("cabinet_id")
 	pay_type, _ := c.GetInt8("pay_type")
 	if pay_type != Al_Pay && pay_type != Wx_Pay {

@@ -73,6 +73,7 @@ func (c *CabinetDetailController) Clear() {
 	utils.Redis.DEL(utils.NOPAY + strconv.Itoa(id))
 	utils.Redis.DEL(utils.PAY + strconv.Itoa(id))
 	utils.Redis.DEL(utils.LOCKED + strconv.Itoa(id))
+	utils.Redis.DEL(utils.FREE + strconv.Itoa(id))
 
 	user, _ := admin.GetAdminById(c.userId)
 

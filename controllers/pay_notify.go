@@ -118,9 +118,10 @@ func (c *PayNotifyController) OauthNotify() {
 	var cdid int
 	var fortime string
 	var cabinet_id int
-	var prefix string //缓存前缀
-	var syb = false   //取标志
-	var free = false  //免费标志
+	var prefix string         //缓存前缀
+	var syb = false           //取标志
+	var free = false          //免费标志
+	var isRepeatStore = false //检验先付后存的重复存
 	auth_code := c.Ctx.Input.Query("auth_code")
 	state := c.Ctx.Input.Query("state")
 	if strings.Contains(state, "_") {
@@ -139,7 +140,6 @@ func (c *PayNotifyController) OauthNotify() {
 	if t.ChargeMode == 3 {
 		free = true
 	}
-
 	o_pri := []byte(oauth_pri)
 	o_pub := []byte(oauth_pub)
 	client := alipay.New(beego.AppConfig.String("APPID"), beego.AppConfig.String("alipay_partner"), o_pub, o_pri, true)
@@ -162,13 +162,20 @@ func (c *PayNotifyController) OauthNotify() {
 		return
 	}
 	openid := reults.AlipaySystemOauthTokenResponse.UserId
+	//校验是否重复存(计次先付后存)
+	if fortime == "1" {
+		isRepeatStore = true
+		//不是取
+		syb = false
+		goto C
+	}
 	//免费(取)
 	if free && syb {
 		goto C
 	}
 
 	//如果为先存后付的取物
-	if len(fortime) > 0 {
+	if len(fortime) > 1 {
 		_, _, cdid, err = models.GetCabinetAndDoorByUserId(openid, 1)
 		if err == orm.ErrNoRows {
 			c.Data["cndata"] = "没有找到你的存物记录"
@@ -224,7 +231,8 @@ C:
 		} else if !syb && !free {
 			prefix = utils.NOPAY
 		}
-		v, err := models.GetCabinetDetailByOpenId(openid)
+		//todo one cabinet just store once
+		v, err := models.GetCabinetDetailByOpenId(openid, cabinet_id)
 		if !syb && err == nil && v != nil {
 			beego.Warn(openid + "[ 重复存物 ]")
 			c.Data["cndata"] = "重复存物"
@@ -238,6 +246,15 @@ C:
 			c.Data["endata"] = "No Record Find For You"
 			c.TplName = "resp/resp.html"
 			c.Render()
+			return
+		} else if isRepeatStore {
+			//重定向到支付宝付款
+			totalFee := strconv.FormatFloat(t.Price, 'f', 2, 64)
+			timeStamp := CabinetTimeStamp[cab.CabinetID]
+			if timeStamp == 0 {
+				timeStamp = int(time.Now().Unix())
+			}
+			c.redirect("http://cabinet.schengzhu.com/order/reorder?pay_type=2&cabinet_id=" + cab.CabinetID + "&timestamp=" + strconv.Itoa(timeStamp) + "&total_fee=" + totalFee + "&open_id=" + openid)
 			return
 		}
 		//已经使用柜子
@@ -362,6 +379,9 @@ A:
 	if free && syb {
 		qs = "&free=" + strconv.Itoa(1)
 	}
+	if fortime == "2" && syb {
+		qs = "&free=" + strconv.Itoa(1)
+	}
 	c.redirect(beego.AppConfig.String("domain") + "/middle/aliOperation.html?door_no=" + strconv.Itoa(door_no) + qs)
 }
 
@@ -467,9 +487,10 @@ func (c *PayNotifyController) Wx() {
 	var cdid int
 	var fortime string
 	var cabinet_id int
-	var prefix string //缓存前缀
-	var syb = false   //取标志
-	var free = false  //免费标志
+	var prefix string         //缓存前缀
+	var syb = false           //取标志
+	var free = false          //免费标志
+	var isRepeatStore = false //检验先付后存的重复存
 	code := c.Input().Get("code")
 	state := c.Ctx.Input.Query("state")
 	if strings.Contains(state, "_") {
@@ -497,12 +518,19 @@ func (c *PayNotifyController) Wx() {
 	if err != nil {
 		beego.Error("[WxUnlock] GetOpenId err: ", err)
 	}
+	//校验是否重复存(计次先付后存)
+	if fortime == "1" {
+		isRepeatStore = true
+		//不是取
+		syb = false
+		goto C
+	}
 	//免费(取)
 	if free && syb {
 		goto C
 	}
 	//如果为先存后付的取物
-	if len(fortime) > 0 {
+	if len(fortime) > 1 {
 		_, _, cdid, err = models.GetCabinetAndDoorByUserId(res.OpenId, 1)
 		if err == orm.ErrNoRows {
 			c.Data["cndata"] = "没有找到你的存物记录"
@@ -550,7 +578,7 @@ func (c *PayNotifyController) Wx() {
 		return
 	}
 C:
-//先存后付授权开门
+//先存后付授权开门 || 校验是否重复存(计次先付后存)
 	if cabinet_id != 0 {
 		//免费
 		if !syb && free {
@@ -558,7 +586,7 @@ C:
 		} else if !syb && !free {
 			prefix = utils.NOPAY
 		}
-		v, err := models.GetCabinetDetailByOpenId(res.OpenId)
+		v, err := models.GetCabinetDetailByOpenId(res.OpenId, cabinet_id)
 		if !syb && err == nil && v != nil {
 			beego.Warn(res.OpenId + "[ 重复存物 ]")
 			c.Data["cndata"] = "重复存物"
@@ -574,6 +602,15 @@ C:
 			c.Render()
 			return
 
+		} else if isRepeatStore {
+			//重定向到支付宝付款
+			totalFee := strconv.FormatFloat(t.Price, 'f', 2, 64)
+			timeStamp := CabinetTimeStamp[cab.CabinetID]
+			if timeStamp == 0 {
+				timeStamp = int(time.Now().Unix())
+			}
+			c.redirect("http://cabinet.schengzhu.com/order/reorder?pay_type=1&cabinet_id=" + cab.CabinetID + "&timestamp=" + strconv.Itoa(timeStamp) + "&total_fee=" + totalFee + "&open_id=" + res.OpenId)
+			return
 		}
 		//已经使用柜子
 		//v, err := models.GetCabinetDetailByOpenId(res.OpenId)
@@ -699,6 +736,9 @@ A:
 	}
 	qs := "&free=" + strconv.Itoa(0)
 	if free && syb {
+		qs = "&free=" + strconv.Itoa(1)
+	}
+	if fortime == "2" && syb {
 		qs = "&free=" + strconv.Itoa(1)
 	}
 	c.redirect(beego.AppConfig.String("domain") + "/middle/wxOperation.html?door_no=" + strconv.Itoa(door_no) + qs)

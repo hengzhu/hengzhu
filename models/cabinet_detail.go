@@ -361,10 +361,11 @@ func BindOpenIdForCabinetDoor(openid string, cdid int) (err error, door_no int) 
 	return
 }
 
-func GetCabinetDetailByOpenId(open_id string) (v *CabinetDetail, err error) {
+//The same cabinet just support one type pay method
+func GetCabinetDetailByOpenId(open_id string, cid int) (v *CabinetDetail, err error) {
 	o := orm.NewOrm()
-	v = &CabinetDetail{UserID: open_id}
-	if err := o.Read(v, "userID"); err == nil {
+	v = &CabinetDetail{UserID: open_id, CabinetId: cid}
+	if err := o.Read(v, "userID", "cabinet_id"); err == nil {
 		return v, nil
 	}
 	return nil, err

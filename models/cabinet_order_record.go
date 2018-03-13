@@ -88,15 +88,30 @@ func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid strin
 		//更新以前重新校验柜子是否可用
 		cor, err = GetCabinetOrderByDetailIdAndOpenId(v.CabinetDetailId)
 		if err == nil && cor.IsPay == 1 {
-			cdd, err = GetFreeDoorByCabinetId(cdd.CabinetId)
+			cdd, err = GetCabinetDetailById(v.CabinetDetailId)
 			if err != nil {
 				beego.Warn("分配柜子失败")
+				return
+			}
+			cdd, err = GetFreeDoorByCabinetId(cdd.CabinetId)
+			if err != nil {
+				beego.Warn("获取空闲柜子失败")
 				return
 			}
 			v.CabinetDetailId = cdd.Id
 		} else if err != nil && err != orm.ErrNoRows {
 			beego.Warn("系统错误")
 			return
+		} else if err == nil && cor.IsPay == 0 {
+			//计次先付后存
+			v.IsPay = 1
+			v.CustomerId = openid
+			v.PayDate = int(time.Now().Unix())
+			v.ThirdOrderNo = third_order_no
+			if _, err = o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err != nil {
+				beego.Error(err)
+				return
+			}
 		} else {
 			var num int64
 			v.IsPay = 1
@@ -127,12 +142,14 @@ func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid strin
 		}
 	}
 	//已经查到该用户在用
-	c := CabinetDetail{UserID: openid, Using: 2, UseState: 1}
-	if err = o.Read(&c, "userID", "using", "use_state"); err == nil {
+	_cdd, err := GetCabinetDetailById(v.CabinetDetailId)
+	c := CabinetDetail{UserID: openid, Using: 2, UseState: 1, CabinetId: _cdd.CabinetId}
+	if err = o.Read(&c, "userID", "using", "use_state", "cabinet_id"); err == nil {
 		cor := CabinetOrderRecord{}
 		if err = o.Raw("select id from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and (past_flag is null or past_flag = 0) limit 1 ;", openid, v.CabinetDetailId).QueryRow(&cor); err == nil {
 			err = errors.New("[重复存物]: " + openid)
 			beego.Error(err)
+			//todo be careful at here because have judge the repeat
 			o.Raw("update cabinet_order_record set past_flag = 1 ,action_type = 1 where order_no = ? and third_order_no = ?;", order_no, third_order_no).Exec()
 			return nil, err
 		}
@@ -146,7 +163,6 @@ func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid strin
 	return
 
 	//更新该柜子的门为使用中>>关门时才绑定
-
 	//cd = cdd
 	//err, _ = BindOpenIdForCabinetDoor(openid, cd.Id)
 	//if err != nil {
