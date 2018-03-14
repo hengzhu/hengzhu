@@ -156,7 +156,7 @@ func (c *PayNotifyController) OauthNotify() {
 	if err != nil || reults == nil {
 		beego.Error(reults, err)
 		c.Data["cndata"] = "授权开门失败"
-		c.Data["endata"] = err.Error()
+		c.Data["endata"] = "Authorization failure"
 		c.TplName = "resp/resp.html"
 		c.Render()
 		return
@@ -231,7 +231,6 @@ C:
 		} else if !syb && !free {
 			prefix = utils.NOPAY
 		}
-		//todo one cabinet just store once
 		v, err := models.GetCabinetDetailByOpenId(openid, cabinet_id)
 		if !syb && err == nil && v != nil {
 			beego.Warn(openid + "[ 重复存物 ]")
@@ -517,6 +516,11 @@ func (c *PayNotifyController) Wx() {
 	beego.Warn("[WxUnlock] get code: ", code)
 	if err != nil {
 		beego.Error("[WxUnlock] GetOpenId err: ", err)
+		c.Data["cndata"] = "授权开门失败"
+		c.Data["endata"] = "Authorization failure"
+		c.TplName = "resp/resp.html"
+		c.Render()
+		return
 	}
 	//校验是否重复存(计次先付后存)
 	if fortime == "1" {

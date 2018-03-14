@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/astaxie/beego/orm"
@@ -113,33 +112,37 @@ func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid strin
 				return
 			}
 		} else {
-			var num int64
 			v.IsPay = 1
 			v.CustomerId = openid
 			v.PayDate = int(time.Now().Unix())
 			v.ThirdOrderNo = third_order_no
 
 			//区分后支付
-			if err = o.Raw("select id from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and (past_flag is null or past_flag = 0) limit 1 ;", openid, v.CabinetDetailId).QueryRow(&cor); err != nil {
-				cd, err = GetCabinetDetailById(v.CabinetDetailId)
-				if err != nil {
-					beego.Error(err)
-				}
-				//取的时候删除缓存
-				err = utils.Redis.DEL(utils.LOCKED + strconv.Itoa(v.CabinetDetailId))
-				beego.Warn("删除缓存: ", utils.LOCKED+strconv.Itoa(v.CabinetDetailId))
-				if err != nil {
-					beego.Error(err)
-				}
-				if num, err2 := o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err2 == nil {
-					fmt.Println("Number of records updated in database:", num)
-				}
+			//if err = o.Raw("select id from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and (past_flag is null or past_flag = 0) limit 1 ;", openid, v.CabinetDetailId).QueryRow(&cor); err == nil {
+			err = o.Raw("select id from cabinet_order_record where customer_id = ? and cabinet_detail_id = ? and (past_flag is null or past_flag = 0) limit 1 ;", openid, v.CabinetDetailId).QueryRow(&cor)
+			cd, err = GetCabinetDetailById(v.CabinetDetailId)
+			if err != nil {
+				beego.Error(err)
+			}
+			//取的时候删除缓存
+			err = utils.Redis.DEL(utils.LOCKED + strconv.Itoa(v.CabinetDetailId))
+			beego.Warn("删除缓存: ", utils.LOCKED+strconv.Itoa(v.CabinetDetailId))
+			if err != nil {
+				beego.Error(err)
+			}
+			if num, err2 := o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err2 == nil {
+				beego.Info("Number of records updated in database:", num)
+			} else {
+				beego.Error(err2)
+				err = err2
 				return
 			}
-			if num, err = o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err == nil {
-				fmt.Println("Number of records updated in database:", num)
-			}
+			return
 		}
+		//if num, err = o.Update(&v, "customer_id", "is_pay", "pay_date", "third_order_no"); err == nil {
+		//	fmt.Println("Number of records updated in database:", num)
+		//}
+		//}
 	}
 	//已经查到该用户在用
 	_cdd, err := GetCabinetDetailById(v.CabinetDetailId)
@@ -173,7 +176,20 @@ func UpdateOrderSuccessByNo(third_order_no string, order_no string, openid strin
 func GetCabinetOrderByDetailIdAndOpenId(detailId int) (cor *CabinetOrderRecord, err error) {
 	o := orm.NewOrm()
 	v := CabinetOrderRecord{}
-	err = o.Raw("select id, is_pay from cabinet_order_record where cabinet_detail_id = ? and (past_flag = 0 or past_flag is null) limit 1;", detailId).QueryRow(&v)
+	err = o.Raw("select id, is_pay, cabinet_detail_id from cabinet_order_record where cabinet_detail_id = ? and (past_flag = 0 or past_flag is null) limit 1;", detailId).QueryRow(&v)
+	if err != nil {
+		beego.Error(err)
+		return
+	}
 	cor = &v
+	t := Types{}
+	err = o.Raw("select toll_time from type where id = (select type_id from cabinet where id = (select cabinet_id from cabinet_detail where id = ?)) limit 1;", cor.CabinetDetailId).QueryRow(&t)
+	if err != nil && err != orm.ErrNoRows {
+		return
+	}
+	//收费时间，1:存物时
+	if t.TollTime != 1 {
+		err = orm.ErrNoRows
+	}
 	return
 }
